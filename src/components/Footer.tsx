@@ -1,10 +1,22 @@
 import { Link } from "react-router-dom"
 import { Mail, Phone } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useEffect, useState } from "react"
+
+const THEME_KEY = "theme"
 
 export default function Footer() {
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
+
+    const [isDark, setIsDark] = useState(false)
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem(THEME_KEY)
+        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+        const dark = savedTheme === "dark" || (!savedTheme && systemDark)
+        setIsDark(dark)
+    }, [])
 
     const t = isBg
         ? {
@@ -54,7 +66,7 @@ export default function Footer() {
                     <div className="min-w-0">
                         <Link to="/" className="inline-flex max-w-full items-center">
                             <img
-                                src="/images/mainlogo.png"
+                                src={isDark ? "/images/mainlogoBlack.png" : "/images/mainlogo.png"}
                                 alt="DG Vision Studio"
                                 className="h-11 w-auto max-w-full object-contain sm:h-12 md:h-14 xl:h-16"
                             />
@@ -131,11 +143,11 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="mailto:contact@dgvisionstudio.com"
+                                href="mailto:dkvisionstudio@gmail.com"
                                 className={contactLinkClass}
                             >
                                 <Mail size={16} className="mt-[2px] shrink-0" />
-                                <span className="break-all">contact@dgvisionstudio.com</span>
+                                <span className="break-all">dkvisionstudio@gmail.com</span>
                             </a>
                         </div>
                     </div>

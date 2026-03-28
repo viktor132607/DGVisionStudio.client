@@ -94,7 +94,7 @@ export default function Navbar() {
                     {/* LOGO */}
                     <Link to="/" className="flex items-center">
                         <img
-                            src="/images/mainlogo.png"
+                            src={isDark ? "/images/mainlogoBlack.png" : "/images/mainlogo.png"}
                             alt="DG Vision Studio"
                             className="h-10 sm:h-12 lg:h-14 w-auto"
                         />
