@@ -5,36 +5,36 @@ export default function About() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
     const sectionClass =
-        "rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none"
+        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-7 xl:p-8"
 
     const textClass =
-        "text-[15px] leading-8 text-slate-600 dark:text-white"
+        "text-[14px] leading-7 text-slate-600 dark:text-white sm:text-[15px] sm:leading-8 lg:text-[16px]"
 
     const smallTitleClass =
-        "mb-4 text-[18px] font-semibold text-slate-900 dark:text-white"
+        "mb-4 text-[17px] font-semibold text-slate-900 dark:text-white sm:text-[18px] lg:text-[20px]"
 
     const bulletClass =
-        "flex items-start gap-3 text-[15px] leading-8 text-slate-600 dark:text-white"
+        "flex items-start gap-3 text-[14px] leading-7 text-slate-600 dark:text-white sm:text-[15px] sm:leading-8 lg:text-[16px]"
 
     const bulletDot =
-        "mt-[11px] h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500 dark:bg-white"
+        "mt-[9px] h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500 dark:bg-white sm:mt-[11px]"
 
     return isBg ? (
-        <div className="mx-auto w-full max-w-6xl bg-white px-4 pb-16 pt-10 dark:bg-black sm:px-6 lg:px-8">
-            <div className="grid gap-8">
-                <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none">
+        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-black sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
+            <div className="grid gap-5 sm:gap-6 lg:gap-8 xl:gap-10">
+                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
                     <img
                         src="/images/JS.jpg"
                         alt="DG Vision Studio"
-                        className="h-[280px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+                        className="h-[220px] w-full object-cover object-center sm:h-[300px] md:h-[360px] lg:h-[420px] xl:h-[500px] 2xl:h-[560px]"
                     />
 
-                    <div className="px-6 py-8 sm:px-8 sm:py-10">
-                        <h1 className="mb-4 text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                    <div className="px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9 lg:px-10 lg:py-10 xl:px-12">
+                        <h1 className="mb-4 text-center text-[28px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[34px] md:text-[38px] lg:text-[44px] xl:text-[48px]">
                             За DG Vision Studio
                         </h1>
 
-                        <p className="mx-auto max-w-4xl text-center text-[16px] leading-8 text-slate-600 dark:text-white">
+                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-white sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
                             Създаваме модерно визуално съдържание с фокус върху брандове, рекламни визии,
                             портретна фотография и запомнящи се истории. Работим като екип от двама души,
                             обединени от общ стил, внимание към детайла и стремеж към силно визуално присъствие.
@@ -42,7 +42,7 @@ export default function About() {
                     </div>
                 </section>
 
-                <section className="grid gap-6 lg:grid-cols-2">
+                <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                     <div className={sectionClass}>
                         <h2 className={smallTitleClass}>Нашият подход</h2>
                         <div className="space-y-4">
@@ -64,25 +64,33 @@ export default function About() {
                         <ul className="space-y-3">
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Бранд и рекламно съдържание за социални мрежи, кампании и онлайн присъствие</span>
+                                <span>
+                                    Бранд и рекламно съдържание за социални мрежи, кампании и онлайн присъствие
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Портретни фотосесии с личен, артистичен или професионален характер</span>
+                                <span>
+                                    Портретни фотосесии с личен, артистичен или професионален характер
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Съдържание за малки и големи екипи, продукти, услуги и визуални концепции</span>
+                                <span>
+                                    Съдържание за малки и големи екипи, продукти, услуги и визуални концепции
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Кадри, които комбинират естетика, идентичност и ясна комуникация</span>
+                                <span>
+                                    Кадри, които комбинират естетика, идентичност и ясна комуникация
+                                </span>
                             </li>
                         </ul>
                     </div>
                 </section>
 
-                <section className="grid gap-6 lg:grid-cols-2">
+                <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                     <div className={sectionClass}>
                         <h2 className={smallTitleClass}>Студио и възможности</h2>
                         <div className="space-y-4">
@@ -130,21 +138,21 @@ export default function About() {
             </div>
         </div>
     ) : (
-        <div className="mx-auto w-full max-w-6xl bg-white px-4 pb-16 pt-10 dark:bg-black sm:px-6 lg:px-8">
-            <div className="grid gap-8">
-                <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none">
+        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-black sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
+            <div className="grid gap-5 sm:gap-6 lg:gap-8 xl:gap-10">
+                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
                     <img
                         src="/images/JS.jpg"
                         alt="DG Vision Studio"
-                        className="h-[280px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+                        className="h-[220px] w-full object-cover object-center sm:h-[300px] md:h-[360px] lg:h-[420px] xl:h-[500px] 2xl:h-[560px]"
                     />
 
-                    <div className="px-6 py-8 sm:px-8 sm:py-10">
-                        <h1 className="mb-4 text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                    <div className="px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-9 lg:px-10 lg:py-10 xl:px-12">
+                        <h1 className="mb-4 text-center text-[28px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[34px] md:text-[38px] lg:text-[44px] xl:text-[48px]">
                             About DG Vision Studio
                         </h1>
 
-                        <p className="mx-auto max-w-4xl text-center text-[16px] leading-8 text-slate-600 dark:text-white">
+                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-white sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
                             We create modern visual content focused on brands, advertising, portrait photography
                             and memorable stories. We work as a two-person studio united by a shared style,
                             attention to detail and a strong sense of visual identity.
@@ -152,7 +160,7 @@ export default function About() {
                     </div>
                 </section>
 
-                <section className="grid gap-6 lg:grid-cols-2">
+                <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                     <div className={sectionClass}>
                         <h2 className={smallTitleClass}>Our Approach</h2>
                         <div className="space-y-4">
@@ -174,25 +182,33 @@ export default function About() {
                         <ul className="space-y-3">
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Brand and advertising content for campaigns, social media and digital presence</span>
+                                <span>
+                                    Brand and advertising content for campaigns, social media and digital presence
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Portrait sessions with personal, artistic or professional focus</span>
+                                <span>
+                                    Portrait sessions with personal, artistic or professional focus
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Visual content for teams, products, services and creative concepts</span>
+                                <span>
+                                    Visual content for teams, products, services and creative concepts
+                                </span>
                             </li>
                             <li className={bulletClass}>
                                 <span className={bulletDot}></span>
-                                <span>Images that combine aesthetics, identity and clear communication</span>
+                                <span>
+                                    Images that combine aesthetics, identity and clear communication
+                                </span>
                             </li>
                         </ul>
                     </div>
                 </section>
 
-                <section className="grid gap-6 lg:grid-cols-2">
+                <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-6 xl:gap-8">
                     <div className={sectionClass}>
                         <h2 className={smallTitleClass}>Studio and Production</h2>
                         <div className="space-y-4">

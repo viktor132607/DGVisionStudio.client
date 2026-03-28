@@ -285,19 +285,19 @@ export default function Services() {
     }, [selectedIndex, filteredItems])
 
     return (
-        <div className="min-h-screen w-full bg-neutral-100 dark:bg-neutral-950">
-            <div className="border-b border-neutral-300 bg-neutral-50 px-4 py-8 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-[1600px]">
-                    <h1 className="text-center text-3xl font-bold uppercase tracking-[0.14em] text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
+        <div className="min-h-screen w-full overflow-x-hidden bg-neutral-100 dark:bg-neutral-950">
+            <div className="border-b border-neutral-300 bg-neutral-50 px-4 py-8 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:px-10">
+                <div className="mx-auto max-w-[1700px]">
+                    <h1 className="text-center text-[28px] font-bold uppercase tracking-[0.12em] text-slate-900 dark:text-white sm:text-[36px] sm:tracking-[0.14em] lg:text-[44px] xl:text-[52px]">
                         {isBg ? "Портфолио" : "Portfolio"}
                     </h1>
                 </div>
             </div>
 
             <div className="border-b border-neutral-300 bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="mx-auto flex max-w-[1600px] justify-center px-4 sm:px-6 lg:px-8">
-                    <div className="flex w-full justify-start overflow-x-auto sm:justify-center">
-                        <div className="flex min-w-max items-center gap-4 py-4 sm:gap-6 lg:gap-8">
+                <div className="mx-auto flex max-w-[1700px] justify-center px-4 sm:px-6 lg:px-8 xl:px-10">
+                    <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 flex w-full justify-start overflow-x-auto">
+                        <div className="flex min-w-max items-center gap-4 py-4 sm:gap-6 sm:py-5 lg:gap-8">
                             {categories.map((category) => {
                                 const active = activeCategory === category.key
 
@@ -306,7 +306,7 @@ export default function Services() {
                                         key={category.key}
                                         type="button"
                                         onClick={() => setActiveCategory(category.key)}
-                                        className={`relative whitespace-nowrap pb-2 text-xs font-bold uppercase tracking-[0.05em] transition sm:text-sm ${
+                                        className={`relative whitespace-nowrap pb-2 text-[11px] font-bold uppercase tracking-[0.06em] transition sm:text-sm ${
                                             active
                                                 ? "text-neutral-900 dark:text-white"
                                                 : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
@@ -330,7 +330,7 @@ export default function Services() {
             </div>
 
             <div className="w-full bg-neutral-300 px-[1px] py-[1px] dark:bg-neutral-900">
-                <div className="columns-2 gap-[1px] sm:columns-3 lg:columns-4 xl:columns-5">
+                <div className="columns-1 gap-[1px] min-[420px]:columns-2 md:columns-3 lg:columns-4 2xl:columns-5">
                     {filteredItems.map((item, index) => (
                         <button
                             key={`${item.src}-${index}`}
@@ -342,16 +342,16 @@ export default function Services() {
                                 src={item.src}
                                 alt={isBg ? item.titleBg : item.titleEn}
                                 loading="lazy"
-                                className="block h-auto w-full transition duration-500 group-hover:scale-[1.02]"
+                                className="block h-auto w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                             />
 
                             <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/20 dark:group-hover:bg-black/30" />
 
-                            <div className="absolute inset-x-0 bottom-0 translate-y-4 p-4 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                                <p className="text-[10px] uppercase tracking-[0.28em] text-white/70">
+                            <div className="absolute inset-x-0 bottom-0 translate-y-3 p-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:translate-y-4 sm:p-4">
+                                <p className="text-[10px] uppercase tracking-[0.22em] text-white/70 sm:tracking-[0.28em]">
                                     {isBg ? item.categoryBg : item.categoryEn}
                                 </p>
-                                <p className="mt-1 text-sm font-semibold text-white">
+                                <p className="mt-1 text-sm font-semibold text-white sm:text-[15px]">
                                     {isBg ? item.titleBg : item.titleEn}
                                 </p>
                             </div>
@@ -362,13 +362,13 @@ export default function Services() {
 
             {selectedItem && (
                 <div
-                    className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/95 p-3 sm:p-6"
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/95 p-2 sm:p-4 lg:p-6"
                     onClick={() => setSelectedIndex(null)}
                 >
                     <button
                         type="button"
                         onClick={() => setSelectedIndex(null)}
-                        className="absolute right-3 top-3 z-[1000] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:right-6 sm:top-6 sm:h-11 sm:w-11"
+                        className="absolute right-2 top-2 z-[1000] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:right-4 sm:top-4 sm:h-11 sm:w-11 lg:right-6 lg:top-6"
                         aria-label={isBg ? "Затвори" : "Close"}
                     >
                         <svg
@@ -394,7 +394,7 @@ export default function Services() {
                                         prev === null ? prev : prev === 0 ? filteredItems.length - 1 : prev - 1
                                     )
                                 }}
-                                className="absolute left-2 top-1/2 z-[1000] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:left-6 sm:h-12 sm:w-12"
+                                className="absolute left-2 top-1/2 z-[1000] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:left-4 sm:h-11 sm:w-11 lg:left-6 lg:h-12 lg:w-12"
                                 aria-label={isBg ? "Предишна" : "Previous"}
                             >
                                 <svg
@@ -417,7 +417,7 @@ export default function Services() {
                                         prev === null ? prev : prev === filteredItems.length - 1 ? 0 : prev + 1
                                     )
                                 }}
-                                className="absolute right-2 top-1/2 z-[1000] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:right-6 sm:h-12 sm:w-12"
+                                className="absolute right-2 top-1/2 z-[1000] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-slate-900/70 text-white transition hover:bg-white/10 sm:right-4 sm:h-11 sm:w-11 lg:right-6 lg:h-12 lg:w-12"
                                 aria-label={isBg ? "Следваща" : "Next"}
                             >
                                 <svg
@@ -435,20 +435,20 @@ export default function Services() {
                     )}
 
                     <div
-                        className="relative flex max-h-full max-w-[96vw] flex-col items-center justify-center"
+                        className="relative flex max-h-full w-full max-w-[98vw] flex-col items-center justify-center"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <img
                             src={selectedItem.src}
                             alt={isBg ? selectedItem.titleBg : selectedItem.titleEn}
-                            className="max-h-[78vh] max-w-[96vw] object-contain sm:max-h-[82vh]"
+                            className="max-h-[72vh] max-w-[98vw] object-contain sm:max-h-[78vh] lg:max-h-[82vh]"
                         />
 
-                        <div className="mt-4 px-6 text-center">
-                            <p className="text-[10px] uppercase tracking-[0.3em] text-white/65 sm:text-[11px]">
+                        <div className="mt-4 px-4 text-center sm:px-6">
+                            <p className="text-[10px] uppercase tracking-[0.24em] text-white/65 sm:text-[11px] sm:tracking-[0.3em]">
                                 {isBg ? selectedItem.categoryBg : selectedItem.categoryEn}
                             </p>
-                            <p className="mt-2 text-sm font-semibold text-white sm:text-base">
+                            <p className="mt-2 text-sm font-semibold text-white sm:text-base lg:text-lg">
                                 {isBg ? selectedItem.titleBg : selectedItem.titleEn}
                             </p>
                         </div>
