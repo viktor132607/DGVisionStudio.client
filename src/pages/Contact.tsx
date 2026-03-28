@@ -9,23 +9,23 @@ export default function Contact() {
         "mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 xl:px-12 2xl:px-16"
 
     const cardClass =
-        "rounded-[22px] bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] dark:bg-neutral-900 sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-8"
-
-    const iconWrapClass =
-        "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 sm:h-12 sm:w-12"
+        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-neutral-900 sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-8"
 
     const sectionTitleClass =
         "text-[24px] font-bold text-slate-900 dark:text-white sm:text-[28px] lg:text-[30px]"
 
-    const blockTextClass =
-        "text-[14px] leading-7 text-slate-700 dark:text-slate-200 sm:text-[15px] sm:leading-8 lg:text-[16px]"
+    const infoBoxClass =
+        "rounded-[18px] border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black sm:rounded-[20px] sm:p-5 lg:rounded-[22px]"
 
-    const phoneCardClass =
-        "rounded-[18px] border border-sky-100 bg-sky-50 px-4 py-4 text-[15px] font-semibold text-sky-700 transition hover:border-sky-200 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-300 dark:hover:border-sky-800 dark:hover:bg-sky-900/40 sm:rounded-[20px] sm:px-5 sm:py-4 sm:text-base"
+    const linkBoxClass =
+        "rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-950 dark:border-white/10 dark:bg-black dark:text-white dark:hover:border-white/20 dark:hover:bg-neutral-950 sm:rounded-[20px] sm:px-5 sm:py-4 sm:text-base"
+
+    const emailBoxClass =
+        "rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-4 text-[14px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-950 dark:border-white/10 dark:bg-black dark:text-white dark:hover:border-white/20 dark:hover:bg-neutral-950 sm:rounded-[20px] sm:px-5 sm:py-4 sm:text-[15px]"
 
     return isBg ? (
         <div className={pageClass}>
-            <section className="mb-6 rounded-[24px] bg-gradient-to-br from-sky-100 via-white to-cyan-50 px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:from-sky-950/40 dark:via-neutral-900 dark:to-cyan-950/30 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
+            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-neutral-900 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
                 <h1 className="mb-4 text-[32px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[42px] lg:text-[52px]">
                     DG Vision Studio
                 </h1>
@@ -34,91 +34,52 @@ export default function Contact() {
                 </p>
             </section>
 
-            <section className="grid gap-5 sm:gap-6 lg:gap-8">
+            <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-8">
                 <div className={cardClass}>
-                    <div className="mb-5 flex items-center gap-4">
-                        <span className={iconWrapClass}>
-                            <img
-                                src="/images/location.png"
-                                alt="За студиото"
-                                className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                            />
-                        </span>
-                        <h2 className={sectionTitleClass}>За студиото</h2>
-                    </div>
+                    <h2 className={sectionTitleClass}>Телефон</h2>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
-                            <p className={blockTextClass}>
-                                DG Vision Studio предлага услуги в сферата на фотографията и видеографията.
-                            </p>
-                        </div>
+                    <div className="mt-5 grid gap-4">
+                        <a className={linkBoxClass} href="tel:+359988758434">
+                            +359 988 758 434
+                        </a>
 
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
-                            <p className={blockTextClass}>
-                                Работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
-                            </p>
-                        </div>
+                        <a className={linkBoxClass} href="tel:+359888959373">
+                            +359 888 959 373
+                        </a>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:gap-8">
-                    <div className={cardClass}>
-                        <div className="mb-5 flex items-center gap-4">
-                            <span className={iconWrapClass}>
-                                <img
-                                    src="/images/phone.png"
-                                    alt="Телефони"
-                                    className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                                />
-                            </span>
-                            <h2 className={sectionTitleClass}>Телефони</h2>
-                        </div>
+                <div className={cardClass}>
+                    <h2 className={sectionTitleClass}>Имейл</h2>
 
-                        <div className="grid gap-4">
-                            <a className={phoneCardClass} href="tel:+359988758434">
-                                +359 988 758 434
-                            </a>
-
-                            <a className={phoneCardClass} href="tel:+359888959373">
-                                +359 888 959 373
-                            </a>
-                        </div>
+                    <div className="mt-5 grid gap-4">
+                        <a
+                            className={`${emailBoxClass} break-all`}
+                            href="mailto:contact@dgvisionstudio.com"
+                        >
+                            contact@dgvisionstudio.com
+                        </a>
                     </div>
+                </div>
 
-                    <div className={cardClass}>
-                        <div className="mb-5 flex items-center gap-4">
-                            <span className={iconWrapClass}>
-                                <img
-                                    src="/images/location.png"
-                                    alt="Адрес"
-                                    className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                                />
-                            </span>
-                            <h2 className={sectionTitleClass}>Адрес</h2>
-                        </div>
+                <div className={cardClass}>
+                    <h2 className={sectionTitleClass}>Адрес</h2>
 
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
+                    <div className="mt-5">
+                        <div className={infoBoxClass}>
                             <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200 sm:text-base sm:leading-8 lg:text-[17px]">
-                                Русе, България
+                                Базирани сме в Русе и работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
                             </p>
                         </div>
                     </div>
                 </div>
+            </section>
 
+            <section className="mt-5 sm:mt-6 lg:mt-8">
                 <div className={cardClass}>
-                    <div className="mb-5 flex items-center gap-4">
-                        <span className={iconWrapClass}>
-                            <img
-                                src="/images/location.png"
-                                alt="Карта"
-                                className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                            />
-                        </span>
-                        <h2 className={sectionTitleClass}>Карта</h2>
-                    </div>
+                    <h2 className={sectionTitleClass}>Карта</h2>
 
-                    <div className="overflow-hidden rounded-[20px] border border-sky-100 dark:border-sky-900/40 sm:rounded-[22px] lg:rounded-[24px]">
+                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-white/10 sm:rounded-[22px] lg:rounded-[24px]">
                         <iframe
                             className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                             loading="lazy"
@@ -129,7 +90,7 @@ export default function Contact() {
 
                     <div className="mt-5">
                         <a
-                            className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full bg-sky-500 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-600 sm:min-h-[48px] sm:w-auto"
+                            className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200 sm:min-h-[48px] sm:w-auto"
                             target="_blank"
                             rel="noopener noreferrer"
                             href="https://www.google.com/maps/search/?api=1&query=Ruse%2C%20Bulgaria"
@@ -142,7 +103,7 @@ export default function Contact() {
         </div>
     ) : (
         <div className={pageClass}>
-            <section className="mb-6 rounded-[24px] bg-gradient-to-br from-sky-100 via-white to-cyan-50 px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:from-sky-950/40 dark:via-neutral-900 dark:to-cyan-950/30 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
+            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-neutral-900 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
                 <h1 className="mb-4 text-[32px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[42px] lg:text-[52px]">
                     DG Vision Studio
                 </h1>
@@ -151,91 +112,52 @@ export default function Contact() {
                 </p>
             </section>
 
-            <section className="grid gap-5 sm:gap-6 lg:gap-8">
+            <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-8">
                 <div className={cardClass}>
-                    <div className="mb-5 flex items-center gap-4">
-                        <span className={iconWrapClass}>
-                            <img
-                                src="/images/location.png"
-                                alt="About the Studio"
-                                className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                            />
-                        </span>
-                        <h2 className={sectionTitleClass}>About the Studio</h2>
-                    </div>
+                    <h2 className={sectionTitleClass}>Phone</h2>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
-                            <p className={blockTextClass}>
-                                DG Vision Studio offers photography and videography services.
-                            </p>
-                        </div>
+                    <div className="mt-5 grid gap-4">
+                        <a className={linkBoxClass} href="tel:+359988758434">
+                            +359 988 758 434
+                        </a>
 
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
-                            <p className={blockTextClass}>
-                                We work with clients from Ruse, Varna, Plovdiv, Burgas and other cities in Bulgaria.
-                            </p>
-                        </div>
+                        <a className={linkBoxClass} href="tel:+359888959373">
+                            +359 888 959 373
+                        </a>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:gap-8">
-                    <div className={cardClass}>
-                        <div className="mb-5 flex items-center gap-4">
-                            <span className={iconWrapClass}>
-                                <img
-                                    src="/images/phone.png"
-                                    alt="Phones"
-                                    className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                                />
-                            </span>
-                            <h2 className={sectionTitleClass}>Phones</h2>
-                        </div>
+                <div className={cardClass}>
+                    <h2 className={sectionTitleClass}>Email</h2>
 
-                        <div className="grid gap-4">
-                            <a className={phoneCardClass} href="tel:+359988758434">
-                                +359 988 758 434
-                            </a>
-
-                            <a className={phoneCardClass} href="tel:+359888959373">
-                                +359 888 959 373
-                            </a>
-                        </div>
+                    <div className="mt-5 grid gap-4">
+                        <a
+                            className={`${emailBoxClass} break-all`}
+                            href="mailto:contact@dgvisionstudio.com"
+                        >
+                            contact@dgvisionstudio.com
+                        </a>
                     </div>
+                </div>
 
-                    <div className={cardClass}>
-                        <div className="mb-5 flex items-center gap-4">
-                            <span className={iconWrapClass}>
-                                <img
-                                    src="/images/location.png"
-                                    alt="Address"
-                                    className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                                />
-                            </span>
-                            <h2 className={sectionTitleClass}>Address</h2>
-                        </div>
+                <div className={cardClass}>
+                    <h2 className={sectionTitleClass}>Address</h2>
 
-                        <div className="rounded-[18px] bg-sky-50 p-4 dark:bg-sky-950/30 sm:rounded-[20px] sm:p-5 lg:rounded-[22px]">
+                    <div className="mt-5">
+                        <div className={infoBoxClass}>
                             <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200 sm:text-base sm:leading-8 lg:text-[17px]">
-                                Ruse, Bulgaria
+                                We are based in Ruse and work with clients from Ruse, Varna, Plovdiv, Burgas and other cities across Bulgaria.
                             </p>
                         </div>
                     </div>
                 </div>
+            </section>
 
+            <section className="mt-5 sm:mt-6 lg:mt-8">
                 <div className={cardClass}>
-                    <div className="mb-5 flex items-center gap-4">
-                        <span className={iconWrapClass}>
-                            <img
-                                src="/images/location.png"
-                                alt="Map"
-                                className="h-5 w-5 object-contain sm:h-5 sm:w-5"
-                            />
-                        </span>
-                        <h2 className={sectionTitleClass}>Map</h2>
-                    </div>
+                    <h2 className={sectionTitleClass}>Map</h2>
 
-                    <div className="overflow-hidden rounded-[20px] border border-sky-100 dark:border-sky-900/40 sm:rounded-[22px] lg:rounded-[24px]">
+                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-white/10 sm:rounded-[22px] lg:rounded-[24px]">
                         <iframe
                             className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                             loading="lazy"
@@ -246,7 +168,7 @@ export default function Contact() {
 
                     <div className="mt-5">
                         <a
-                            className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full bg-sky-500 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-600 sm:min-h-[48px] sm:w-auto"
+                            className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200 sm:min-h-[48px] sm:w-auto"
                             target="_blank"
                             rel="noopener noreferrer"
                             href="https://www.google.com/maps/search/?api=1&query=Ruse%2C%20Bulgaria"

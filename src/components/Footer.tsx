@@ -143,11 +143,11 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="mailto:dkvisionstudio@gmail.com"
+                                href="mailto:dgvisionstudio@gmail.com"
                                 className={contactLinkClass}
                             >
                                 <Mail size={16} className="mt-[2px] shrink-0" />
-                                <span className="break-all">dkvisionstudio@gmail.com</span>
+                                <span className="break-all">dgvisionstudio@gmail.com</span>
                             </a>
                         </div>
                     </div>
