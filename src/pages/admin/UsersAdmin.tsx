@@ -1,0 +1,279 @@
+import { useEffect, useMemo, useState } from "react"
+import { Link } from "react-router-dom"
+
+type User = {
+    id: string
+    email: string
+    isBlocked: boolean
+}
+
+const ADMIN_EMAILS = [
+    "iliev132607@gmail.com",
+    "nthalachev@gmail.com",
+    "nikolahalachev2811@gmail.com"
+]
+
+export default function UsersAdmin() {
+    const [users, setUsers] = useState<User[]>([])
+    const [search, setSearch] = useState("")
+    const [statusFilter, setStatusFilter] = useState("all")
+    const [pageSize, setPageSize] = useState(20)
+    const [currentPage, setCurrentPage] = useState(1)
+
+    const loadUsers = () => {
+        fetch("/api/admin/users", {
+            credentials: "include"
+        })
+            .then(r => r.json())
+            .then(data => setUsers(data))
+    }
+
+    useEffect(() => {
+        loadUsers()
+    }, [])
+
+    const filteredUsers = useMemo(() => {
+        const normalizedSearch = search.trim().toLowerCase()
+
+        return users
+            .filter(u => !ADMIN_EMAILS.includes((u.email || "").toLowerCase()))
+            .filter(u => {
+                if (statusFilter === "active") return !u.isBlocked
+                if (statusFilter === "blocked") return u.isBlocked
+                return true
+            })
+            .filter(u => {
+                if (!normalizedSearch) return true
+                return (
+                    u.email?.toLowerCase().includes(normalizedSearch) ||
+                    u.id?.toLowerCase().includes(normalizedSearch)
+                )
+            })
+    }, [users, search, statusFilter])
+
+    const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setTimeout(() => setCurrentPage(totalPages), 0)
+        }
+    }, [currentPage, totalPages])
+
+    const paginatedUsers = useMemo(() => {
+        const start = (currentPage - 1) * pageSize
+        return filteredUsers.slice(start, start + pageSize)
+    }, [filteredUsers, currentPage, pageSize])
+
+    const block = async (id: string) => {
+        await fetch(`/api/admin/users/${id}/block`, {
+            method: "POST",
+            credentials: "include"
+        })
+        loadUsers()
+    }
+
+    const unblock = async (id: string) => {
+        await fetch(`/api/admin/users/${id}/unblock`, {
+            method: "POST",
+            credentials: "include"
+        })
+        loadUsers()
+    }
+
+    const remove = async (id: string) => {
+        const confirmDelete = window.confirm("Delete this user?")
+        if (!confirmDelete) return
+
+        await fetch(`/api/admin/users/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        })
+
+        loadUsers()
+    }
+
+    return (
+        <div className="p-6">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <Link
+                        to="/admin"
+                        className="mb-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                    >
+                        Back
+                    </Link>
+
+                    <h1 className="text-2xl font-bold text-gray-900">Users Admin</h1>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Manage user accounts
+                    </p>
+                </div>
+            </div>
+
+            <div className="mb-6 grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-4">
+                <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Search
+                    </label>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value)
+                            setCurrentPage(1)
+                        }}
+                        placeholder="Search email or user id..."
+                        className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                    />
+                </div>
+
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Status
+                    </label>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value)
+                            setCurrentPage(1)
+                        }}
+                        className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                    >
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Per page
+                    </label>
+                    <select
+                        value={pageSize}
+                        onChange={(e) => {
+                            setPageSize(Number(e.target.value))
+                            setCurrentPage(1)
+                        }}
+                        className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                    >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="mb-4 flex items-center justify-between text-sm text-gray-600">
+                <div>
+                    Showing {filteredUsers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+                    {" - "}
+                    {Math.min(currentPage * pageSize, filteredUsers.length)} of {filteredUsers.length}
+                </div>
+
+                <button
+                    onClick={loadUsers}
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                >
+                    Refresh
+                </button>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[900px]">
+                        <thead className="bg-gray-50">
+                            <tr className="border-b border-gray-200">
+                                <th className="p-3 text-left text-sm font-semibold text-gray-700">User ID</th>
+                                <th className="p-3 text-left text-sm font-semibold text-gray-700">Email</th>
+                                <th className="p-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                                <th className="p-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {paginatedUsers.length > 0 ? (
+                                paginatedUsers.map(u => (
+                                    <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50 last:border-b-0">
+                                        <td className="p-3 text-xs text-gray-500 break-all">{u.id}</td>
+
+                                        <td className="p-3 text-sm font-medium text-gray-900">{u.email}</td>
+
+                                        <td className="p-3">
+                                            <span
+                                                className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${u.isBlocked
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-green-100 text-green-700"
+                                                    }`}
+                                            >
+                                                {u.isBlocked ? "Blocked" : "Active"}
+                                            </span>
+                                        </td>
+
+                                        <td className="p-3">
+                                            <div className="flex flex-wrap gap-2">
+                                                {!u.isBlocked ? (
+                                                    <button
+                                                        onClick={() => block(u.id)}
+                                                        className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                                                    >
+                                                        Block
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => unblock(u.id)}
+                                                        className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+                                                    >
+                                                        Unblock
+                                                    </button>
+                                                )}
+
+                                                <button
+                                                    onClick={() => remove(u.id)}
+                                                    className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-black"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="p-8 text-center text-sm text-gray-500">
+                                        No users found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                </div>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
