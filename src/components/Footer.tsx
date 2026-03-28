@@ -134,12 +134,12 @@ export default function Footer() {
                         <div className="flex flex-col gap-3 text-sm text-slate-500 dark:text-slate-400 sm:text-[15px] lg:items-end">
                             <a href="tel:+359887764200" className={contactLinkClass}>
                                 <Phone size={16} className="mt-[2px] shrink-0" />
-                                <span className="whitespace-nowrap">088 776 4200</span>
+                                <span className="whitespace-nowrap">+359 988 758 434</span>
                             </a>
 
                             <a href="tel:+359887764201" className={contactLinkClass}>
                                 <Phone size={16} className="mt-[2px] shrink-0" />
-                                <span className="whitespace-nowrap">088 776 4201</span>
+                                <span className="whitespace-nowrap">+359 888 959 373</span>
                             </a>
 
                             <a
