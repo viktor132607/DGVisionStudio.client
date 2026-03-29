@@ -1,224 +1,323 @@
 import { useTranslation } from "react-i18next"
 
-export default function Privacy() {
+export default function Terms() {
     const { i18n } = useTranslation()
-    const lang = i18n.language
+    const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
     const wrapperClass =
-        "mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8"
+        "mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8 dark:bg-zinc-900"
 
     const titleClass =
-        "text-center text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl"
+        "text-center text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl"
 
     const updatedClass =
-        "mt-3 text-center text-sm font-medium text-slate-500"
+        "mt-3 text-center text-sm font-medium text-slate-500 dark:text-zinc-400"
 
     const sectionClass =
-        "mt-8 rounded-[26px] bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8"
+        "mt-8 rounded-[26px] border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-none sm:p-8"
 
     const headingClass =
-        "mb-4 text-2xl font-bold text-slate-900"
+        "mb-4 text-2xl font-bold text-slate-900 dark:text-white"
 
     const textClass =
-        "text-[15px] leading-8 text-slate-700 sm:text-base"
+        "text-[15px] leading-8 text-slate-700 dark:text-zinc-200 sm:text-base"
 
     const boxClass =
-        "my-5 rounded-[22px] bg-sky-50 p-5 text-[15px] leading-8 text-slate-700"
+        "my-5 rounded-[22px] border border-slate-200 bg-sky-50 p-5 text-[15px] leading-8 text-slate-700 dark:border-zinc-700 dark:bg-zinc-700/40 dark:text-zinc-200"
 
     const listClass =
-        "mt-4 list-disc space-y-3 pl-5 text-[15px] leading-8 text-slate-700 marker:text-sky-500 sm:text-base"
+        "mt-4 list-disc space-y-3 pl-5 text-[15px] leading-8 text-slate-700 marker:text-sky-500 dark:text-zinc-200 dark:marker:text-white sm:text-base"
 
-    return lang === "bg" ? (
+    return isBg ? (
         <div className={wrapperClass}>
-            <h1 className={titleClass}>Политика за поверителност</h1>
+            <h1 className={titleClass}>Общи условия</h1>
             <p className={updatedClass}>
-                Последна актуализация: <span className="font-semibold text-slate-700">17.03.2026</span>
+                Последна актуализация:{" "}
+                <span className="font-semibold text-slate-700 dark:text-zinc-200">
+                    29 март 2026 г.
+                </span>
             </p>
 
             <section className={sectionClass}>
                 <div className="space-y-4">
                     <p className={textClass}>
-                        Настоящата политика за поверителност описва как „ЕТ Никола Халачев Акаунтинг“
-                        („Никола Халачев Акаунтинг“, „ние“) обработва лични данни при използване
-                        на уебсайта halachevaccounting.com и свързаните канали.
+                        Настоящите общи условия уреждат използването на сайта DG Vision Studio
+                        и комуникацията, свързана със запитвания, фотосесии, резервации и
+                        съдържанието, публикувано в сайта.
                     </p>
                     <p className={textClass}>
-                        Поддържаме прозрачност и прилагаме мерки съгласно Общия регламент
-                        за защита на данните (GDPR) и Закона за защита на личните данни.
+                        С използването на сайта приемате тези условия. Ако не сте съгласни с
+                        тях, не следва да използвате сайта.
                     </p>
                 </div>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Администратор на лични данни</h2>
-                <p className={textClass}>
-                    „ЕТ Никола Халачев Акаунтинг“ е администратор на личните ви данни,
-                    когато използвате нашия уебсайт или се свързвате с нас.
-                </p>
-
-                <div className={boxClass}>
-                    <p><strong>Юридическо лице:</strong> ЕТ Никола Халачев Акаунтинг</p>
-                    <p><strong>Град:</strong> Варна, България</p>
-                    <p><strong>Електронна поща:</strong> contact@halachevaccounting.com</p>
-                    <p><strong>Телефон:</strong> +359 887 764 200</p>
+                <h2 className={headingClass}>Предмет на сайта</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        Сайтът има представителен и информационен характер. Чрез него можете
+                        да се запознаете с портфолиото, стила на работа, услугите и начините
+                        за контакт с DG Vision Studio.
+                    </p>
+                    <p className={textClass}>
+                        Публикуваната информация не представлява автоматично обвързваща
+                        оферта, освен ако изрично не е посочено друго.
+                    </p>
                 </div>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Видове лични данни</h2>
-
+                <h2 className={headingClass}>Запитвания и резервации</h2>
                 <ul className={listClass}>
-                    <li><strong>Идентификационни данни:</strong> име, телефон, имейл.</li>
-                    <li><strong>Данни от комуникация:</strong> запитвания и кореспонденция.</li>
-                    <li><strong>Счетоводни данни:</strong> фактури и платежни документи.</li>
-                    <li><strong>Технически данни:</strong> логове, устройство и бисквитки.</li>
+                    <li>Изпращането на запитване през сайта не означава автоматично приета резервация.</li>
+                    <li>Резервация се счита за потвърдена след изрично потвърждение от страна на DG Vision Studio.</li>
+                    <li>Детайлите по проект, фотосесия, дата, място, цена и срокове се уточняват допълнително.</li>
+                    <li>DG Vision Studio си запазва правото да откаже запитване по своя преценка.</li>
                 </ul>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Правни основания</h2>
+                <h2 className={headingClass}>Цени и условия по услуги</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        Ако на сайта има публикувани ориентировъчни цени, пакети или описания,
+                        те имат информативен характер, освен ако изрично не е посочено друго.
+                    </p>
+                    <p className={textClass}>
+                        Крайните условия по конкретна услуга се уточняват индивидуално според
+                        обема на проекта, локацията, продължителността, обработката и другите
+                        специфики на заданието.
+                    </p>
+                </div>
+            </section>
 
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Права върху съдържанието</h2>
                 <ul className={listClass}>
-                    <li>Изпълнение на договор</li>
-                    <li>Законно задължение</li>
-                    <li>Законен интерес</li>
-                    <li>Съгласие</li>
+                    <li>Всички текстове, изображения, видео, графики и други материали в сайта са защитени.</li>
+                    <li>Съдържанието не може да бъде копирано, разпространявано, променяно или използвано с търговска цел без предварително разрешение.</li>
+                    <li>Портфолиото служи за представяне на работата на DG Vision Studio и не може да се използва извън тази цел без съгласие.</li>
                 </ul>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Споделяне на данни</h2>
-
-                <p className={textClass}>
-                    Личните данни не се продават. Те могат да бъдат споделяни
-                    само когато това е необходимо за предоставяне на услугите
-                    или когато законът го изисква.
-                </p>
-
-                <p className={`${textClass} mt-4`}>
-                    Всички доставчици обработват данни съгласно договор
-                    и инструкции от „ЕТ Никола Халачев Акаунтинг“.
-                </p>
-            </section>
-
-            <section className={sectionClass}>
-                <h2 className={headingClass}>Вашите права</h2>
-
+                <h2 className={headingClass}>Поведение при използване на сайта</h2>
                 <ul className={listClass}>
-                    <li>Право на достъп</li>
-                    <li>Право на корекция</li>
-                    <li>Право на изтриване</li>
-                    <li>Право на ограничаване</li>
-                    <li>Право на преносимост</li>
-                    <li>Право на възражение</li>
-                    <li>Право на жалба до КЗЛД</li>
+                    <li>Да не използвате сайта по начин, който нарушава закона или правата на трети лица.</li>
+                    <li>Да не изпращате злонамерено, подвеждащо или спам съдържание.</li>
+                    <li>Да не правите опити за неоторизиран достъп, претоварване или нарушаване на работата на сайта.</li>
                 </ul>
-
-                <p className={`${textClass} mt-4`}>
-                    За упражняване на права: contact@halachevaccounting.com
-                </p>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Промени</h2>
-                <p className={textClass}>
-                    Политиката може да бъде актуализирана при промени в закона
-                    или практиките на дружеството.
-                </p>
+                <h2 className={headingClass}>Външни услуги и линкове</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        Сайтът може да съдържа вградени услуги или линкове към външни
+                        платформи, като карта, социални мрежи или други сайтове.
+                    </p>
+                    <p className={textClass}>
+                        DG Vision Studio не носи отговорност за съдържанието, наличността или
+                        политиките на тези външни услуги.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Ограничаване на отговорността</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        Полагаме усилия информацията в сайта да бъде актуална и точна, но не
+                        гарантираме, че тя е изчерпателна, напълно безгрешна или винаги
+                        актуализирана към всеки момент.
+                    </p>
+                    <p className={textClass}>
+                        DG Vision Studio не носи отговорност за вреди или пропуснати ползи,
+                        настъпили във връзка с използването или невъзможността за използване
+                        на сайта, освен ако това не следва от императивни правни норми.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Поверителност и бисквитки</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        Обработването на информация и използването на бисквитки се уреждат
+                        съответно от Политиката за поверителност и Политиката за бисквитките,
+                        публикувани в сайта.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Промени в условията</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        DG Vision Studio си запазва правото да актуализира тези общи условия
+                        по всяко време.
+                    </p>
+                    <p className={textClass}>
+                        Актуалната версия винаги е публикувана на тази страница и влиза в сила
+                        от момента на публикуването ѝ.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Контакт</h2>
+                <div className={boxClass}>
+                    <p><strong>DG Vision Studio</strong></p>
+                    <p><strong>Имейл:</strong> dgvisionstudio@gmail.com</p>
+                    <p><strong>Телефон:</strong> +359 988 758 434</p>
+                    <p><strong>Допълнителен телефон:</strong> +359 888 959 373</p>
+                </div>
             </section>
         </div>
     ) : (
         <div className={wrapperClass}>
-            <h1 className={titleClass}>Privacy Policy</h1>
+            <h1 className={titleClass}>Terms and Conditions</h1>
             <p className={updatedClass}>
-                Last updated: <span className="font-semibold text-slate-700">17.03.2026</span>
+                Last updated:{" "}
+                <span className="font-semibold text-slate-700 dark:text-zinc-200">
+                    29 March 2026
+                </span>
             </p>
 
             <section className={sectionClass}>
                 <div className="space-y-4">
                     <p className={textClass}>
-                        This privacy policy explains how ET Nikola Halachev Accounting
-                        (“Nikola Halachev Accounting”, “we”) processes personal data
-                        when operating the halachevaccounting.com website.
+                        These Terms and Conditions govern the use of the DG Vision Studio
+                        website and the communication related to enquiries, photoshoots,
+                        bookings, and the content published on the site.
                     </p>
                     <p className={textClass}>
-                        We follow the General Data Protection Regulation (GDPR)
-                        and applicable Bulgarian data protection legislation.
+                        By using this website, you agree to these terms. If you do not agree,
+                        you should not use the website.
                     </p>
                 </div>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Data Controller</h2>
-
-                <div className={boxClass}>
-                    <p><strong>Registered entity:</strong> ET Nikola Halachev Accounting</p>
-                    <p><strong>Location:</strong> Varna, Bulgaria</p>
-                    <p><strong>Email:</strong> contact@halachevaccounting.com</p>
-                    <p><strong>Phone:</strong> +359 887 764 200</p>
+                <h2 className={headingClass}>Purpose of the Website</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        The website is informational and presentation-based. It is intended to
+                        present the portfolio, working style, services, and contact options of
+                        DG Vision Studio.
+                    </p>
+                    <p className={textClass}>
+                        The information published on the website does not automatically
+                        constitute a binding offer unless explicitly stated otherwise.
+                    </p>
                 </div>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Types of Data</h2>
-
+                <h2 className={headingClass}>Enquiries and Bookings</h2>
                 <ul className={listClass}>
-                    <li><strong>Identification:</strong> name, phone, email.</li>
-                    <li><strong>Communication data:</strong> enquiries and messages.</li>
-                    <li><strong>Accounting data:</strong> invoices and payments.</li>
-                    <li><strong>Technical data:</strong> logs, device info, cookies.</li>
+                    <li>Sending an enquiry through the website does not automatically create a confirmed booking.</li>
+                    <li>A booking is considered confirmed only after explicit confirmation from DG Vision Studio.</li>
+                    <li>Project details such as date, location, scope, price, and deadlines are agreed separately.</li>
+                    <li>DG Vision Studio reserves the right to decline an enquiry at its discretion.</li>
                 </ul>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Legal Basis</h2>
+                <h2 className={headingClass}>Prices and Service Terms</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        If the website contains indicative prices, packages, or descriptions,
+                        they are for informational purposes only unless explicitly stated otherwise.
+                    </p>
+                    <p className={textClass}>
+                        Final terms for a specific service are agreed individually depending on
+                        project scope, location, duration, editing, and other details.
+                    </p>
+                </div>
+            </section>
 
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Intellectual Property</h2>
                 <ul className={listClass}>
-                    <li>Contract performance</li>
-                    <li>Legal obligation</li>
-                    <li>Legitimate interest</li>
-                    <li>Consent</li>
+                    <li>All texts, images, video, graphics, and other materials on the website are protected.</li>
+                    <li>Website content may not be copied, distributed, modified, or used commercially without prior permission.</li>
+                    <li>The portfolio is presented solely to showcase the work of DG Vision Studio and may not be reused without consent.</li>
                 </ul>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Data Sharing</h2>
-
-                <p className={textClass}>
-                    Personal data is never sold and is shared only when
-                    necessary to deliver services or comply with legal obligations.
-                </p>
-
-                <p className={`${textClass} mt-4`}>
-                    All providers process data according to written agreements
-                    with ET Nikola Halachev Accounting.
-                </p>
-            </section>
-
-            <section className={sectionClass}>
-                <h2 className={headingClass}>Your Rights</h2>
-
+                <h2 className={headingClass}>Acceptable Use</h2>
                 <ul className={listClass}>
-                    <li>Right of access</li>
-                    <li>Right to rectification</li>
-                    <li>Right to erasure</li>
-                    <li>Right to restriction</li>
-                    <li>Right to data portability</li>
-                    <li>Right to object</li>
-                    <li>Right to lodge a complaint</li>
+                    <li>You must not use the website in a way that violates the law or the rights of third parties.</li>
+                    <li>You must not send malicious, misleading, or spam content through the website.</li>
+                    <li>You must not attempt unauthorized access, overload, or disruption of the website.</li>
                 </ul>
-
-                <p className={`${textClass} mt-4`}>
-                    Contact: contact@halachevaccounting.com
-                </p>
             </section>
 
             <section className={sectionClass}>
-                <h2 className={headingClass}>Updates</h2>
-                <p className={textClass}>
-                    This policy may be updated when legal or operational
-                    changes occur.
-                </p>
+                <h2 className={headingClass}>External Services and Links</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        The website may contain embedded services or links to external
+                        platforms such as maps, social media, or third-party websites.
+                    </p>
+                    <p className={textClass}>
+                        DG Vision Studio is not responsible for the content, availability, or
+                        policies of those external services.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Limitation of Liability</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        We make reasonable efforts to keep the website information accurate and
+                        up to date, but we do not guarantee that it is complete, error-free, or
+                        current at all times.
+                    </p>
+                    <p className={textClass}>
+                        DG Vision Studio is not liable for damages or loss arising from the use
+                        of, or inability to use, the website, except where liability cannot be
+                        excluded under applicable law.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Privacy and Cookies</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        The handling of information and the use of cookies are governed by the
+                        Privacy Policy and the Cookies Policy published on this website.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Changes to the Terms</h2>
+                <div className="space-y-4">
+                    <p className={textClass}>
+                        DG Vision Studio reserves the right to update these Terms and
+                        Conditions at any time.
+                    </p>
+                    <p className={textClass}>
+                        The latest version is always published on this page and takes effect
+                        from the moment of publication.
+                    </p>
+                </div>
+            </section>
+
+            <section className={sectionClass}>
+                <h2 className={headingClass}>Contact</h2>
+                <div className={boxClass}>
+                    <p><strong>DG Vision Studio</strong></p>
+                    <p><strong>Email:</strong> dgvisionstudio@gmail.com</p>
+                    <p><strong>Phone:</strong> +359 988 758 434</p>
+                    <p><strong>Additional phone:</strong> +359 888 959 373</p>
+                </div>
             </section>
         </div>
     )

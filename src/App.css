@@ -13,6 +13,14 @@
 html,
 body {
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+html.dark,
+html.dark body {
+  background-color: #18181b;
+  color: #ffffff;
 }
 
 img {
@@ -67,9 +75,11 @@ img {
   .text-responsive-sm {
     font-size: 15px;
   }
+
   .text-responsive-md {
     font-size: 17px;
   }
+
   .text-responsive-lg {
     font-size: 22px;
   }
@@ -79,9 +89,11 @@ img {
   .text-responsive-sm {
     font-size: 16px;
   }
+
   .text-responsive-md {
     font-size: 18px;
   }
+
   .text-responsive-lg {
     font-size: 24px;
   }

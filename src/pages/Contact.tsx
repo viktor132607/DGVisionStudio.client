@@ -6,30 +6,30 @@ export default function Contact() {
     const isBg = lang.startsWith("bg")
 
     const pageClass =
-        "mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 xl:px-12 2xl:px-16"
+        "mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 xl:px-12 2xl:px-16 dark:bg-zinc-900"
 
     const cardClass =
-        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-neutral-900 sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-8"
+        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.08)] dark:border-zinc-700 dark:bg-zinc-800 sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-8"
 
     const sectionTitleClass =
         "text-[24px] font-bold text-slate-900 dark:text-white sm:text-[28px] lg:text-[30px]"
 
-    const infoBoxClass =
-        "rounded-[18px] border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black sm:rounded-[20px] sm:p-5 lg:rounded-[22px]"
+    const contactLinkClass =
+        "block text-[15px] leading-8 font-semibold text-slate-700 transition hover:text-slate-950 dark:text-zinc-200 dark:hover:text-white sm:text-base"
 
-    const linkBoxClass =
-        "rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-950 dark:border-white/10 dark:bg-black dark:text-white dark:hover:border-white/20 dark:hover:bg-neutral-950 sm:rounded-[20px] sm:px-5 sm:py-4 sm:text-base"
+    const emailLinkClass =
+        "block break-all text-[15px] leading-8 font-semibold text-slate-700 transition hover:text-slate-950 dark:text-zinc-200 dark:hover:text-white sm:text-base"
 
-    const emailBoxClass =
-        "rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-4 text-[14px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-950 dark:border-white/10 dark:bg-black dark:text-white dark:hover:border-white/20 dark:hover:bg-neutral-950 sm:rounded-[20px] sm:px-5 sm:py-4 sm:text-[15px]"
+    const textClass =
+        "text-[15px] leading-8 text-slate-700 dark:text-zinc-200 sm:text-base lg:text-[17px]"
 
     return isBg ? (
         <div className={pageClass}>
-            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-neutral-900 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
+            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
                 <h1 className="mb-4 text-[32px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[42px] lg:text-[52px]">
                     DG Vision Studio
                 </h1>
-                <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-slate-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">
+                <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">
                     Фотография и видеография. Свържете се с нас за запитвания и резервации.
                 </p>
             </section>
@@ -38,12 +38,12 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Телефон</h2>
 
-                    <div className="mt-5 grid gap-4">
-                        <a className={linkBoxClass} href="tel:+359988758434">
+                    <div className="mt-5 space-y-3">
+                        <a className={contactLinkClass} href="tel:+359988758434">
                             +359 988 758 434
                         </a>
 
-                        <a className={linkBoxClass} href="tel:+359888959373">
+                        <a className={contactLinkClass} href="tel:+359888959373">
                             +359 888 959 373
                         </a>
                     </div>
@@ -52,12 +52,12 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Имейл</h2>
 
-                    <div className="mt-5 grid gap-4">
+                    <div className="mt-5">
                         <a
-                            className={`${emailBoxClass} break-all`}
-                            href="mailto:contact@dgvisionstudio.com"
+                            className={emailLinkClass}
+                            href="mailto:dgvisionstudio@gmail.com"
                         >
-                            contact@dgvisionstudio.com
+                            dgvisionstudio@gmail.com
                         </a>
                     </div>
                 </div>
@@ -66,11 +66,9 @@ export default function Contact() {
                     <h2 className={sectionTitleClass}>Адрес</h2>
 
                     <div className="mt-5">
-                        <div className={infoBoxClass}>
-                            <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200 sm:text-base sm:leading-8 lg:text-[17px]">
-                                Базирани сме в Русе и работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
-                            </p>
-                        </div>
+                        <p className={textClass}>
+                            Базирани сме в Русе и работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -79,7 +77,7 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Карта</h2>
 
-                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-white/10 sm:rounded-[22px] lg:rounded-[24px]">
+                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-zinc-700 sm:rounded-[22px] lg:rounded-[24px]">
                         <iframe
                             className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                             loading="lazy"
@@ -103,11 +101,11 @@ export default function Contact() {
         </div>
     ) : (
         <div className={pageClass}>
-            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-neutral-900 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
+            <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
                 <h1 className="mb-4 text-[32px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[42px] lg:text-[52px]">
                     DG Vision Studio
                 </h1>
-                <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-slate-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">
+                <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">
                     Photography and videography. Contact us for inquiries and bookings.
                 </p>
             </section>
@@ -116,12 +114,12 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Phone</h2>
 
-                    <div className="mt-5 grid gap-4">
-                        <a className={linkBoxClass} href="tel:+359988758434">
+                    <div className="mt-5 space-y-3">
+                        <a className={contactLinkClass} href="tel:+359988758434">
                             +359 988 758 434
                         </a>
 
-                        <a className={linkBoxClass} href="tel:+359888959373">
+                        <a className={contactLinkClass} href="tel:+359888959373">
                             +359 888 959 373
                         </a>
                     </div>
@@ -130,12 +128,12 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Email</h2>
 
-                    <div className="mt-5 grid gap-4">
+                    <div className="mt-5">
                         <a
-                            className={`${emailBoxClass} break-all`}
-                            href="mailto:contact@dgvisionstudio.com"
+                            className={emailLinkClass}
+                            href="mailto:dgvisionstudio@gmail.com"
                         >
-                            contact@dgvisionstudio.com
+                            dgvisionstudio@gmail.com
                         </a>
                     </div>
                 </div>
@@ -144,11 +142,9 @@ export default function Contact() {
                     <h2 className={sectionTitleClass}>Address</h2>
 
                     <div className="mt-5">
-                        <div className={infoBoxClass}>
-                            <p className="text-[15px] leading-7 text-slate-700 dark:text-slate-200 sm:text-base sm:leading-8 lg:text-[17px]">
-                                We are based in Ruse and work with clients from Ruse, Varna, Plovdiv, Burgas and other cities across Bulgaria.
-                            </p>
-                        </div>
+                        <p className={textClass}>
+                            We are based in Ruse and work with clients from Ruse, Varna, Plovdiv, Burgas and other cities across Bulgaria.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -157,7 +153,7 @@ export default function Contact() {
                 <div className={cardClass}>
                     <h2 className={sectionTitleClass}>Map</h2>
 
-                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-white/10 sm:rounded-[22px] lg:rounded-[24px]">
+                    <div className="mt-5 overflow-hidden rounded-[20px] border border-slate-200 dark:border-zinc-700 sm:rounded-[22px] lg:rounded-[24px]">
                         <iframe
                             className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                             loading="lazy"

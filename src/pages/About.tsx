@@ -5,24 +5,24 @@ export default function About() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
     const sectionClass =
-        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-7 xl:p-8"
+        "rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-none sm:rounded-[24px] sm:p-6 lg:rounded-[28px] lg:p-7 xl:p-8"
 
     const textClass =
-        "text-[14px] leading-7 text-slate-600 dark:text-white sm:text-[15px] sm:leading-8 lg:text-[16px]"
+        "text-[14px] leading-7 text-slate-600 dark:text-zinc-200 sm:text-[15px] sm:leading-8 lg:text-[16px]"
 
     const smallTitleClass =
         "mb-4 text-[17px] font-semibold text-slate-900 dark:text-white sm:text-[18px] lg:text-[20px]"
 
     const bulletClass =
-        "flex items-start gap-3 text-[14px] leading-7 text-slate-600 dark:text-white sm:text-[15px] sm:leading-8 lg:text-[16px]"
+        "flex items-start gap-3 text-[14px] leading-7 text-slate-600 dark:text-zinc-200 sm:text-[15px] sm:leading-8 lg:text-[16px]"
 
     const bulletDot =
         "mt-[9px] h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500 dark:bg-white sm:mt-[11px]"
 
     return isBg ? (
-        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-black sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
+        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-zinc-900 sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
             <div className="grid gap-5 sm:gap-6 lg:gap-8 xl:gap-10">
-                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
+                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
                     <img
                         src="/images/JS.jpg"
                         alt="DG Vision Studio"
@@ -34,7 +34,7 @@ export default function About() {
                             За DG Vision Studio
                         </h1>
 
-                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-white sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
+                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-zinc-200 sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
                             Създаваме модерно визуално съдържание с фокус върху брандове, рекламни визии,
                             портретна фотография и запомнящи се истории. Работим като екип от двама души,
                             обединени от общ стил, внимание към детайла и стремеж към силно визуално присъствие.
@@ -138,9 +138,9 @@ export default function About() {
             </div>
         </div>
     ) : (
-        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-black sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
+        <div className="mx-auto w-full max-w-[1600px] bg-white px-4 pb-12 pt-6 dark:bg-zinc-900 sm:px-6 sm:pb-14 sm:pt-8 md:px-8 md:pb-16 md:pt-10 lg:px-10 xl:px-12 2xl:px-16">
             <div className="grid gap-5 sm:gap-6 lg:gap-8 xl:gap-10">
-                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-white dark:bg-black dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
+                <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-none sm:rounded-[28px] lg:rounded-[32px]">
                     <img
                         src="/images/JS.jpg"
                         alt="DG Vision Studio"
@@ -152,7 +152,7 @@ export default function About() {
                             About DG Vision Studio
                         </h1>
 
-                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-white sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
+                        <p className="mx-auto max-w-4xl text-center text-[15px] leading-7 text-slate-600 dark:text-zinc-200 sm:text-[16px] sm:leading-8 lg:text-[17px] xl:text-[18px]">
                             We create modern visual content focused on brands, advertising, portrait photography
                             and memorable stories. We work as a two-person studio united by a shared style,
                             attention to detail and a strong sense of visual identity.

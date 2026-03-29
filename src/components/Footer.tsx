@@ -9,13 +9,41 @@ export default function Footer() {
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
+    const getIsDark = () => {
+        const savedTheme = localStorage.getItem(THEME_KEY)
+
+        if (savedTheme === "dark") return true
+        if (savedTheme === "light") return false
+
+        return document.documentElement.classList.contains("dark")
+    }
+
     const [isDark, setIsDark] = useState(false)
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem(THEME_KEY)
-        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        const dark = savedTheme === "dark" || (!savedTheme && systemDark)
-        setIsDark(dark)
+        const updateTheme = () => {
+            const dark = getIsDark()
+            document.documentElement.classList.toggle("dark", dark)
+            setIsDark(dark)
+        }
+
+        updateTheme()
+
+        const observer = new MutationObserver(() => {
+            updateTheme()
+        })
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        })
+
+        window.addEventListener("storage", updateTheme)
+
+        return () => {
+            observer.disconnect()
+            window.removeEventListener("storage", updateTheme)
+        }
     }, [])
 
     const t = isBg
@@ -31,7 +59,7 @@ export default function Footer() {
               terms: "Общи условия",
               cookies: "Бисквитки",
               rights: "Всички права запазени.",
-              createdBy: "Site created by DG Vision Studio",
+              createdBy: "Site created by viktor132607",
           }
         : {
               description:
@@ -45,34 +73,39 @@ export default function Footer() {
               terms: "Terms",
               cookies: "Cookies",
               rights: "All rights reserved.",
-              createdBy: "Site created by DG Vision Studio",
+              createdBy: "Site created by viktor132607",
           }
 
-    const socialClass =
-        "inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white transition hover:scale-105 hover:border-slate-300 dark:border-white/10 dark:bg-slate-900 dark:hover:border-white/20 sm:h-11 sm:w-11"
+    const logoSrc = isDark
+        ? "/images/mainlogoBlack.png"
+        : "/images/mainlogo.png"
 
-    const fullIconClass = "h-full w-full rounded-full object-contain p-[1px]"
+    const socialClass =
+        "inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-transparent transition hover:scale-105 sm:h-11 sm:w-11"
+
+    const socialIconClass =
+        "h-[70%] w-[70%] object-contain dark:invert dark:brightness-200"
 
     const footerLinkClass =
-        "break-words transition hover:text-slate-950 dark:hover:text-white"
+        "break-words text-slate-600 transition hover:text-slate-950 dark:text-white dark:hover:text-white"
 
     const contactLinkClass =
-        "inline-flex w-fit max-w-full items-start gap-2 text-left transition hover:text-slate-900 dark:hover:text-white lg:text-right"
+        "inline-flex w-fit max-w-full items-start gap-2 text-left text-slate-500 transition hover:text-slate-900 dark:text-white dark:hover:text-white lg:text-right"
 
     return (
-        <footer className="mt-12 border-t border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950 sm:mt-14 lg:mt-16">
+        <footer className="mt-12 border-t border-slate-200 bg-white dark:border-white/10 dark:bg-black sm:mt-14 lg:mt-16">
             <div className="mx-auto w-full max-w-[1700px] px-4 py-10 sm:px-6 sm:py-12 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
                 <div className="grid grid-cols-1 gap-10 sm:gap-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.95fr)_minmax(0,0.95fr)] lg:items-start lg:gap-10 xl:gap-14 2xl:gap-20">
                     <div className="min-w-0">
-                        <Link to="/" className="inline-flex max-w-full items-center">
+                        <Link to="/" className="flex items-center overflow-hidden">
                             <img
-                                src={isDark ? "/images/mainlogoBlack.png" : "/images/mainlogo.png"}
+                                src={logoSrc}
                                 alt="DG Vision Studio"
-                                className="h-11 w-auto max-w-full object-contain sm:h-12 md:h-14 xl:h-16"
+                                className="h-10 w-auto scale-[1.35] object-contain sm:h-12 lg:h-14"
                             />
                         </Link>
 
-                        <p className="mt-4 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-[15px] sm:leading-7 xl:max-w-lg xl:text-base">
+                        <p className="mt-4 max-w-md text-sm leading-6 text-slate-600 dark:text-white sm:text-[15px] sm:leading-7 xl:max-w-lg xl:text-base">
                             {t.description}
                         </p>
 
@@ -86,7 +119,7 @@ export default function Footer() {
                                 <img
                                     src="/images/facebook.png"
                                     alt="Facebook"
-                                    className={fullIconClass}
+                                    className={socialIconClass}
                                 />
                             </a>
                         </div>
@@ -98,7 +131,7 @@ export default function Footer() {
                                 {t.company}
                             </h4>
 
-                            <div className="flex flex-col gap-2.5 text-sm text-slate-600 dark:text-slate-300 sm:text-[15px]">
+                            <div className="flex flex-col gap-2.5 text-sm sm:text-[15px]">
                                 <Link to="/" className={footerLinkClass}>
                                     {t.home}
                                 </Link>
@@ -116,7 +149,7 @@ export default function Footer() {
                                 {t.info}
                             </h4>
 
-                            <div className="flex flex-col gap-2.5 text-sm text-slate-600 dark:text-slate-300 sm:text-[15px]">
+                            <div className="flex flex-col gap-2.5 text-sm sm:text-[15px]">
                                 <Link to="/privacy" className={footerLinkClass}>
                                     {t.privacy}
                                 </Link>
@@ -131,13 +164,13 @@ export default function Footer() {
                     </div>
 
                     <div className="min-w-0 lg:justify-self-end lg:text-right">
-                        <div className="flex flex-col gap-3 text-sm text-slate-500 dark:text-slate-400 sm:text-[15px] lg:items-end">
-                            <a href="tel:+359887764200" className={contactLinkClass}>
+                        <div className="flex flex-col gap-3 sm:text-[15px] lg:items-end">
+                            <a href="tel:+359988758434" className={contactLinkClass}>
                                 <Phone size={16} className="mt-[2px] shrink-0" />
                                 <span className="whitespace-nowrap">+359 988 758 434</span>
                             </a>
 
-                            <a href="tel:+359887764201" className={contactLinkClass}>
+                            <a href="tel:+359888959373" className={contactLinkClass}>
                                 <Phone size={16} className="mt-[2px] shrink-0" />
                                 <span className="whitespace-nowrap">+359 888 959 373</span>
                             </a>
@@ -153,13 +186,13 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="mt-8 border-t border-slate-200 pt-6 text-sm text-slate-500 dark:border-white/10 dark:text-slate-400 sm:mt-10 sm:pt-7 md:text-[15px]">
+                <div className="mt-8 border-t border-slate-200 pt-6 text-sm text-slate-500 dark:border-white/10 dark:text-white sm:mt-10 sm:pt-7 md:text-[15px]">
                     <div className="flex flex-col gap-3 text-center sm:text-left lg:flex-row lg:items-center lg:justify-between">
-                        <p className="break-words">
+                        <p className="break-words dark:text-white">
                             © {new Date().getFullYear()} DG Vision Studio. {t.rights}
                         </p>
 
-                        <p className="break-words lg:text-right">
+                        <p className="break-words dark:text-white lg:text-right">
                             {t.createdBy}
                         </p>
                     </div>

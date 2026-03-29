@@ -14,11 +14,13 @@ import BlogPost from "./pages/BlogPost"
 
 export default function App() {
   return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-black dark:text-white">
+    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white">
       <Navbar />
 
-      <main className="flex-1 w-full">
-        <div className="w-full max-w-[1700px] mx-auto">
+      <div className="h-16 shrink-0 lg:h-20" />
+
+      <main className="w-full flex-1">
+        <div className="mx-auto w-full max-w-[1700px]">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />

@@ -285,8 +285,8 @@ export default function Services() {
     }, [selectedIndex, filteredItems])
 
     return (
-        <div className="min-h-screen w-full overflow-x-hidden bg-neutral-100 dark:bg-neutral-950">
-            <div className="border-b border-neutral-300 bg-neutral-50 px-4 py-8 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:px-10">
+        <div className="min-h-screen w-full overflow-x-hidden bg-neutral-100 dark:bg-zinc-900">
+            <div className="border-b border-neutral-300 bg-neutral-50 px-4 py-8 dark:border-zinc-700 dark:bg-zinc-800 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:px-10">
                 <div className="mx-auto max-w-[1700px]">
                     <h1 className="text-center text-[28px] font-bold uppercase tracking-[0.12em] text-slate-900 dark:text-white sm:text-[36px] sm:tracking-[0.14em] lg:text-[44px] xl:text-[52px]">
                         {isBg ? "Портфолио" : "Portfolio"}
@@ -294,9 +294,9 @@ export default function Services() {
                 </div>
             </div>
 
-            <div className="border-b border-neutral-300 bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="border-b border-neutral-300 bg-neutral-200 dark:border-zinc-700 dark:bg-zinc-800">
                 <div className="mx-auto flex max-w-[1700px] justify-center px-4 sm:px-6 lg:px-8 xl:px-10">
-                    <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 flex w-full justify-start overflow-x-auto">
+                    <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-400 dark:scrollbar-thumb-zinc-600 flex w-full justify-start overflow-x-auto">
                         <div className="flex min-w-max items-center gap-4 py-4 sm:gap-6 sm:py-5 lg:gap-8">
                             {categories.map((category) => {
                                 const active = activeCategory === category.key
@@ -309,7 +309,7 @@ export default function Services() {
                                         className={`relative whitespace-nowrap pb-2 text-[11px] font-bold uppercase tracking-[0.06em] transition sm:text-sm ${
                                             active
                                                 ? "text-neutral-900 dark:text-white"
-                                                : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                                                : "text-neutral-600 hover:text-neutral-900 dark:text-zinc-300 dark:hover:text-white"
                                         }`}
                                     >
                                         {isBg ? category.labelBg : category.labelEn}
@@ -329,14 +329,14 @@ export default function Services() {
                 </div>
             </div>
 
-            <div className="w-full bg-neutral-300 px-[1px] py-[1px] dark:bg-neutral-900">
+            <div className="w-full bg-neutral-300 px-[1px] py-[1px] dark:bg-zinc-800">
                 <div className="columns-1 gap-[1px] min-[420px]:columns-2 md:columns-3 lg:columns-4 2xl:columns-5">
                     {filteredItems.map((item, index) => (
                         <button
                             key={`${item.src}-${index}`}
                             type="button"
                             onClick={() => setSelectedIndex(index)}
-                            className="group relative mb-[1px] block w-full break-inside-avoid overflow-hidden bg-neutral-100 text-left dark:bg-neutral-950"
+                            className="group relative mb-[1px] block w-full break-inside-avoid overflow-hidden bg-neutral-100 text-left dark:bg-zinc-900"
                         >
                             <img
                                 src={item.src}
