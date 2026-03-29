@@ -1,6 +1,8 @@
 import { Routes, Route } from "react-router-dom"
+import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
+import CookieBanner from "./components/CookieBanner"
 
 import Home from "./pages/Home"
 import About from "./pages/About"
@@ -15,6 +17,7 @@ import BlogPost from "./pages/BlogPost"
 export default function App() {
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white">
+      <ScrollToTop />
       <Navbar />
 
       <div className="h-16 shrink-0 lg:h-20" />
@@ -37,6 +40,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <CookieBanner />
     </div>
   )
 }
