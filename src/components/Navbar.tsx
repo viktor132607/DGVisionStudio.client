@@ -62,12 +62,10 @@ export default function Navbar() {
               { to: "/portfolio#commercial", label: "Рекламна фотография" },
               { to: "/portfolio#corporate", label: "Корпоративна фотография" },
               { to: "/portfolio#graduate", label: "Абитуриентска фотография" },
-              { to: "/portfolio#birthday", label: "Детски рожден ден" },
-              { to: "/portfolio#christmas", label: "Коледна фотосесия" },
               { to: "/portfolio#baptism", label: "Кръщене" },
               { to: "/portfolio#wedding", label: "Сватбена фотография" },
               { to: "/portfolio#family", label: "Семейна фотография" },
-              { to: "/portfolio#maternity", label: "Бременност" },
+              { to: "/portfolio#event", label: "Заснемане на събития" },
           ]
         : [
               { to: "/portfolio#portrait", label: "Portrait Photography" },
@@ -75,12 +73,10 @@ export default function Navbar() {
               { to: "/portfolio#commercial", label: "Commercial Photography" },
               { to: "/portfolio#corporate", label: "Corporate Photography" },
               { to: "/portfolio#graduate", label: "Graduation Photography" },
-              { to: "/portfolio#birthday", label: "Kids Birthday" },
-              { to: "/portfolio#christmas", label: "Christmas Photoshoot" },
               { to: "/portfolio#baptism", label: "Baptism" },
               { to: "/portfolio#wedding", label: "Wedding Photography" },
               { to: "/portfolio#family", label: "Family Photography" },
-              { to: "/portfolio#maternity", label: "Maternity" },
+                { to: "/portfolio#event", label: "Event Photography" },
           ]
 
     const items = isBg

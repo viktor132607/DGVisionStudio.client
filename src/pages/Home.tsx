@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import Seo from "../components/Seo"
@@ -9,11 +10,54 @@ type ServiceCard = {
     titleEn: string
     descBg: string
     descEn: string
+    priceBg: string
+    priceEn: string
 }
+
+const THEME_KEY = "theme"
 
 export default function Home() {
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
+
+    const getIsDark = () => {
+        const savedTheme = localStorage.getItem(THEME_KEY)
+
+        if (savedTheme === "dark") return true
+        if (savedTheme === "light") return false
+
+        return document.documentElement.classList.contains("dark")
+    }
+
+    const [isDark, setIsDark] = useState(false)
+
+    useEffect(() => {
+        const updateTheme = () => {
+            const dark = getIsDark()
+            document.documentElement.classList.toggle("dark", dark)
+            setIsDark(dark)
+        }
+
+        updateTheme()
+
+        const observer = new MutationObserver(() => {
+            updateTheme()
+        })
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        })
+
+        window.addEventListener("storage", updateTheme)
+
+        return () => {
+            observer.disconnect()
+            window.removeEventListener("storage", updateTheme)
+        }
+    }, [])
+
+    const logoSrc = isDark ? "/images/Pronto100tr.png" : "/images/Pronto101tr.png"
 
     const homeJsonLd = {
         "@context": "https://schema.org",
@@ -36,99 +80,100 @@ export default function Home() {
     const cards: ServiceCard[] = [
         {
             href: "/portfolio#turquoise",
-            image: "/images/porfolio/turquaz/639766578_122099975367277251_3978753087381724830_n.jpg",
+            image: "/images/porfolio/ПОРТРЕТ/зимна%20фотосесия%20ПОРТРЕТ/641416539_122101709805277251_8677250284073032946_n.jpg",
             titleBg: "Портретна фотография",
             titleEn: "Portrait Photography",
             descBg: "Индивидуални, артистични и професионални портрети с изчистена визия и силно присъствие.",
             descEn: "Individual, artistic, and professional portraits with a clean visual style and strong presence.",
+            priceBg: "от 60€ / фотосесия",
+            priceEn: "from €60 / session",
         },
         {
             href: "/portfolio#turquoise",
-            image: "/images/porfolio/turquaz/640072369_122099975331277251_8854217072496019133_n.jpg",
+            image: "/images/porfolio/ПОРТРЕТ/ПРОЛЕТ%20ПОРТРЕТ/2U2A6355.jpg",
             titleBg: "Продуктова фотография",
             titleEn: "Product Photography",
             descBg: "Кадри за продукти, брандове и онлайн магазини с фокус върху детайла и представянето.",
             descEn: "Visuals for products, brands, and online stores with focus on detail and presentation.",
+            priceBg: "по запитване",
+            priceEn: "upon request",
         },
         {
             href: "/portfolio#snow",
-            image: "/images/porfolio/snqg/641416539_122101709805277251_8677250284073032946_n.jpg",
+            image: "/images/porfolio/events/bulgare/2.jpg",
             titleBg: "Рекламна фотография",
             titleEn: "Commercial Photography",
             descBg: "Съдържание за кампании, социални мрежи и онлайн присъствие с ясно визуално послание.",
             descEn: "Content for campaigns, social media, and online presence with a clear visual message.",
+            priceBg: "по запитване",
+            priceEn: "upon request",
         },
         {
             href: "/portfolio#landscape",
-            image: "/images/porfolio/650235666_122104710225277251_7176854112806431771_n.jpg",
+            image: "/images/porfolio/ПЕЙЗАЖИ/650235666_122104710225277251_7176854112806431771_n.jpg",
             titleBg: "Корпоративна фотография",
             titleEn: "Corporate Photography",
             descBg: "Професионални кадри за екипи, бизнес среда, услуги и фирмено присъствие.",
             descEn: "Professional visuals for teams, business environments, services, and company presence.",
+            priceBg: "по запитване",
+            priceEn: "upon request",
         },
         {
             href: "/portfolio#turquoise",
-            image: "/images/porfolio/turquaz/640973347_122099975325277251_9203183424506999673_n.jpg",
+            image: "/images/porfolio/балове/Бал%20Азра/639766578_122099975367277251_3978753087381724830_n.jpg",
             titleBg: "Абитуриентска фотография",
             titleEn: "Graduation Photography",
             descBg: "Елегантни и запомнящи се кадри за абитуриенти с изразен стил и настроение.",
             descEn: "Elegant and memorable images for graduates with a distinct style and mood.",
-        },
-        {
-            href: "/portfolio#snow",
-            image: "/images/porfolio/snqg/641597983_122101709997277251_5678473421857308190_n.jpg",
-            titleBg: "Заснемане на детски рожден ден",
-            titleEn: "Kids Birthday Photography",
-            descBg: "Енергични, топли и естествени кадри от детски празници и лични събития.",
-            descEn: "Energetic, warm, and natural photography for kids' celebrations and personal events.",
+            priceBg: "от 60€ / час",
+            priceEn: "from €60 / hour",
         },
         {
             href: "/portfolio#wedding",
-            image: "/images/porfolio/svatba/653345408_122105935437277251_4254495819981584913_n.jpg",
-            titleBg: "Коледна фотосесия",
-            titleEn: "Christmas Photoshoot",
-            descBg: "Празнична атмосфера, сезонна визия и кадри с уютно, запомнящо се усещане.",
-            descEn: "Festive mood, seasonal styling, and imagery with a warm memorable feel.",
-        },
-        {
-            href: "/portfolio#wedding",
-            image: "/images/porfolio/svatba/654846086_122105935389277251_2252568087198579211_n.jpg",
+            image: "/images/porfolio/кръщенета/Кръщене%201/2U2A2111.jpg",
             titleBg: "Заснемане на кръщене",
             titleEn: "Baptism Photography",
             descBg: "Дискретно и емоционално заснемане на важни семейни и ритуални моменти.",
             descEn: "Discreet and emotional coverage of important family and ceremonial moments.",
+            priceBg: "от 60€ / час",
+            priceEn: "from €60 / hour",
         },
         {
             href: "/portfolio#wedding",
-            image: "/images/porfolio/svatba/654688641_122105935335277251_7457760121515071198_n.jpg",
+            image: "/images/porfolio/СВАТБИ/СВАТБА%203/2U2A1723.jpg",
             titleBg: "Сватбена фотография",
             titleEn: "Wedding Photography",
             descBg: "Емоционални и стилни кадри, които запазват атмосферата, хората и най-силните моменти.",
             descEn: "Emotional and stylish images that preserve the atmosphere, people, and strongest moments.",
+            priceBg: "120€ / час + 30€ дрон",
+            priceEn: "€120 / hour + €30 drone",
         },
         {
             href: "/portfolio#snow",
-            image: "/images/porfolio/snqg/641423751_122101709535277251_8354687302531540257_n.jpg",
+            image: "/images/porfolio/кръщенета/Кръщене%201/2U2A2198.jpg",
             titleBg: "Семейна фотография",
             titleEn: "Family Photography",
             descBg: "Топли, естествени и запомнящи се кадри за семейства, деца и лични поводи.",
             descEn: "Warm, natural, and memorable sessions for families, children, and personal occasions.",
+            priceBg: "по запитване",
+            priceEn: "upon request",
         },
         {
-            href: "/portfolio#wedding",
-            image: "/images/porfolio/svatba/652929756_122105935101277251_5371404381692777414_n.jpg",
-            titleBg: "Фотосесия за бременни",
-            titleEn: "Maternity Photoshoot",
-            descBg: "Нежни, стилни и емоционални кадри с фокус върху периода на очакване.",
-            descEn: "Soft, stylish, and emotional imagery focused on the beauty of pregnancy.",
+            href: "/portfolio#snow",
+            image: "/images/porfolio/events/bulgare/1.jpg",
+            titleBg: "Заснемане на събития ",
+            titleEn: "Event Photography",
+            descBg: "Отразяване на различни събития, събирания и поводи с фокус върху улавянето на атмосферата и ключовите моменти.",
+            descEn: "Coverage of various events, gatherings, and occasions with a focus on capturing the atmosphere and key moments.",
+            priceBg: "от 60€ / час",
+            priceEn: "from €60 / hour",
         },
     ]
 
     const quickLinks = [
         { href: "/portfolio#all", bg: "Всички албуми", en: "All Albums" },
-        { href: "/portfolio#snow", bg: "Сняг", en: "Snow" },
         { href: "/portfolio#wedding", bg: "Сватби", en: "Weddings" },
-        { href: "/portfolio#turquoise", bg: "Тюркоаз", en: "Turquoise" },
+        { href: "/portfolio#turquoise", bg: "Абитуриентски балове", en: "Graduation" },
         { href: "/portfolio#landscape", bg: "Пейзажи", en: "Landscapes" },
         { href: "/portfolio#all", bg: "Портрети", en: "Portraits" },
         { href: "/portfolio#turquoise", bg: "Продукти", en: "Products" },
@@ -157,9 +202,11 @@ export default function Home() {
                 <section className="border-b border-neutral-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
                     <div className="mx-auto grid min-h-[auto] w-full max-w-[1700px] grid-cols-1 lg:min-h-[620px] lg:grid-cols-[1.08fr_0.92fr] xl:min-h-[700px] 2xl:min-h-[760px]">
                         <div className="order-2 flex flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 md:px-8 md:py-14 lg:order-1 lg:px-10 lg:py-16 xl:px-14 2xl:px-20">
-                            <span className="mb-4 inline-flex w-fit max-w-full self-start rounded-full border border-neutral-300 bg-neutral-100 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-neutral-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 sm:px-4 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
-                                DG Vision Studio
-                            </span>
+                            <img
+                                src={logoSrc}
+                                alt="DG Vision Studio"
+                                className="mb-4 block h-auto w-[220px] max-w-full object-contain sm:mb-5 sm:w-[260px] md:w-[300px]"
+                            />
 
                             <h1 className="max-w-4xl text-[28px] font-extrabold uppercase leading-[1.06] tracking-[0.02em] text-neutral-950 dark:text-white sm:text-[36px] md:text-[44px] md:leading-[1.05] lg:text-[50px] xl:text-[60px] 2xl:text-[68px]">
                                 {isBg
@@ -194,31 +241,34 @@ export default function Home() {
                             <div className="grid h-full grid-cols-2 grid-rows-2 gap-[1px] bg-neutral-300 dark:bg-zinc-700">
                                 <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
                                     <img
-                                        src="/images/porfolio/turquaz/640973347_122099975325277251_9203183424506999673_n.jpg"
+                                        src="/images/porfolio/балове/Бал%20Азра/640973347_122099975325277251_9203183424506999673_n.jpg"
                                         alt=""
                                         className="h-full w-full object-cover object-center"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                 </div>
+
                                 <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
                                     <img
-                                        src="/images/porfolio/svatba/654688641_122105935335277251_7457760121515071198_n.jpg"
+                                        src="/images/porfolio/СВАТБИ/СВАТБА%203/2U2A1677.jpg"
+                                        alt=""
+                                        className="h-full w-full object-cover object-[67%_30%]"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                                </div>
+
+                                <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
+                                    <img
+                                        src="/images/porfolio/ПОРТРЕТ/зимна%20фотосесия%20ПОРТРЕТ/2U2A2362.jpg"
                                         alt=""
                                         className="h-full w-full object-cover object-center"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                 </div>
+
                                 <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
                                     <img
-                                        src="/images/porfolio/snqg/641423751_122101709535277251_8354687302531540257_n.jpg"
-                                        alt=""
-                                        className="h-full w-full object-cover object-center"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                                </div>
-                                <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
-                                    <img
-                                        src="/images/porfolio/svatba/654846086_122105935389277251_2252568087198579211_n.jpg"
+                                        src="/images/porfolio/ПОРТРЕТ/ПРОЛЕТ%20ПОРТРЕТ/2U2A6404.jpg"
                                         alt=""
                                         className="h-full w-full object-cover object-center"
                                     />
@@ -289,9 +339,20 @@ export default function Home() {
                                         <h3 className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[15px] sm:tracking-[0.08em]">
                                             {isBg ? card.titleBg : card.titleEn}
                                         </h3>
+
                                         <p className="mt-3 flex-1 text-[13px] leading-6 text-neutral-600 dark:text-zinc-300 sm:min-h-[72px] sm:text-sm sm:leading-7">
                                             {isBg ? card.descBg : card.descEn}
                                         </p>
+
+                                        <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-zinc-700">
+                                            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-neutral-500 dark:text-zinc-400 sm:text-[11px] sm:tracking-[0.18em]">
+                                                {isBg ? "Цени" : "Pricing"}
+                                            </p>
+                                            <p className="mt-2 text-[13px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[14px]">
+                                                {isBg ? card.priceBg : card.priceEn}
+                                            </p>
+                                        </div>
+
                                         <span className="mt-4 inline-flex text-[10px] font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white sm:text-[11px] sm:tracking-[0.18em]">
                                             {isBg ? "Виж повече" : "Learn More"}
                                         </span>

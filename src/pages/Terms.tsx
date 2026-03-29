@@ -5,6 +5,21 @@ export default function Terms() {
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
+    const termsJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: isBg ? "Общи условия" : "Terms and Conditions",
+        url: "https://dgvisionstudio.com/terms",
+        description: isBg
+            ? "Общите условия на DG Vision Studio за използване на сайта, запитвания, резервации, съдържание и права."
+            : "The DG Vision Studio terms and conditions for website use, enquiries, bookings, content, and rights.",
+        isPartOf: {
+            "@type": "WebSite",
+            name: "DG Vision Studio",
+            url: "https://dgvisionstudio.com",
+        },
+    }
+
     const wrapperClass =
         "mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8 dark:bg-zinc-900"
 
@@ -37,6 +52,7 @@ export default function Terms() {
                 canonical="/terms"
                 image="/og-cover.jpg"
                 type="website"
+                jsonLd={termsJsonLd}
             />
 
             <div className={wrapperClass}>
@@ -194,6 +210,7 @@ export default function Terms() {
                 canonical="/terms"
                 image="/og-cover.jpg"
                 type="website"
+                jsonLd={termsJsonLd}
             />
 
             <div className={wrapperClass}>

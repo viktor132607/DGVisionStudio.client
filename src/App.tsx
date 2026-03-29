@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
@@ -14,7 +14,10 @@ import Terms from "./pages/Terms"
 import Blog from "./pages/Blog"
 import BlogPost from "./pages/BlogPost"
 
-export default function App() {
+function AppContent() {
+  const location = useLocation()
+  const isPortfolioPage = location.pathname === "/portfolio"
+
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white">
       <ScrollToTop />
@@ -23,7 +26,7 @@ export default function App() {
       <div className="h-16 shrink-0 lg:h-20" />
 
       <main className="w-full flex-1">
-        <div className="mx-auto w-full max-w-[1700px]">
+        <div className={isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />
@@ -43,4 +46,8 @@ export default function App() {
       <CookieBanner />
     </div>
   )
+}
+
+export default function App() {
+  return <AppContent />
 }
