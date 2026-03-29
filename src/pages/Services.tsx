@@ -102,8 +102,6 @@ const commercialPaths = [] as const
 
 const eventBulgarePaths = [
     "/images/porfolio/events/bulgare/1.jpg",
-    "/images/porfolio/events/bulgare/2.jpg",
-    "/images/porfolio/events/bulgare/3.jpg",
     "/images/porfolio/events/bulgare/13.jpg",
 ] as const
 
@@ -417,13 +415,13 @@ export default function Services() {
     }[] = [
         { key: "all", labelBg: "Всички", labelEn: "All" },
         { key: "portrait", labelBg: "Портретна фотография", labelEn: "Portrait Photography" },
-        { key: "product", labelBg: "Продуктова фотография", labelEn: "Product Photography" },
-        { key: "commercial", labelBg: "Рекламна фотография", labelEn: "Commercial Photography" },
-        { key: "corporate", labelBg: "Корпоративна фотография", labelEn: "Corporate Photography" },
+        // { key: "product", labelBg: "Продуктова фотография", labelEn: "Product Photography" },
+        // { key: "commercial", labelBg: "Рекламна фотография", labelEn: "Commercial Photography" },
+        // { key: "corporate", labelBg: "Корпоративна фотография", labelEn: "Corporate Photography" },
         { key: "event", labelBg: "Събития", labelEn: "Events" },
         { key: "graduate", labelBg: "Абитуриентски балове", labelEn: "Proms" },
-        { key: "birthday", labelBg: "Детски рожден ден", labelEn: "Kids Birthday" },
-        { key: "christmas", labelBg: "Коледни", labelEn: "Christmas" },
+        // { key: "birthday", labelBg: "Детски рожден ден", labelEn: "Kids Birthday" },
+        // { key: "christmas", labelBg: "Коледни", labelEn: "Christmas" },
         { key: "baptism", labelBg: "Кръщене", labelEn: "Baptism" },
         { key: "wedding", labelBg: "Сватбена фотография", labelEn: "Wedding Photography" },
         { key: "family", labelBg: "Семейна фотография", labelEn: "Family Photography" },
