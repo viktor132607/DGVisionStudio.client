@@ -266,7 +266,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="border-t border-neutral-300 bg-white py-12 dark:border-zinc-700 dark:bg-zinc-950 sm:py-16 lg:py-20">
+                {/* <section className="border-t border-neutral-300 bg-white py-12 dark:border-zinc-700 dark:bg-zinc-950 sm:py-16 lg:py-20">
                     <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
                         <div className="mb-8 max-w-3xl">
                             <h2 className="text-[28px] font-extrabold uppercase tracking-[0.04em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
@@ -319,7 +319,7 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
-                </section>
+                </section> */}
             </div>
         </>
     )
