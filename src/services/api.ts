@@ -22,11 +22,41 @@ export async function apiFetch(path: string, options: FetchOptions = {}) {
     })
 }
 
-export async function addNumbers(a: number, b: number) {
-    const res = await apiFetch(`/test/add?a=${a}&b=${b}`, {
-        method: "GET",
-        skipJsonContentType: true,
+export async function apiFetchJson<T>(path: string, options: FetchOptions = {}): Promise<T> {
+    const response = await apiFetch(path, {
+        ...options,
+        skipJsonContentType: options.skipJsonContentType ?? false,
     })
 
-    return res.json()
+    if (!response.ok) {
+        let message = "Request failed."
+
+        try {
+            const contentType = response.headers.get("content-type") || ""
+
+            if (contentType.includes("application/json")) {
+                const errorData = await response.json()
+                message =
+                    errorData?.message ||
+                    errorData?.title ||
+                    errorData?.error ||
+                    JSON.stringify(errorData)
+            } else {
+                const text = await response.text()
+                if (text) {
+                    message = text
+                }
+            }
+        } catch {
+            message = `${response.status} ${response.statusText}`.trim() || "Request failed."
+        }
+
+        throw new Error(message)
+    }
+
+    if (response.status === 204) {
+        return undefined as T
+    }
+
+    return (await response.json()) as T
 }

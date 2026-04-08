@@ -1,17 +1,24 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { apiFetch } from "../services/api"
+import { parseApiErrorResponse } from "../utils/identity"
 
 type User = {
     email: string
     roles: string[]
 }
 
+type LoginResult = {
+    success: boolean
+    errors: string[]
+}
+
 type AuthContextType = {
     user: User | null
     loading: boolean
-    login: (email: string, password: string) => Promise<boolean>
+    login: (email: string, password: string) => Promise<LoginResult>
     logout: () => Promise<void>
     refreshUser: () => Promise<void>
+    clearUser: () => void
     isAdmin: boolean
 }
 
@@ -20,6 +27,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
+
+    const clearUser = () => {
+        setUser(null)
+    }
 
     const refreshUser = async () => {
         try {
@@ -52,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshUser().finally(() => setLoading(false))
     }, [])
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string): Promise<LoginResult> => {
         try {
             const res = await apiFetch("/auth/login", {
                 method: "POST",
@@ -60,13 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
 
             if (!res.ok) {
-                return false
+                const { errors } = await parseApiErrorResponse(res)
+                return { success: false, errors }
             }
 
             await refreshUser()
-            return true
+            return { success: true, errors: [] }
         } catch {
-            return false
+            return { success: false, errors: ["Login failed."] }
         }
     }
 
@@ -86,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         refreshUser,
+        clearUser,
         isAdmin: !!user?.roles?.includes("Admin"),
     }
 

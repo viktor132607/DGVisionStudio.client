@@ -1,10 +1,27 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import Seo from "../components/Seo"
+import { apiFetch } from "../services/api"
 import {
     COOKIE_CONSENT_EVENT,
     hasAcceptedOptionalCookies,
 } from "../utils/cookieConsent"
+
+type ContactFormState = {
+    name: string
+    email: string
+    phone: string
+    subject: string
+    message: string
+}
+
+const initialFormState: ContactFormState = {
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+}
 
 export default function Contact() {
     const { i18n } = useTranslation()
@@ -12,6 +29,10 @@ export default function Contact() {
     const isBg = lang.startsWith("bg")
 
     const [canLoadMap, setCanLoadMap] = useState(false)
+    const [form, setForm] = useState<ContactFormState>(initialFormState)
+    const [submitting, setSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState("")
+    const [submitSuccess, setSubmitSuccess] = useState("")
 
     const contactJsonLd = {
         "@context": "https://schema.org",
@@ -49,6 +70,81 @@ export default function Contact() {
         }
     }, [])
 
+    const handleChange =
+        (field: keyof ContactFormState) =>
+        (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setForm((current) => ({
+                ...current,
+                [field]: event.target.value,
+            }))
+        }
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+
+        setSubmitError("")
+        setSubmitSuccess("")
+
+        if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+            setSubmitError(
+                isBg
+                    ? "Името, имейлът и съобщението са задължителни."
+                    : "Name, email and message are required."
+            )
+            return
+        }
+
+        setSubmitting(true)
+
+        try {
+            const response = await apiFetch("/contact", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: form.name.trim(),
+                    email: form.email.trim(),
+                    phone: form.phone.trim() || null,
+                    subject: form.subject.trim() || null,
+                    message: form.message.trim(),
+                }),
+            })
+
+            if (!response.ok) {
+                let message = isBg
+                    ? "Неуспешно изпращане на запитването."
+                    : "Failed to submit your inquiry."
+
+                try {
+                    const data = await response.json()
+                    message = data?.message || message
+                } catch {
+                    const text = await response.text()
+                    if (text) {
+                        message = text
+                    }
+                }
+
+                throw new Error(message)
+            }
+
+            setSubmitSuccess(
+                isBg
+                    ? "Запитването беше изпратено успешно."
+                    : "Your inquiry was submitted successfully."
+            )
+            setForm(initialFormState)
+        } catch (error) {
+            setSubmitError(
+                error instanceof Error
+                    ? error.message
+                    : isBg
+                      ? "Неуспешно изпращане на запитването."
+                      : "Failed to submit your inquiry."
+            )
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
     const pageClass =
         "mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 xl:px-12 2xl:px-16 dark:bg-zinc-900"
 
@@ -66,6 +162,14 @@ export default function Contact() {
 
     const textClass =
         "text-[15px] leading-8 text-slate-700 dark:text-zinc-200 sm:text-base lg:text-[17px]"
+
+    const inputClassName =
+        "w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
+
+    const textareaClassName = `${inputClassName} min-h-[180px] resize-y`
+
+    const submitButtonClassName =
+        "inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200"
 
     const mapUrl = "https://www.google.com/maps/search/?api=1&query=Ruse%2C%20Bulgaria"
     const embedUrl = "https://www.google.com/maps?hl=bg&q=Ruse,%20Bulgaria&z=12&output=embed"
@@ -110,10 +214,7 @@ export default function Contact() {
                         <h2 className={sectionTitleClass}>Имейл</h2>
 
                         <div className="mt-5">
-                            <a
-                                className={emailLinkClass}
-                                href="mailto:dgvisionstudio@gmail.com"
-                            >
+                            <a className={emailLinkClass} href="mailto:dgvisionstudio@gmail.com">
                                 dgvisionstudio@gmail.com
                             </a>
                         </div>
@@ -127,6 +228,102 @@ export default function Contact() {
                                 Базирани сме в Русе и работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
                             </p>
                         </div>
+                    </div>
+                </section>
+
+                <section className="mt-5 sm:mt-6 lg:mt-8">
+                    <div className={cardClass}>
+                        <h2 className={sectionTitleClass}>Форма за контакт</h2>
+
+                        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Име *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.name}
+                                        onChange={handleChange("name")}
+                                        className={inputClassName}
+                                        placeholder="Вашето име"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Имейл *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={form.email}
+                                        onChange={handleChange("email")}
+                                        className={inputClassName}
+                                        placeholder="Вашият имейл"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Телефон
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.phone}
+                                        onChange={handleChange("phone")}
+                                        className={inputClassName}
+                                        placeholder="Вашият телефон"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Тема
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.subject}
+                                        onChange={handleChange("subject")}
+                                        className={inputClassName}
+                                        placeholder="Тема на запитването"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                    Съобщение *
+                                </label>
+                                <textarea
+                                    value={form.message}
+                                    onChange={handleChange("message")}
+                                    className={textareaClassName}
+                                    placeholder="Опишете какво ви е нужно"
+                                />
+                            </div>
+
+                            {submitError ? (
+                                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                                    {submitError}
+                                </div>
+                            ) : null}
+
+                            {submitSuccess ? (
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+                                    {submitSuccess}
+                                </div>
+                            ) : null}
+
+                            <div>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className={submitButtonClassName}
+                                >
+                                    {submitting ? "Изпращане..." : "Изпрати"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </section>
 
@@ -216,10 +413,7 @@ export default function Contact() {
                         <h2 className={sectionTitleClass}>Email</h2>
 
                         <div className="mt-5">
-                            <a
-                                className={emailLinkClass}
-                                href="mailto:dgvisionstudio@gmail.com"
-                            >
+                            <a className={emailLinkClass} href="mailto:dgvisionstudio@gmail.com">
                                 dgvisionstudio@gmail.com
                             </a>
                         </div>
@@ -233,6 +427,102 @@ export default function Contact() {
                                 We are based in Ruse and work with clients from Ruse, Varna, Plovdiv, Burgas and other cities across Bulgaria.
                             </p>
                         </div>
+                    </div>
+                </section>
+
+                <section className="mt-5 sm:mt-6 lg:mt-8">
+                    <div className={cardClass}>
+                        <h2 className={sectionTitleClass}>Contact form</h2>
+
+                        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.name}
+                                        onChange={handleChange("name")}
+                                        className={inputClassName}
+                                        placeholder="Your name"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Email *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={form.email}
+                                        onChange={handleChange("email")}
+                                        className={inputClassName}
+                                        placeholder="Your email"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Phone
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.phone}
+                                        onChange={handleChange("phone")}
+                                        className={inputClassName}
+                                        placeholder="Your phone"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                        Subject
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={form.subject}
+                                        onChange={handleChange("subject")}
+                                        className={inputClassName}
+                                        placeholder="Inquiry subject"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
+                                    Message *
+                                </label>
+                                <textarea
+                                    value={form.message}
+                                    onChange={handleChange("message")}
+                                    className={textareaClassName}
+                                    placeholder="Tell us what you need"
+                                />
+                            </div>
+
+                            {submitError ? (
+                                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                                    {submitError}
+                                </div>
+                            ) : null}
+
+                            {submitSuccess ? (
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+                                    {submitSuccess}
+                                </div>
+                            ) : null}
+
+                            <div>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className={submitButtonClassName}
+                                >
+                                    {submitting ? "Sending..." : "Send"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </section>
 

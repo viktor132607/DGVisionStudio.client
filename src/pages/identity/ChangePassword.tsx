@@ -1,34 +1,78 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import IdentityLayout from "../../components/IdentityLayout"
+import PasswordRequirements from "../../components/PasswordRequirements"
 import { apiFetch } from "../../services/api"
+import {
+    parseApiErrorResponse,
+    passwordMeetsIdentityRules,
+} from "../../utils/identity"
 
 export default function ChangePassword() {
     const navigate = useNavigate()
+    const { i18n } = useTranslation()
+    const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
     const [currentPassword, setCurrentPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
-    const [error, setError] = useState("")
+    const [errors, setErrors] = useState<string[]>([])
     const [success, setSuccess] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    const t = isBg
+        ? {
+              title: "Смяна на парола",
+              description: "Обнови паролата на акаунта си.",
+              currentPassword: "Текуща парола",
+              newPassword: "Нова парола",
+              confirmPassword: "Потвърди нова парола",
+              allFieldsRequired: "Всички полета са задължителни.",
+              passwordsDoNotMatch: "Паролите не съвпадат.",
+              passwordRulesError: "Новата парола не покрива изискванията.",
+              save: "Запази",
+              saving: "Запазване...",
+              success: "Паролата е сменена успешно.",
+              failed: "Смяната на паролата беше неуспешна.",
+              backToProfile: "Назад към профил",
+          }
+        : {
+              title: "Change password",
+              description: "Update your account password.",
+              currentPassword: "Current password",
+              newPassword: "New password",
+              confirmPassword: "Confirm new password",
+              allFieldsRequired: "All fields are required.",
+              passwordsDoNotMatch: "Passwords do not match.",
+              passwordRulesError: "New password does not meet the requirements.",
+              save: "Save",
+              saving: "Saving...",
+              success: "Password changed successfully.",
+              failed: "Password change failed.",
+              backToProfile: "Back to profile",
+          }
+
+    const inputClassName =
+        "w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-[15px] text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-0 focus:outline-none dark:border-zinc-600 dark:bg-zinc-100 dark:text-black dark:placeholder:text-zinc-500 dark:focus:border-zinc-600 dark:focus:bg-zinc-100 dark:focus:ring-0 dark:focus:outline-none"
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setError("")
+        setErrors([])
         setSuccess("")
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            setError("All fields are required.")
-            return
-        }
-
-        if (newPassword.length < 6) {
-            setError("New password must be at least 6 characters.")
+            setErrors([t.allFieldsRequired])
             return
         }
 
         if (newPassword !== confirmPassword) {
-            setError("Passwords do not match.")
+            setErrors([t.passwordsDoNotMatch])
+            return
+        }
+
+        if (!passwordMeetsIdentityRules(newPassword)) {
+            setErrors([t.passwordRulesError])
             return
         }
 
@@ -40,18 +84,19 @@ export default function ChangePassword() {
                 body: JSON.stringify({
                     currentPassword,
                     newPassword,
-                    confirmPassword
+                    confirmPassword,
                 }),
             })
 
-            const data = await res.json().catch(() => null)
-
             if (!res.ok) {
-                setError(data?.message || data?.error || "Password change failed.")
+                const { errors: backendErrors } = await parseApiErrorResponse(res)
+                setErrors(backendErrors)
                 return
             }
 
-            setSuccess(data?.message || "Password changed successfully.")
+            const data = await res.json().catch(() => null)
+
+            setSuccess(data?.message || t.success)
             setCurrentPassword("")
             setNewPassword("")
             setConfirmPassword("")
@@ -60,95 +105,102 @@ export default function ChangePassword() {
                 navigate("/identity/profile")
             }, 1200)
         } catch {
-            setError("Password change failed.")
+            setErrors([t.failed])
         } finally {
             setIsSubmitting(false)
         }
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 px-4 py-10">
-            <div className="mx-auto w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold text-gray-900">Change password</h1>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Update your account password.
-                    </p>
+        <IdentityLayout title={t.title} description={t.description}>
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                    <label className="mb-2 block text-[14px] font-semibold text-neutral-800 dark:text-zinc-100">
+                        {t.currentPassword}
+                    </label>
+                    <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => {
+                            setCurrentPassword(e.target.value)
+                            if (errors.length) setErrors([])
+                            if (success) setSuccess("")
+                        }}
+                        className={inputClassName}
+                        autoComplete="current-password"
+                        required
+                    />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Current password
-                        </label>
-                        <input
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                            autoComplete="current-password"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            New password
-                        </label>
-                        <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                            autoComplete="new-password"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Confirm new password
-                        </label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                            autoComplete="new-password"
-                            required
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {error}
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {success}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full rounded-xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {isSubmitting ? "Saving..." : "Change password"}
-                    </button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <Link
-                        to="/identity/profile"
-                        className="text-sm text-gray-600 transition hover:text-black"
-                    >
-                        Back to profile
-                    </Link>
+                <div>
+                    <label className="mb-2 block text-[14px] font-semibold text-neutral-800 dark:text-zinc-100">
+                        {t.newPassword}
+                    </label>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => {
+                            setNewPassword(e.target.value)
+                            if (errors.length) setErrors([])
+                            if (success) setSuccess("")
+                        }}
+                        className={inputClassName}
+                        autoComplete="new-password"
+                        required
+                    />
                 </div>
+
+                <PasswordRequirements password={newPassword} />
+
+                <div>
+                    <label className="mb-2 block text-[14px] font-semibold text-neutral-800 dark:text-zinc-100">
+                        {t.confirmPassword}
+                    </label>
+                    <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                            setConfirmPassword(e.target.value)
+                            if (errors.length) setErrors([])
+                            if (success) setSuccess("")
+                        }}
+                        className={inputClassName}
+                        autoComplete="new-password"
+                        required
+                    />
+                </div>
+
+                <div className="min-h-[20px] text-[13px] leading-5 text-red-600 dark:text-red-400">
+                    {errors.length > 0 ? (
+                        <ul className="space-y-1">
+                            {errors.map((error, index) => (
+                                <li key={`${error}-${index}`}>{error}</li>
+                            ))}
+                        </ul>
+                    ) : null}
+                </div>
+
+                <div className="min-h-[20px] text-[13px] leading-5 text-emerald-600 dark:text-emerald-400">
+                    {success ? <p>{success}</p> : null}
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full rounded-full border border-neutral-950 bg-neutral-950 px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                    {isSubmitting ? t.saving : t.save}
+                </button>
+            </form>
+
+            <div className="mt-7 text-center text-[14px]">
+                <Link
+                    to="/identity/profile"
+                    className="text-blue-600 transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                    {t.backToProfile}
+                </Link>
             </div>
-        </div>
+        </IdentityLayout>
     )
 }
