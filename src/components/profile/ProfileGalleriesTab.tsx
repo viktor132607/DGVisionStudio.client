@@ -40,12 +40,21 @@ export default function ProfileGalleriesTab({
         [openedGallery]
     )
 
-    const openGallery = async (galleryId: number) => {
+    const openGallery = async (gallery: MyClientGalleryDto) => {
+        if (!gallery.previewEnabled || gallery.isExpired) {
+            setGalleryError(
+                isBg
+                    ? "Нямаш активен достъп за преглед до тази галерия."
+                    : "You do not have active preview access to this gallery."
+            )
+            return
+        }
+
         try {
             setGalleryError("")
-            setGalleryLoadingId(galleryId)
+            setGalleryLoadingId(gallery.id)
 
-            const data = await getClientGalleryDetails(galleryId)
+            const data = await getClientGalleryDetails(gallery.id)
             setOpenedGallery(data)
         } catch (err) {
             setGalleryError(
@@ -134,7 +143,7 @@ export default function ProfileGalleriesTab({
                         gallery={gallery}
                         isBg={isBg}
                         loading={galleryLoadingId === gallery.id}
-                        onOpen={() => void openGallery(gallery.id)}
+                        onOpen={() => void openGallery(gallery)}
                         onDownloadAll={() => {
                             window.location.href = getGalleryZipDownloadUrl(gallery.id)
                         }}

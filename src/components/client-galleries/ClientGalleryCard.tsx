@@ -17,10 +17,11 @@ export default function ClientGalleryCard({
     onDownloadAll,
     loading = false,
 }: ClientGalleryCardProps) {
+    const canPreview = gallery.previewEnabled && !gallery.isExpired
     const canDownload = gallery.downloadEnabled && !gallery.isExpired
 
     const handleOpen = () => {
-        if (loading) return
+        if (loading || !canPreview) return
         onOpen?.()
     }
 
@@ -35,7 +36,8 @@ export default function ClientGalleryCard({
             <button
                 type="button"
                 onClick={handleOpen}
-                className="block w-full text-left"
+                disabled={!canPreview}
+                className="block w-full text-left disabled:cursor-not-allowed"
             >
                 <div className="aspect-[4/5] w-full overflow-hidden bg-neutral-200 dark:bg-zinc-800">
                     {gallery.coverImageUrl ? (
@@ -110,8 +112,8 @@ export default function ClientGalleryCard({
                     <button
                         type="button"
                         onClick={handleOpen}
-                        disabled={loading}
-                        className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-5 text-[14px] font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-60 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        disabled={loading || !canPreview}
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-5 text-[14px] font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                     >
                         {loading
                             ? isBg ? "Зареждане..." : "Loading..."
