@@ -143,7 +143,11 @@ export default function ProfileGalleriesTab({
                         gallery={gallery}
                         isBg={isBg}
                         loading={galleryLoadingId === gallery.id}
-                        onOpen={() => void openGallery(gallery)}
+                        onOpen={
+    gallery.previewEnabled && !gallery.isExpired
+        ? () => void openGallery(gallery)
+        : undefined
+}
                         onDownloadAll={() => {
                             window.location.href = getGalleryZipDownloadUrl(gallery.id)
                         }}
