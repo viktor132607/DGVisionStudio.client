@@ -226,11 +226,11 @@ export default function Home() {
                             <h2 className="text-[28px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
                                 {isBg ? "Услуги" : "Services"}
                             </h2>
-                            <p className="mx-auto mt-4 max-w-3xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px] sm:leading-8 md:text-[16px]">
+                            {/* <p className="mx-auto mt-4 max-w-3xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px] sm:leading-8 md:text-[16px]">
                                 {isBg
                                     ? "Категориите и кадрите тук вече идват от portfolio данните, не от хардкод."
                                     : "The categories and visuals here now come from the portfolio data, not from hardcoded content."}
-                            </p>
+                            </p> */}
                         </div>
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
