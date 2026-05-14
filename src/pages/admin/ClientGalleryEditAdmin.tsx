@@ -19,7 +19,6 @@ import type {
 } from "../../types/clientGallery"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
 import AlbumVisibilitySection from "../../components/client-galleries/AlbumVisibilitySection"
-import AlbumThumbnailPicker from "../../components/client-galleries/AlbumThumbnailPicker"
 import AlbumBulkActionsBar from "../../components/client-galleries/AlbumBulkActionsBar"
 import UserAccessSelector, {
     type SelectedUserAccess,
@@ -49,6 +48,8 @@ type DraftPhotoItem = {
     visibleToAllAuthorizedUsers: boolean
     allowedUserIds: string[]
 }
+
+const MAX_PHOTO_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024
 
 function createLocalId() {
     return `local-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -117,9 +118,11 @@ export default function ClientGalleryEditAdmin() {
               photosRequired: "Добави поне една снимка.",
               duplicateTitleBg: "Вече съществува албум със същото име на български.",
               duplicateTitleEn: "Вече съществува албум със същото име на английски.",
+              photoTooLarge: "Една или повече снимки са над 20MB.",
+              invalidPhotoType: "Можеш да качваш само снимки.",
               dropzone: "Качи снимки",
               dropzoneHint:
-                  "Плъзни снимки тук, избери файлове или постави директно с Ctrl + V.",
+                  "Плъзни снимки тук, избери файлове или постави директно с Ctrl + V. Максимум 20MB на снимка.",
               chooseFiles: "Избери снимки",
               save: "Запази",
               saving: "Запазване...",
@@ -164,8 +167,11 @@ export default function ClientGalleryEditAdmin() {
               photosRequired: "Add at least one photo.",
               duplicateTitleBg: "An album with the same Bulgarian title already exists.",
               duplicateTitleEn: "An album with the same English title already exists.",
+              photoTooLarge: "One or more photos are larger than 20MB.",
+              invalidPhotoType: "Only image files are allowed.",
               dropzone: "Upload photos",
-              dropzoneHint: "Drag photos here, choose files, or paste directly with Ctrl + V.",
+              dropzoneHint:
+                  "Drag photos here, choose files, or paste directly with Ctrl + V. Maximum 20MB per photo.",
               chooseFiles: "Choose photos",
               save: "Save",
               saving: "Saving...",
@@ -337,7 +343,23 @@ export default function ClientGalleryEditAdmin() {
     const handleFiles = (files: File[]) => {
         if (!files.length) return
 
-        const newItems: DraftPhotoItem[] = files.map((file, index) => ({
+        const imageFiles = files.filter((file) => file.type.startsWith("image/"))
+
+        if (imageFiles.length !== files.length) {
+            setError(t.invalidPhotoType)
+            return
+        }
+
+        const oversizedFiles = imageFiles.filter((file) => file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES)
+
+        if (oversizedFiles.length > 0) {
+            setError(t.photoTooLarge)
+            return
+        }
+
+        setError("")
+
+        const newItems: DraftPhotoItem[] = imageFiles.map((file, index) => ({
             localId: createLocalId(),
             file,
             previewUrl: URL.createObjectURL(file),
@@ -384,9 +406,7 @@ export default function ClientGalleryEditAdmin() {
     const handleDropUpload = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault()
 
-        const files = Array.from(event.dataTransfer.files || []).filter((file) =>
-            file.type.startsWith("image/")
-        )
+        const files = Array.from(event.dataTransfer.files || [])
 
         handleFiles(files)
     }
@@ -488,6 +508,11 @@ export default function ClientGalleryEditAdmin() {
 
         if (!photos.length) {
             setError(t.photosRequired)
+            return false
+        }
+
+        if (photos.some((photo) => photo.file && photo.file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES)) {
+            setError(t.photoTooLarge)
             return false
         }
 
@@ -879,34 +904,6 @@ export default function ClientGalleryEditAdmin() {
                         </div>
                     )}
                 </section>
-
-                <AlbumThumbnailPicker
-                    isBg={isBg}
-                    photos={sortedPhotos.map((photo) => ({
-                        id: photo.id ?? Number(photo.localId.replace(/\D/g, "").slice(0, 9) || 0),
-                        previewUrl: photo.previewUrl,
-                        fileName: photo.file?.name,
-                        isCover: photo.isCover,
-                    }))}
-                    selectedPhotoId={
-                        sortedPhotos.find((item) => item.isCover)?.id ??
-                        Number(
-                            (sortedPhotos.find((item) => item.isCover)?.localId || "")
-                                .replace(/\D/g, "")
-                                .slice(0, 9) || 0
-                        )
-                    }
-                    onSelect={(photoId) => {
-                        const found = sortedPhotos.find(
-                            (item) =>
-                                item.id === photoId ||
-                                Number(item.localId.replace(/\D/g, "").slice(0, 9) || 0) === photoId
-                        )
-                        if (found) {
-                            setCoverLocal(found.localId)
-                        }
-                    }}
-                />
 
                 <UserAccessSelector
                     isBg={isBg}

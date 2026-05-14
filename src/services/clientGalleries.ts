@@ -73,6 +73,17 @@ export type PagedResultDto<T> = {
 
 const API_ROOT = (import.meta.env.VITE_API_URL || "http://localhost:10000").replace(/\/+$/, "")
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${API_ROOT}/api`).replace(/\/+$/, "")
+const MAX_PHOTO_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024
+
+function validatePhotoFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+        throw new Error("Only image files are allowed.")
+    }
+
+    if (file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES) {
+        throw new Error("Photo is too large. Maximum size is 20MB.")
+    }
+}
 
 function normalizeApiUrl(url?: string | null): string | null | undefined {
     if (!url) return url
@@ -188,6 +199,8 @@ export async function uploadMyClientGalleryPhoto(
     galleryId: number,
     file: File
 ): Promise<ClientPhotoDto> {
+    validatePhotoFile(file)
+
     const formData = new FormData()
     formData.append("file", file)
 
@@ -385,6 +398,8 @@ export async function uploadGalleryPhoto(
     galleryId: number,
     file: File
 ): Promise<ClientPhotoDto> {
+    validatePhotoFile(file)
+
     const formData = new FormData()
     formData.append("file", file)
 
