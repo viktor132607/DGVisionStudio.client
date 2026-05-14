@@ -40,7 +40,7 @@ function AppContent() {
 
   useEffect(() => {
     const finishLoading = () => {
-      setTimeout(() => setIsPageLoading(false), 400)
+      setTimeout(() => setIsPageLoading(false), 500)
     }
 
     if (document.readyState === "complete") {
