@@ -5,6 +5,7 @@ import type {
     ClientGalleryDetailsDto,
     ClientPhotoDto,
     CreateAdminClientGalleryRequest,
+    CreateUserClientGalleryRequest,
     MyClientGalleryDto,
     UpdateAdminClientGalleryRequest,
 } from "../types/clientGallery"
@@ -42,11 +43,24 @@ export type ReorderGalleryPhotosRequest = {
 const API_ROOT = (import.meta.env.VITE_API_URL || "http://localhost:10000").replace(/\/+$/, "")
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${API_ROOT}/api`).replace(/\/+$/, "")
 
+function normalizeApiUrl(url?: string | null): string | null | undefined {
+    if (!url) return url
+
+    if (url.startsWith("/api/")) {
+        return `${API_ROOT}${url}`
+    }
+
+    return resolveAssetUrl(url)
+}
+
 function normalizePhoto(photo: ClientPhotoDto): ClientPhotoDto {
     return {
         ...photo,
-        previewUrl: resolveAssetUrl(photo.previewUrl),
-        originalUrl: photo.originalUrl ? resolveAssetUrl(photo.originalUrl) : photo.originalUrl,
+        previewUrl: normalizeApiUrl(photo.previewUrl) || "",
+        originalUrl: normalizeApiUrl(photo.originalUrl),
+        downloadUrl: photo.downloadUrl?.startsWith("/api/")
+            ? `${API_ROOT}${photo.downloadUrl}`
+            : photo.downloadUrl,
     }
 }
 
@@ -82,6 +96,45 @@ export async function getMyClientGalleries(): Promise<MyClientGalleryDto[]> {
     return data.map(normalizeGallery)
 }
 
+export async function createMyClientGallery(
+    payload: CreateUserClientGalleryRequest
+): Promise<{ id: number; message?: string }> {
+    const response = await apiFetch("/client-galleries/my", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    })
+
+    const data = await parseJsonSafe<{ id: number; message?: string }>(response)
+
+    if (!response.ok || !data) {
+        throw new Error(data?.message || "Failed to create gallery.")
+    }
+
+    return data
+}
+
+export async function uploadMyClientGalleryPhoto(
+    galleryId: number,
+    file: File
+): Promise<ClientPhotoDto> {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    const response = await apiFetch(`/client-galleries/${galleryId}/photos/upload`, {
+        method: "POST",
+        body: formData,
+        skipJsonContentType: true,
+    })
+
+    const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
+
+    if (!response.ok || !data) {
+        throw new Error(data?.message || "Failed to upload photo.")
+    }
+
+    return normalizePhoto(data)
+}
+
 export async function getClientGalleryDetails(galleryId: number): Promise<ClientGalleryDetailsDto> {
     const response = await apiFetch(`/client-galleries/${galleryId}`, {
         method: "GET",
@@ -98,6 +151,10 @@ export async function getClientGalleryDetails(galleryId: number): Promise<Client
 
 export function getGalleryPhotoDownloadUrl(galleryId: number, photoId: number): string {
     return `${API_BASE}/client-galleries/${galleryId}/photos/${photoId}/download`
+}
+
+export function getAdminGalleryPhotoDownloadUrl(galleryId: number, photoId: number): string {
+    return `${API_BASE}/admin/client-galleries/${galleryId}/photos/${photoId}/download`
 }
 
 export function getGalleryZipDownloadUrl(galleryId: number): string {

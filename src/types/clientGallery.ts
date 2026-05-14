@@ -1,3 +1,5 @@
+export type UserClientGalleryStatus = "Pending" | "Processed" | "Expired" | 1 | 2 | 3
+
 export type AdminGalleryUserOptionDto = {
     id: string
     email: string
@@ -28,12 +30,19 @@ export type MyClientGalleryDto = {
     downloadExpiresAtUtc?: string | null
     remainingDownloadDays?: number | null
     isExpired: boolean
+    isUserUploaded: boolean
+    ownerUserId?: string | null
+    ownerEmail?: string | null
+    expiresAtUtc?: string | null
+    remainingLifetimeDays?: number | null
+    userGalleryStatus: UserClientGalleryStatus
 }
 
 export type ClientPhotoDto = {
     id: number
     previewUrl: string
     originalUrl?: string | null
+    downloadUrl?: string | null
     altText?: string | null
     caption?: string | null
     canDownload: boolean
@@ -60,9 +69,20 @@ export type ClientGalleryDetailsDto = {
     downloadExpiresAtUtc?: string | null
     remainingDownloadDays?: number | null
     isExpired: boolean
+    isUserUploaded: boolean
+    ownerUserId?: string | null
+    ownerEmail?: string | null
+    expiresAtUtc?: string | null
+    remainingLifetimeDays?: number | null
+    userGalleryStatus: UserClientGalleryStatus
     availableUsers: AdminGalleryUserOptionDto[]
     userAccesses?: GalleryUserAccessDto[]
     photos: ClientPhotoDto[]
+}
+
+export type CreateUserClientGalleryRequest = {
+    title: string
+    description?: string | null
 }
 
 export type AdminUpdateClientPhotoRequest = {

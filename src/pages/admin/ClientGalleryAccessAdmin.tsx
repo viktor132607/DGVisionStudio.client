@@ -7,6 +7,7 @@ import {
     updateGalleryAccess,
 } from "../../services/clientGalleries"
 import { apiFetch } from "../../services/api"
+import type { PagedResultDto } from "../../types/pagination"
 
 type GalleryAccessDto = {
     userId: string
@@ -77,7 +78,7 @@ export default function ClientGalleryAccessAdmin() {
     >({})
 
     const loadUsers = async () => {
-        const response = await apiFetch("/admin/users", {
+        const response = await apiFetch("/admin/users?page=1&pageSize=200", {
             method: "GET",
             skipJsonContentType: true,
         })
@@ -86,16 +87,21 @@ export default function ClientGalleryAccessAdmin() {
             throw new Error("Failed to load users.")
         }
 
-        const data = await response.json().catch(() => [])
-        const normalized = Array.isArray(data)
+        const data = (await response.json().catch(() => null)) as PagedResultDto<UserOption> | UserOption[] | null
+
+        const rawUsers = Array.isArray(data)
             ? data
-                  .filter((x) => x?.email && !x?.isBlocked)
-                  .map((x) => ({
-                      id: String(x.id ?? ""),
-                      email: String(x.email ?? ""),
-                      isBlocked: Boolean(x.isBlocked),
-                  }))
-            : []
+            : Array.isArray(data?.items)
+              ? data.items
+              : []
+
+        const normalized = rawUsers
+            .filter((x) => x?.email && !x?.isBlocked)
+            .map((x) => ({
+                id: String(x.id ?? ""),
+                email: String(x.email ?? ""),
+                isBlocked: Boolean(x.isBlocked),
+            }))
 
         setUsers(normalized)
     }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { apiFetch } from "../../services/api"
+import type { PagedResultDto } from "../../types/pagination"
 
 type CategorySummary = {
     id: number
@@ -23,7 +24,7 @@ type CategoryAlbumOption = {
 
 type CategoryAlbumsResponse = {
     category: CategorySummary
-    albums: CategoryAlbumOption[]
+    albums: CategoryAlbumOption[] | PagedResultDto<CategoryAlbumOption>
 }
 
 export default function PortfolioCategoryAlbumsAdmin() {
@@ -31,10 +32,15 @@ export default function PortfolioCategoryAlbumsAdmin() {
     const categoryIdParam = searchParams.get("id")
     const categoryId = categoryIdParam ? Number(categoryIdParam) : 0
 
-    const [data, setData] = useState<CategoryAlbumsResponse | null>(null)
+    const [category, setCategory] = useState<CategorySummary | null>(null)
+    const [albums, setAlbums] = useState<CategoryAlbumOption[]>([])
     const [selectedAlbumIds, setSelectedAlbumIds] = useState<number[]>([])
     const [search, setSearch] = useState("")
     const [showOnlySelected, setShowOnlySelected] = useState(false)
+
+    const [pageSize, setPageSize] = useState(20)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [total, setTotal] = useState(0)
 
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -53,28 +59,49 @@ export default function PortfolioCategoryAlbumsAdmin() {
         setSuccess("")
 
         try {
-            const response = await apiFetch(`/admin/portfolio/categories/${categoryId}/albums`, {
-                method: "GET",
-                skipJsonContentType: true,
-            })
+            const response = await apiFetch(
+                `/admin/portfolio/categories/${categoryId}/albums?page=${currentPage}&pageSize=${pageSize}`,
+                {
+                    method: "GET",
+                    skipJsonContentType: true,
+                }
+            )
 
             if (!response.ok) {
                 throw new Error("Неуспешно зареждане на албумите за категорията.")
             }
 
             const result = (await response.json()) as CategoryAlbumsResponse
-            setData(result)
-            setSelectedAlbumIds(
-                (result.albums || []).filter((item) => item.isSelected).map((item) => item.id)
-            )
+            const rawAlbums = result.albums
+
+            const normalizedAlbums = Array.isArray(rawAlbums)
+                ? rawAlbums
+                : Array.isArray(rawAlbums?.items)
+                  ? rawAlbums.items
+                  : []
+
+            setCategory(result.category)
+            setAlbums(normalizedAlbums)
+            setTotal(Array.isArray(rawAlbums) ? rawAlbums.length : Number(rawAlbums?.total ?? normalizedAlbums.length))
+
+            setSelectedAlbumIds((current) => {
+                const next = new Set(current)
+
+                normalizedAlbums
+                    .filter((item) => item.isSelected)
+                    .forEach((item) => next.add(item.id))
+
+                return Array.from(next)
+            })
         } catch (err) {
             setError(
                 err instanceof Error
                     ? err.message
                     : "Неуспешно зареждане на албумите за категорията."
             )
-            setData(null)
-            setSelectedAlbumIds([])
+            setCategory(null)
+            setAlbums([])
+            setTotal(0)
         } finally {
             setLoading(false)
         }
@@ -82,15 +109,15 @@ export default function PortfolioCategoryAlbumsAdmin() {
 
     useEffect(() => {
         void load()
-    }, [categoryId])
+    }, [categoryId, currentPage, pageSize])
 
     const filteredAlbums = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase()
-        const albums = [...(data?.albums ?? [])].sort(
+        const sortedAlbums = [...albums].sort(
             (a, b) => a.displayOrder - b.displayOrder || a.id - b.id
         )
 
-        return albums.filter((album) => {
+        return sortedAlbums.filter((album) => {
             const matchesSearch =
                 !normalizedSearch ||
                 album.title.toLowerCase().includes(normalizedSearch) ||
@@ -102,7 +129,15 @@ export default function PortfolioCategoryAlbumsAdmin() {
 
             return matchesSearch && matchesSelection
         })
-    }, [data?.albums, search, selectedAlbumIds, showOnlySelected])
+    }, [albums, search, selectedAlbumIds, showOnlySelected])
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages)
+        }
+    }, [currentPage, totalPages])
 
     const toggleAlbum = (albumId: number) => {
         setSelectedAlbumIds((current) =>
@@ -178,13 +213,13 @@ export default function PortfolioCategoryAlbumsAdmin() {
                     </p>
                 </div>
 
-                {data?.category ? (
+                {category ? (
                     <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {data.category.name}
+                            {category.name}
                         </div>
                         <div className="mt-1 text-xs uppercase tracking-[0.12em] text-gray-500 dark:text-zinc-400">
-                            {data.category.key}
+                            {category.key}
                         </div>
                     </div>
                 ) : null}
@@ -208,16 +243,30 @@ export default function PortfolioCategoryAlbumsAdmin() {
                 </div>
             ) : null}
 
-            {data ? (
+            {category ? (
                 <>
                     <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
+                        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto_auto]">
                             <input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Търси по име или slug"
+                                placeholder="Търси по име или slug в текущата страница"
                                 className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:ring-sky-900"
                             />
+
+                            <select
+                                value={pageSize}
+                                onChange={(e) => {
+                                    setPageSize(Number(e.target.value))
+                                    setCurrentPage(1)
+                                }}
+                                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:ring-sky-900"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
 
                             <label className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-zinc-700 dark:text-zinc-200">
                                 <input
@@ -243,6 +292,18 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             >
                                 Махни видимите
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="mb-4 flex flex-col gap-2 text-sm font-medium text-gray-600 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            Показани {total === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+                            {" - "}
+                            {Math.min(currentPage * pageSize, total)} от {total}
+                        </div>
+
+                        <div>
+                            Страница {currentPage} от {totalPages}
                         </div>
                     </div>
 
@@ -348,24 +409,46 @@ export default function PortfolioCategoryAlbumsAdmin() {
                         </div>
                     </div>
 
-                    <div className="mt-6 flex flex-wrap gap-3">
-                        <button
-                            type="button"
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="inline-flex items-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                        >
-                            {saving ? "Запазване..." : "Запази"}
-                        </button>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                                disabled={currentPage === 1 || loading}
+                                className="inline-flex items-center justify-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            >
+                                Предишна
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={() => void load()}
-                            disabled={saving}
-                            className="inline-flex items-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                        >
-                            Обнови
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                                disabled={currentPage === totalPages || loading}
+                                className="inline-flex items-center justify-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            >
+                                Следваща
+                            </button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                type="button"
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="inline-flex items-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                            >
+                                {saving ? "Запазване..." : "Запази"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => void load()}
+                                disabled={saving}
+                                className="inline-flex items-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            >
+                                Обнови
+                            </button>
+                        </div>
                     </div>
                 </>
             ) : null}

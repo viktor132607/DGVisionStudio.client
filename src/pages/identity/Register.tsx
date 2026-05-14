@@ -9,10 +9,6 @@ import {
     passwordMeetsIdentityRules,
 } from "../../utils/identity"
 
-type EmailAvailabilityResponse = {
-    exists?: boolean
-}
-
 export default function Register() {
     const navigate = useNavigate()
     const { i18n } = useTranslation()
@@ -24,7 +20,6 @@ export default function Register() {
     const [errors, setErrors] = useState<string[]>([])
     const [success, setSuccess] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [emailStatus, setEmailStatus] = useState<"idle" | "checking" | "available" | "exists" | "invalid">("idle")
 
     const t = isBg
         ? {
@@ -40,9 +35,6 @@ export default function Register() {
               alreadyHaveAccount: "Вече имаш акаунт?",
               registrationFailed: "Регистрацията беше неуспешна.",
               successMessage: "Регистрацията е успешна.",
-              emailExists: "Вече съществува акаунт с този имейл.",
-              emailAvailable: "Имейлът е свободен.",
-              emailChecking: "Проверка на имейла...",
               invalidEmail: "Невалиден имейл адрес.",
           }
         : {
@@ -58,9 +50,6 @@ export default function Register() {
               alreadyHaveAccount: "Already have an account?",
               registrationFailed: "Registration failed.",
               successMessage: "Registration successful.",
-              emailExists: "An account with this email already exists.",
-              emailAvailable: "Email is available.",
-              emailChecking: "Checking email...",
               invalidEmail: "Invalid email address.",
           }
 
@@ -73,42 +62,6 @@ export default function Register() {
         "w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-[15px] text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-0 focus:outline-none dark:border-zinc-600 dark:bg-zinc-100 dark:text-black dark:placeholder:text-zinc-500 dark:focus:border-zinc-600 dark:focus:bg-zinc-100 dark:focus:ring-0 dark:focus:outline-none"
 
     const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-
-    const checkEmailAvailability = async (value: string) => {
-        const normalizedEmail = value.trim()
-
-        if (!normalizedEmail) {
-            setEmailStatus("idle")
-            return
-        }
-
-        if (!isValidEmail(normalizedEmail)) {
-            setEmailStatus("invalid")
-            return
-        }
-
-        setEmailStatus("checking")
-
-        try {
-            const res = await apiFetch(
-                `/auth/check-email?email=${encodeURIComponent(normalizedEmail)}`,
-                {
-                    method: "GET",
-                    skipJsonContentType: true,
-                }
-            )
-
-            if (!res.ok) {
-                setEmailStatus("idle")
-                return
-            }
-
-            const data = (await res.json().catch(() => null)) as EmailAvailabilityResponse | null
-            setEmailStatus(data?.exists ? "exists" : "available")
-        } catch {
-            setEmailStatus("idle")
-        }
-    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -130,11 +83,6 @@ export default function Register() {
             return
         }
 
-        if (emailStatus === "exists") {
-            setErrors([t.emailExists])
-            return
-        }
-
         setIsSubmitting(true)
 
         try {
@@ -145,7 +93,7 @@ export default function Register() {
 
             if (!res.ok) {
                 const { errors: backendErrors } = await parseApiErrorResponse(res)
-                setErrors(backendErrors)
+                setErrors(backendErrors.length ? backendErrors : [t.registrationFailed])
                 return
             }
 
@@ -171,33 +119,13 @@ export default function Register() {
                         value={email}
                         onChange={(e) => {
                             setEmail(e.target.value)
-                            setEmailStatus("idle")
                             if (errors.length) setErrors([])
                             if (success) setSuccess("")
                         }}
-                        onBlur={() => void checkEmailAvailability(email)}
                         className={inputClassName}
                         autoComplete="email"
                         required
                     />
-
-                    <div className="mt-2 min-h-[20px] text-[13px] leading-5">
-                        {emailStatus === "checking" ? (
-                            <p className="text-neutral-500 dark:text-zinc-400">{t.emailChecking}</p>
-                        ) : null}
-
-                        {emailStatus === "available" ? (
-                            <p className="text-emerald-600 dark:text-emerald-400">{t.emailAvailable}</p>
-                        ) : null}
-
-                        {emailStatus === "exists" ? (
-                            <p className="text-red-600 dark:text-red-400">{t.emailExists}</p>
-                        ) : null}
-
-                        {emailStatus === "invalid" ? (
-                            <p className="text-red-600 dark:text-red-400">{t.invalidEmail}</p>
-                        ) : null}
-                    </div>
                 </div>
 
                 <div>

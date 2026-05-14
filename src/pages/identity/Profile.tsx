@@ -11,7 +11,7 @@ import ProfileSecurityTab from "../../components/profile/ProfileSecurityTab"
 
 export default function Profile() {
     const { user, isAdmin, logout } = useAuth()
-    const { galleries, loading, error } = useMyClientGalleries()
+    const { galleries, loading, error, reload } = useMyClientGalleries()
     const navigate = useNavigate()
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
@@ -125,6 +125,7 @@ export default function Profile() {
                             loading={loading}
                             error={error}
                             isBg={isBg}
+                            onReload={reload}
                         />
                     ) : null}
 

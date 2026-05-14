@@ -1,3 +1,5 @@
+import { apiFetchJson } from "./api"
+
 type BlogPost = {
     id: number
     title: string
@@ -13,47 +15,36 @@ type BlogPostInput = {
     isPublished: boolean
 }
 
-const API = `${import.meta.env.VITE_API_URL || ""}/api/blog`
-
 export async function getPosts(): Promise<BlogPost[]> {
-    const res = await fetch(API)
-    return res.json()
+    return await apiFetchJson<BlogPost[]>("/blog", {
+        method: "GET",
+        skipJsonContentType: true,
+    })
 }
 
 export async function getPost(id: number): Promise<BlogPost> {
-    const res = await fetch(`${API}/${id}`)
-    return res.json()
+    return await apiFetchJson<BlogPost>(`/blog/${id}`, {
+        method: "GET",
+        skipJsonContentType: true,
+    })
 }
 
 export async function createPost(data: BlogPostInput): Promise<BlogPost> {
-    const res = await fetch(API, {
+    return await apiFetchJson<BlogPost>("/blog", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
     })
-
-    return res.json()
 }
 
 export async function updatePost(id: number, data: BlogPostInput): Promise<BlogPost> {
-    const res = await fetch(`${API}/${id}`, {
+    return await apiFetchJson<BlogPost>(`/blog/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
     })
-
-    return res.json()
 }
 
 export async function deletePost(id: number): Promise<void> {
-    await fetch(`${API}/${id}`, {
+    await apiFetchJson<void>(`/blog/${id}`, {
         method: "DELETE",
-        credentials: "include"
     })
 }
