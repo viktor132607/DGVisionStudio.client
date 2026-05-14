@@ -418,12 +418,12 @@ export default function AdminPanel() {
                             Обнови албумите
                         </button>
 
-                        <a
-                            href="#categories"
-                            className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                        >
-                            Управлявай категории
-                        </a>
+                        <Link
+    to="/admin/client-galleries/new"
+    className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+>
+    Създай нов албум
+</Link>
                     </div>
                 </div>
 
