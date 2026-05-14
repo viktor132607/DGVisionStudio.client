@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom"
 import { useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../../services/api"
-import { deleteAdminClientGallery, getAdminClientGalleries } from "../../services/clientGalleries"
-import type { MyClientGalleryDto } from "../../types/clientGallery"
+import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
 
 type DashboardStats = {
@@ -25,6 +24,20 @@ type PortfolioCategoryRow = {
     isActive: boolean
 }
 
+type PortfolioAlbumRow = {
+    id: number
+    portfolioCategoryId: number
+    slug: string
+    title: string
+    titleEn?: string | null
+    description?: string | null
+    coverImageUrl?: string | null
+    displayOrder: number
+    columnNumber?: number | null
+    isPublished: boolean
+    portfolioCategory?: PortfolioCategoryRow | null
+}
+
 export default function AdminPanel() {
     const [stats, setStats] = useState<DashboardStats>({
         users: 0,
@@ -38,7 +51,7 @@ export default function AdminPanel() {
 
     const [statsLoading, setStatsLoading] = useState(true)
 
-    const [albums, setAlbums] = useState<MyClientGalleryDto[]>([])
+    const [albums, setAlbums] = useState<PortfolioAlbumRow[]>([])
     const [albumsLoading, setAlbumsLoading] = useState(true)
     const [albumsError, setAlbumsError] = useState("")
     const [busyAlbumId, setBusyAlbumId] = useState<number | null>(null)
@@ -70,9 +83,9 @@ export default function AdminPanel() {
                 contacts: data?.contacts ?? 0,
                 services: data?.services ?? 0,
                 testimonials: data?.testimonials ?? 0,
-                portfolioCategories: data?.portfolioCategories ?? 0,
-                portfolioAlbums: data?.portfolioAlbums ?? 0,
-                portfolioImages: data?.portfolioImages ?? 0,
+                portfolioCategories: data?.portfolioCategories ?? data?.categories ?? 0,
+                portfolioAlbums: data?.portfolioAlbums ?? data?.albums ?? 0,
+                portfolioImages: data?.portfolioImages ?? data?.images ?? 0,
             })
         } catch {
             setStats({
@@ -94,8 +107,26 @@ export default function AdminPanel() {
         setAlbumsError("")
 
         try {
-            const data = await getAdminClientGalleries()
-            setAlbums(Array.isArray(data) ? data : [])
+            const response = await apiFetch("/admin/portfolio/albums?page=1&pageSize=500", {
+                method: "GET",
+                skipJsonContentType: true,
+            })
+
+            if (!response.ok) {
+                throw new Error("Грешка при зареждане на албумите.")
+            }
+
+            const data = await response.json().catch(() => null)
+            const items = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : []
+
+            setAlbums(
+                [...items].sort(
+                    (a, b) =>
+                        (a.portfolioCategoryId ?? 0) - (b.portfolioCategoryId ?? 0) ||
+                        (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+                        (a.id ?? 0) - (b.id ?? 0)
+                )
+            )
         } catch (err) {
             setAlbumsError(err instanceof Error ? err.message : "Грешка при зареждане на албумите.")
             setAlbums([])
@@ -149,9 +180,17 @@ export default function AdminPanel() {
         setAlbumsError("")
 
         try {
-            await deleteAdminClientGallery(deleteAlbumId)
+            const response = await apiFetch(`/admin/portfolio/albums/${deleteAlbumId}`, {
+                method: "DELETE",
+            })
+
+            if (!response.ok) {
+                throw new Error("Изтриването беше неуспешно.")
+            }
+
             setAlbums((current) => current.filter((x) => x.id !== deleteAlbumId))
             setDeleteAlbumId(null)
+            await loadStats()
         } catch (err) {
             setAlbumsError(err instanceof Error ? err.message : "Изтриването беше неуспешно.")
         } finally {
@@ -211,6 +250,7 @@ export default function AdminPanel() {
 
             setCategories((current) => current.filter((x) => x.id !== deleteCategoryId))
             setDeleteCategoryId(null)
+            await Promise.all([loadStats(), loadAlbums()])
         } catch (err) {
             setCategoriesError(err instanceof Error ? err.message : "Неуспешно изтриване на категорията.")
         } finally {
@@ -263,10 +303,12 @@ export default function AdminPanel() {
         await moveCategory(draggedCategory.id, targetCategory.displayOrder)
     }
 
-    const getAlbumStatus = (album: MyClientGalleryDto) => {
-        if (album.isExpired) return "expired"
-        if (album.previewEnabled || album.downloadEnabled) return "active"
-        return "inactive"
+    const getAlbumStatus = (album: PortfolioAlbumRow) => {
+        return album.isPublished ? "active" : "inactive"
+    }
+
+    const getAlbumCategoryName = (album: PortfolioAlbumRow) => {
+        return album.portfolioCategory?.name || categories.find((x) => x.id === album.portfolioCategoryId)?.name || "—"
     }
 
     const filteredAlbums = useMemo(() => {
@@ -279,22 +321,23 @@ export default function AdminPanel() {
             const matchesSearch =
                 !normalizedSearch ||
                 album.title.toLowerCase().includes(normalizedSearch) ||
-                album.description?.toLowerCase().includes(normalizedSearch)
+                album.slug.toLowerCase().includes(normalizedSearch) ||
+                album.description?.toLowerCase().includes(normalizedSearch) ||
+                getAlbumCategoryName(album).toLowerCase().includes(normalizedSearch)
 
             return matchesStatus && matchesSearch
         })
-    }, [albums, albumSearch, albumStatusFilter])
+    }, [albums, categories, albumSearch, albumStatusFilter])
 
     const albumStats = useMemo(() => {
         const active = albums.filter((x) => getAlbumStatus(x) === "active").length
         const inactive = albums.filter((x) => getAlbumStatus(x) === "inactive").length
-        const expired = albums.filter((x) => getAlbumStatus(x) === "expired").length
 
         return {
             total: albums.length,
             active,
             inactive,
-            expired,
+            expired: 0,
         }
     }, [albums])
 
@@ -375,12 +418,12 @@ export default function AdminPanel() {
                             Обнови албумите
                         </button>
 
-                        <Link
-                            to="/admin/client-galleries/new"
+                        <a
+                            href="#categories"
                             className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                         >
-                            Създай нов албум
-                        </Link>
+                            Управлявай категории
+                        </a>
                     </div>
                 </div>
 
@@ -431,7 +474,7 @@ export default function AdminPanel() {
                             type="text"
                             value={albumSearch}
                             onChange={(e) => setAlbumSearch(e.target.value)}
-                            placeholder="Търси по заглавие или описание..."
+                            placeholder="Търси по заглавие, описание, slug или категория..."
                             className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:ring-sky-900/40"
                         />
                     </div>
@@ -448,7 +491,6 @@ export default function AdminPanel() {
                             <option value="all">Всички</option>
                             <option value="active">Активни</option>
                             <option value="inactive">Неактивни</option>
-                            <option value="expired">Изтекли</option>
                         </select>
                     </div>
                 </div>
@@ -475,6 +517,7 @@ export default function AdminPanel() {
                     <div className="grid grid-cols-2 gap-[2px] md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                         {filteredAlbums.map((album) => {
                             const status = getAlbumStatus(album)
+                            const categoryName = getAlbumCategoryName(album)
 
                             return (
                                 <div
@@ -484,7 +527,7 @@ export default function AdminPanel() {
                                     <div className="relative aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-zinc-800">
                                         {album.coverImageUrl ? (
                                             <img
-                                                src={album.coverImageUrl}
+                                                src={resolveAssetUrl(album.coverImageUrl)}
                                                 alt={album.title}
                                                 className="h-full w-full object-cover"
                                             />
@@ -497,18 +540,12 @@ export default function AdminPanel() {
                                         <div className="absolute left-4 top-4">
                                             <span
                                                 className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-sm ${
-                                                    status === "expired"
-                                                        ? "border-red-200 bg-red-50/95 text-red-700 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-300"
-                                                        : status === "active"
-                                                          ? "border-green-200 bg-green-50/95 text-green-700 dark:border-green-500/30 dark:bg-green-500/20 dark:text-green-300"
-                                                          : "border-gray-200 bg-white/95 text-gray-700 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200"
+                                                    status === "active"
+                                                        ? "border-green-200 bg-green-50/95 text-green-700 dark:border-green-500/30 dark:bg-green-500/20 dark:text-green-300"
+                                                        : "border-gray-200 bg-white/95 text-gray-700 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200"
                                                 }`}
                                             >
-                                                {status === "expired"
-                                                    ? "Изтекъл"
-                                                    : status === "active"
-                                                      ? "Активен"
-                                                      : "Неактивен"}
+                                                {status === "active" ? "Активен" : "Неактивен"}
                                             </span>
                                         </div>
                                     </div>
@@ -526,7 +563,11 @@ export default function AdminPanel() {
                                             ) : null}
 
                                             <div className="mt-3 text-xs font-medium text-gray-500 dark:text-zinc-400">
-                                                Категория: —
+                                                Категория: {categoryName}
+                                            </div>
+
+                                            <div className="mt-1 text-xs font-medium text-gray-500 dark:text-zinc-400">
+                                                Slug: {album.slug}
                                             </div>
                                         </div>
 
@@ -536,33 +577,26 @@ export default function AdminPanel() {
                                                     В портфолио
                                                 </div>
                                                 <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                                    Незададено
+                                                    {album.isPublished ? "Да" : "Не"}
                                                 </div>
                                             </div>
 
                                             <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
                                                 <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
-                                                    Сваляне
+                                                    Ред
                                                 </div>
                                                 <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {album.downloadEnabled ? "Включено" : "Изключено"}
+                                                    {album.displayOrder}
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                                             <Link
-                                                to={`/admin/client-galleries/edit?id=${album.id}`}
+                                                to={`/admin/portfolio-categories/albums?id=${album.portfolioCategoryId}`}
                                                 className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
                                             >
-                                                Редакция
-                                            </Link>
-
-                                            <Link
-                                                to={`/admin/client-galleries/access?id=${album.id}`}
-                                                className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
-                                            >
-                                                Достъп
+                                                Категория
                                             </Link>
 
                                             <button
@@ -582,7 +616,7 @@ export default function AdminPanel() {
                 ) : null}
             </section>
 
-            <section className="mb-10">
+            <section id="categories" className="mb-10 scroll-mt-24">
                 <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">

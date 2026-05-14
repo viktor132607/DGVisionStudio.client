@@ -40,6 +40,37 @@ export type ReorderGalleryPhotosRequest = {
     orderedPhotoIds: number[]
 }
 
+export type PortfolioCategoryDto = {
+    id: number
+    key: string
+    name: string
+    nameEn?: string | null
+    description?: string | null
+    displayOrder: number
+    isActive: boolean
+}
+
+export type PortfolioAlbumDto = {
+    id: number
+    portfolioCategoryId: number
+    slug: string
+    title: string
+    titleEn?: string | null
+    description?: string | null
+    coverImageUrl?: string | null
+    displayOrder: number
+    columnNumber?: number | null
+    isPublished: boolean
+    portfolioCategory?: PortfolioCategoryDto | null
+}
+
+export type PagedResultDto<T> = {
+    page: number
+    pageSize: number
+    total: number
+    items: T[]
+}
+
 const API_ROOT = (import.meta.env.VITE_API_URL || "http://localhost:10000").replace(/\/+$/, "")
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${API_ROOT}/api`).replace(/\/+$/, "")
 
@@ -71,6 +102,13 @@ function normalizeGallery<T extends { coverImageUrl?: string | null }>(gallery: 
     }
 }
 
+function normalizePortfolioAlbum(album: PortfolioAlbumDto): PortfolioAlbumDto {
+    return {
+        ...album,
+        coverImageUrl: album.coverImageUrl ? resolveAssetUrl(album.coverImageUrl) : album.coverImageUrl,
+    }
+}
+
 function normalizeGalleryDetails(gallery: ClientGalleryDetailsDto): ClientGalleryDetailsDto {
     return {
         ...normalizeGallery(gallery),
@@ -80,6 +118,39 @@ function normalizeGalleryDetails(gallery: ClientGalleryDetailsDto): ClientGaller
 
 async function parseJsonSafe<T>(response: Response): Promise<T | null> {
     return (await response.json().catch(() => null)) as T | null
+}
+
+export async function getAdminPortfolioAlbums(
+    page = 1,
+    pageSize = 500
+): Promise<PagedResultDto<PortfolioAlbumDto>> {
+    const response = await apiFetch(`/admin/portfolio/albums?page=${page}&pageSize=${pageSize}`, {
+        method: "GET",
+        skipJsonContentType: true,
+    })
+
+    if (!response.ok) {
+        throw new Error("Failed to load portfolio albums.")
+    }
+
+    const data = (await response.json()) as PagedResultDto<PortfolioAlbumDto>
+
+    return {
+        page: data.page ?? page,
+        pageSize: data.pageSize ?? pageSize,
+        total: data.total ?? 0,
+        items: Array.isArray(data.items) ? data.items.map(normalizePortfolioAlbum) : [],
+    }
+}
+
+export async function deleteAdminPortfolioAlbum(albumId: number): Promise<void> {
+    const response = await apiFetch(`/admin/portfolio/albums/${albumId}`, {
+        method: "DELETE",
+    })
+
+    if (!response.ok) {
+        throw new Error("Failed to delete portfolio album.")
+    }
 }
 
 export async function getMyClientGalleries(): Promise<MyClientGalleryDto[]> {
