@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react"
 import { Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
+import GlobalPageLoader from "./components/GlobalPageLoader"
 
 import Home from "./pages/Home"
 import About from "./pages/About"
@@ -34,9 +36,26 @@ import AdminRoutes from "./pages/admin/AdminRoutes"
 function AppContent() {
   const location = useLocation()
   const isPortfolioPage = location.pathname === "/portfolio"
+  const [isPageLoading, setIsPageLoading] = useState(true)
+
+  useEffect(() => {
+    const finishLoading = () => {
+      setTimeout(() => setIsPageLoading(false), 400)
+    }
+
+    if (document.readyState === "complete") {
+      finishLoading()
+    } else {
+      window.addEventListener("load", finishLoading)
+    }
+
+    return () => window.removeEventListener("load", finishLoading)
+  }, [])
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white">
+      {isPageLoading ? <GlobalPageLoader /> : null}
+
       <ScrollToTop />
       <Navbar />
 
