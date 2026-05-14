@@ -556,11 +556,9 @@ export default function AdminPanel() {
                                                 {album.title}
                                             </h3>
 
-                                            {album.description ? (
-                                                <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-zinc-300">
-                                                    {album.description}
-                                                </p>
-                                            ) : null}
+                                            <p className="mt-2 min-h-[48px] line-clamp-2 text-sm leading-6 text-gray-600 dark:text-zinc-300">
+                                                {album.description || "Няма описание"}
+                                            </p>
 
                                             <div className="mt-3 text-xs font-medium text-gray-500 dark:text-zinc-400">
                                                 Категория: {categoryName}
@@ -593,10 +591,17 @@ export default function AdminPanel() {
 
                                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                                             <Link
-                                                to={`/admin/portfolio-categories/albums?id=${album.portfolioCategoryId}`}
+                                                to={`/admin/client-galleries/edit?id=${album.id}`}
                                                 className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
                                             >
-                                                Категория
+                                                Редакция
+                                            </Link>
+
+                                            <Link
+                                                to={`/admin/client-galleries/access?id=${album.id}`}
+                                                className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
+                                            >
+                                                Достъп
                                             </Link>
 
                                             <button
