@@ -245,6 +245,20 @@ export default function ClientGalleryEditAdmin() {
         setCategories(Array.isArray(data) ? data : [])
     }
 
+    const loadAvailableUsers = async () => {
+        const response = await apiFetch("/admin/client-galleries/users", {
+            method: "GET",
+            skipJsonContentType: true,
+        })
+
+        if (!response.ok) {
+            throw new Error("Неуспешно зареждане на потребителите.")
+        }
+
+        const data = (await response.json().catch(() => [])) as AdminGalleryUserOptionDto[]
+        setAvailableUsers(Array.isArray(data) ? data : [])
+    }
+
     const loadExistingGalleries = async () => {
         try {
             const data = await getAdminClientGalleries()
@@ -265,7 +279,10 @@ export default function ClientGalleryEditAdmin() {
         setIsPublic(Boolean((data as any).isPublic || (data as any).portfolioCategoryId))
         setPortfolioCategoryId((data as any).portfolioCategoryId ?? null)
         setIsPublished((data as any).isPublished ?? true)
-        setAvailableUsers(data.availableUsers || [])
+
+        if (Array.isArray(data.availableUsers) && data.availableUsers.length > 0) {
+            setAvailableUsers(data.availableUsers)
+        }
 
         const mappedPhotos: DraftPhotoItem[] = (data.photos || []).map((photo) => ({
             localId: `saved-${photo.id}`,
@@ -301,7 +318,12 @@ export default function ClientGalleryEditAdmin() {
             setError("")
 
             try {
-                await Promise.all([loadCategories(), loadExistingGalleries(), loadGallery()])
+                await Promise.all([
+                    loadCategories(),
+                    loadAvailableUsers(),
+                    loadExistingGalleries(),
+                    loadGallery(),
+                ])
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Неуспешно зареждане.")
             } finally {
@@ -553,6 +575,7 @@ export default function ClientGalleryEditAdmin() {
                 setSuccess(t.updateSuccess)
                 await loadGallery()
                 await loadExistingGalleries()
+                await loadAvailableUsers()
             } else {
                 const created = await createAdminClientGallery(payload as any)
                 const createdId = (created as any)?.id
