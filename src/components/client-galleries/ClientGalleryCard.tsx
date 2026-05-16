@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react"
-import type { MyClientGalleryDto } from "../../types/clientGallery"
+import type { GalleryType, MyClientGalleryDto } from "../../types/clientGallery"
 import ClientGalleryStatusBadge from "./ClientGalleryStatusBadge"
 
 type ClientGalleryCardProps = {
@@ -10,6 +10,10 @@ type ClientGalleryCardProps = {
     loading?: boolean
 }
 
+const isClientPrintUpload = (galleryType?: GalleryType) => {
+    return galleryType === "ClientPrintUpload" || galleryType === 2
+}
+
 export default function ClientGalleryCard({
     gallery,
     isBg,
@@ -17,8 +21,9 @@ export default function ClientGalleryCard({
     onDownloadAll,
     loading = false,
 }: ClientGalleryCardProps) {
+    const galleryIsClientPrintUpload = isClientPrintUpload(gallery.galleryType)
     const canPreview = gallery.previewEnabled && !gallery.isExpired
-    const canDownload = gallery.downloadEnabled && !gallery.isExpired
+    const canDownload = !galleryIsClientPrintUpload && gallery.downloadEnabled && !gallery.isExpired
 
     const handleOpen = () => {
         if (loading || !canPreview) return
@@ -70,43 +75,49 @@ export default function ClientGalleryCard({
                         )}
                     </div>
 
-                    <ClientGalleryStatusBadge
-                        previewEnabled={gallery.previewEnabled}
-                        downloadEnabled={gallery.downloadEnabled}
-                        isExpired={gallery.isExpired}
-                        isBg={isBg}
-                    />
+                    {!galleryIsClientPrintUpload ? (
+                        <ClientGalleryStatusBadge
+                            previewEnabled={gallery.previewEnabled}
+                            downloadEnabled={gallery.downloadEnabled}
+                            isExpired={gallery.isExpired}
+                            isBg={isBg}
+                        />
+                    ) : null}
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[18px] border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-zinc-400">
-                            {isBg ? "Преглед" : "Preview"}
-                        </p>
-                        <p className="mt-1 text-[14px] font-semibold text-neutral-950 dark:text-white">
-                            {gallery.previewEnabled ? (isBg ? "Разрешен" : "Enabled") : (isBg ? "Изключен" : "Disabled")}
-                        </p>
-                    </div>
+                {!galleryIsClientPrintUpload ? (
+                    <>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-[18px] border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-zinc-400">
+                                    {isBg ? "Преглед" : "Preview"}
+                                </p>
+                                <p className="mt-1 text-[14px] font-semibold text-neutral-950 dark:text-white">
+                                    {gallery.previewEnabled ? (isBg ? "Разрешен" : "Enabled") : (isBg ? "Изключен" : "Disabled")}
+                                </p>
+                            </div>
 
-                    <div className="rounded-[18px] border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-zinc-400">
-                            {isBg ? "Изтегляне" : "Download"}
-                        </p>
-                        <p className="mt-1 text-[14px] font-semibold text-neutral-950 dark:text-white">
-                            {gallery.downloadEnabled ? (isBg ? "Разрешено" : "Enabled") : (isBg ? "Изключено" : "Disabled")}
-                        </p>
-                    </div>
-                </div>
+                            <div className="rounded-[18px] border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-zinc-400">
+                                    {isBg ? "Изтегляне" : "Download"}
+                                </p>
+                                <p className="mt-1 text-[14px] font-semibold text-neutral-950 dark:text-white">
+                                    {gallery.downloadEnabled ? (isBg ? "Разрешено" : "Enabled") : (isBg ? "Изключено" : "Disabled")}
+                                </p>
+                            </div>
+                        </div>
 
-                {gallery.downloadEnabled && gallery.remainingDownloadDays !== null ? (
-                    <p className="text-[13px] text-neutral-500 dark:text-zinc-400">
-                        {isBg
-                            ? `Остават ${gallery.remainingDownloadDays} дни`
-                            : `${gallery.remainingDownloadDays} days remaining`}
-                    </p>
-                ) : (
-                    <div className="h-[20px]" />
-                )}
+                        {gallery.downloadEnabled && gallery.remainingDownloadDays !== null ? (
+                            <p className="text-[13px] text-neutral-500 dark:text-zinc-400">
+                                {isBg
+                                    ? `Остават ${gallery.remainingDownloadDays} дни`
+                                    : `${gallery.remainingDownloadDays} days remaining`}
+                            </p>
+                        ) : (
+                            <div className="h-[20px]" />
+                        )}
+                    </>
+                ) : null}
 
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button

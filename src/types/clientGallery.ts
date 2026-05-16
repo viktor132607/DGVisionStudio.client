@@ -1,4 +1,24 @@
-export type UserClientGalleryStatus = "Pending" | "Processed" | "Expired" | 1 | 2 | 3
+export type GalleryType =
+    | "Photoshoot"
+    | "ClientPrintUpload"
+    | 1
+    | 2
+
+export type UserClientGalleryStatus =
+    | "Pending"
+    | "Processed"
+    | "Expired"
+    | "PhotoshootUploaded"
+    | "PhotoshootInProgress"
+    | "PhotoshootReadyForPickup"
+    | "PhotoshootCancelled"
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5
+    | 6
+    | 7
 
 export type AdminGalleryUserOptionDto = {
     id: string
@@ -30,6 +50,7 @@ export type MyClientGalleryDto = {
     downloadExpiresAtUtc?: string | null
     remainingDownloadDays?: number | null
     isExpired: boolean
+    galleryType: GalleryType
     isUserUploaded: boolean
     ownerUserId?: string | null
     ownerEmail?: string | null
@@ -69,6 +90,7 @@ export type ClientGalleryDetailsDto = {
     downloadExpiresAtUtc?: string | null
     remainingDownloadDays?: number | null
     isExpired: boolean
+    galleryType: GalleryType
     isUserUploaded: boolean
     ownerUserId?: string | null
     ownerEmail?: string | null
@@ -106,6 +128,8 @@ export type CreateAdminClientGalleryRequest = {
     isPublic?: boolean
     isPublished?: boolean
     portfolioCategoryId?: number | null
+    galleryType: GalleryType
+    userGalleryStatus: UserClientGalleryStatus
     userAccesses?: GalleryUserAccessDto[]
 }
 
@@ -118,5 +142,7 @@ export type UpdateAdminClientGalleryRequest = {
     isPublic?: boolean
     isPublished?: boolean
     portfolioCategoryId?: number | null
+    galleryType: GalleryType
+    userGalleryStatus: UserClientGalleryStatus
     userAccesses?: GalleryUserAccessDto[]
 }

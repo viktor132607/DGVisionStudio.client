@@ -11,11 +11,17 @@ export default function AdminLayout() {
                         <Link to="/admin" className="transition hover:text-white">
                             Начало
                         </Link>
+
                         <Link to="/admin/contact-requests" className="transition hover:text-white">
                             Контакти
                         </Link>
+
                         <Link to="/admin/users" className="transition hover:text-white">
                             Потребители
+                        </Link>
+
+                        <Link to="/admin/print-requests" className="transition hover:text-white">
+                            Заявки за принтиране
                         </Link>
                     </div>
                 </div>

@@ -15,7 +15,9 @@ import { apiFetch } from "../../services/api"
 import type {
     AdminGalleryUserOptionDto,
     ClientPhotoDto,
+    GalleryType,
     MyClientGalleryDto,
+    UserClientGalleryStatus,
 } from "../../types/clientGallery"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
 import AlbumVisibilitySection from "../../components/client-galleries/AlbumVisibilitySection"
@@ -83,6 +85,8 @@ export default function ClientGalleryEditAdmin() {
     const [portfolioCategoryId, setPortfolioCategoryId] = useState<number | null>(null)
     const [isPublished, setIsPublished] = useState(true)
     const [isActive, setIsActive] = useState(true)
+    const [galleryType, setGalleryType] = useState<GalleryType>("Photoshoot")
+    const [userGalleryStatus, setUserGalleryStatus] = useState<UserClientGalleryStatus>("PhotoshootUploaded")
 
     const [photos, setPhotos] = useState<DraftPhotoItem[]>([])
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
@@ -134,6 +138,17 @@ export default function ClientGalleryEditAdmin() {
               deleteConfirm: "Изтрий",
               cancel: "Отказ",
               active: "Активен албум",
+              galleryType: "Тип галерия",
+              photoshoot: "Фотосесия",
+              clientPrintUpload: "Клиент качва снимки за печат",
+              galleryStatus: "Статус",
+              photoshootUploaded: "Качена",
+              photoshootInProgress: "В обработка",
+              photoshootReadyForPickup: "Готова за вземане",
+              photoshootCancelled: "Отказана",
+              pending: "Чака обработка",
+              processed: "Обработена",
+              expired: "Изтекла",
               photos: "Снимки",
               noPhotos: "Още няма снимки.",
               removePhoto: "Премахни снимка",
@@ -183,6 +198,17 @@ export default function ClientGalleryEditAdmin() {
               deleteConfirm: "Delete",
               cancel: "Cancel",
               active: "Active album",
+              galleryType: "Gallery type",
+              photoshoot: "Photoshoot",
+              clientPrintUpload: "Client print upload",
+              galleryStatus: "Status",
+              photoshootUploaded: "Uploaded",
+              photoshootInProgress: "In progress",
+              photoshootReadyForPickup: "Ready for pickup",
+              photoshootCancelled: "Cancelled",
+              pending: "Pending",
+              processed: "Processed",
+              expired: "Expired",
               photos: "Photos",
               noPhotos: "No photos yet.",
               removePhoto: "Remove photo",
@@ -285,6 +311,8 @@ export default function ClientGalleryEditAdmin() {
         setIsPublic(Boolean((data as any).isPublic || (data as any).portfolioCategoryId))
         setPortfolioCategoryId((data as any).portfolioCategoryId ?? null)
         setIsPublished((data as any).isPublished ?? true)
+        setGalleryType(((data as any).galleryType ?? "Photoshoot") as GalleryType)
+        setUserGalleryStatus(((data as any).userGalleryStatus ?? "PhotoshootUploaded") as UserClientGalleryStatus)
 
         if (Array.isArray(data.availableUsers) && data.availableUsers.length > 0) {
             setAvailableUsers(data.availableUsers)
@@ -591,6 +619,8 @@ export default function ClientGalleryEditAdmin() {
                 isPublic,
                 portfolioCategoryId: isPublic ? portfolioCategoryId : null,
                 isPublished: isPublic ? isPublished : false,
+                galleryType,
+                userGalleryStatus,
                 userAccesses: selectedAccesses,
             } as any
 
@@ -750,64 +780,107 @@ export default function ClientGalleryEditAdmin() {
                         />
                     </div>
 
-                    <div className="mt-5">
-                        <label className="inline-flex items-center gap-3 text-sm font-medium text-neutral-800 dark:text-zinc-200">
-                            <input
-                                type="checkbox"
-                                checked={isActive}
-                                onChange={(e) => setIsActive(e.target.checked)}
-                                className="h-4 w-4 rounded"
-                            />
-                            {t.active}
-                        </label>
+                    <div className="mt-5 grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-neutral-800 dark:text-zinc-200">
+                                {t.galleryType}
+                            </label>
+                            <select
+                                value={String(galleryType)}
+                                onChange={(e) => {
+                                    const nextType = e.target.value as GalleryType
+                                    setGalleryType(nextType)
+                                    setUserGalleryStatus(
+                                        nextType === "ClientPrintUpload"
+                                            ? "Pending"
+                                            : "PhotoshootUploaded"
+                                    )
+                                }}
+                                className={inputClassName}
+                            >
+                                <option value="Photoshoot">{t.photoshoot}</option>
+                                <option value="ClientPrintUpload">{t.clientPrintUpload}</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-neutral-800 dark:text-zinc-200">
+                                {t.galleryStatus}
+                            </label>
+                            <select
+                                value={String(userGalleryStatus)}
+                                onChange={(e) => setUserGalleryStatus(e.target.value as UserClientGalleryStatus)}
+                                className={inputClassName}
+                            >
+                                {galleryType === "ClientPrintUpload" || galleryType === 2 ? (
+                                    <>
+                                        <option value="Pending">{t.pending}</option>
+                                        <option value="Processed">{t.processed}</option>
+                                        <option value="Expired">{t.expired}</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value="PhotoshootUploaded">{t.photoshootUploaded}</option>
+                                        <option value="PhotoshootInProgress">{t.photoshootInProgress}</option>
+                                        <option value="PhotoshootReadyForPickup">{t.photoshootReadyForPickup}</option>
+                                        <option value="PhotoshootCancelled">{t.photoshootCancelled}</option>
+                                    </>
+                                )}
+                            </select>
+                        </div>
                     </div>
                 </section>
 
                 <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                    <div className="mb-5">
-                        <h2 className="text-xl font-bold text-neutral-950 dark:text-white">
-                            {t.photos}
-                        </h2>
-                    </div>
+                    <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold text-neutral-950 dark:text-white">
+                                {t.photos}
+                            </h2>
+                            <p className="mt-1 text-sm text-neutral-500 dark:text-zinc-400">
+                                {t.dropzoneHint}
+                            </p>
+                        </div>
 
-                    <div
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={handleDropUpload}
-                        className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-950"
-                    >
-                        <p className="text-base font-semibold text-neutral-900 dark:text-white">
-                            {t.dropzone}
-                        </p>
-                        <p className="mt-2 text-sm text-neutral-600 dark:text-zinc-400">
-                            {t.dropzoneHint}
-                        </p>
-
-                        <label className="mt-4 inline-flex cursor-pointer items-center rounded-2xl border border-neutral-300 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
+                        <label className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
                             {t.chooseFiles}
                             <input
                                 type="file"
-                                multiple
                                 accept="image/*"
+                                multiple
                                 className="hidden"
                                 onChange={(e) => handleFiles(Array.from(e.target.files || []))}
                             />
                         </label>
                     </div>
 
-                    <AlbumBulkActionsBar
-                        isBg={isBg}
-                        selectedCount={selectedPhotoIds.length}
-                        canMove={false}
-                        onClearSelection={() => setSelectedPhotoIds([])}
-                        onDeleteSelected={() => void handleDeleteSelected()}
-                    />
+                    <div
+                        onDrop={handleDropUpload}
+                        onDragOver={(e) => e.preventDefault()}
+                        className="mb-5 rounded-3xl border-2 border-dashed border-neutral-300 bg-neutral-50 px-6 py-10 text-center dark:border-zinc-700 dark:bg-zinc-950"
+                    >
+                        <div className="text-base font-semibold text-neutral-900 dark:text-white">
+                            {t.dropzone}
+                        </div>
+                        <div className="mt-2 text-sm text-neutral-500 dark:text-zinc-400">
+                            {t.dropzoneHint}
+                        </div>
+                    </div>
 
-                    {sortedPhotos.length === 0 ? (
-                        <div className="mt-5 rounded-2xl border border-dashed border-neutral-300 px-4 py-8 text-sm text-neutral-500 dark:border-zinc-700 dark:text-zinc-400">
+                    <AlbumBulkActionsBar
+    isBg={isBg}
+    canMove={selectedPhotoIds.length > 0}
+    selectedCount={selectedPhotoIds.length}
+    onDeleteSelected={() => void handleDeleteSelected()}
+    onClearSelection={() => setSelectedPhotoIds([])}
+/>
+
+                    {!sortedPhotos.length ? (
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-8 text-sm text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                             {t.noPhotos}
                         </div>
                     ) : (
-                        <div className="mt-5 grid grid-cols-2 gap-[2px] md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {sortedPhotos.map((photo) => (
                                 <div
                                     key={photo.localId}
@@ -815,7 +888,7 @@ export default function ClientGalleryEditAdmin() {
                                     onDragStart={() => setDraggingPhotoId(photo.localId)}
                                     onDragOver={(e) => e.preventDefault()}
                                     onDrop={() => handlePhotoDropReorder(photo.localId)}
-                                    className={`group overflow-hidden border border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 ${
+                                    className={`overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950 ${
                                         selectedPhotoId === photo.localId ? "ring-2 ring-sky-400" : ""
                                     }`}
                                 >

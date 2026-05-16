@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import PortfolioLightbox from "../portfolio/PortfolioLightbox"
 import ClientGalleryCard from "../client-galleries/ClientGalleryCard"
-import type { MyClientGalleryDto, ClientGalleryDetailsDto } from "../../types/clientGallery"
+import type { MyClientGalleryDto, ClientGalleryDetailsDto, GalleryType, UserClientGalleryStatus } from "../../types/clientGallery"
 import {
     createMyClientGallery,
     getClientGalleryDetails,
@@ -16,6 +16,33 @@ type ProfileGalleriesTabProps = {
     error: string
     isBg: boolean
     onReload?: () => Promise<void> | void
+}
+
+const isClientPrintUpload = (galleryType?: GalleryType) => {
+    return galleryType === "ClientPrintUpload" || galleryType === 2
+}
+
+const isExpiredStatus = (status?: UserClientGalleryStatus) => {
+    return status === "Expired" || status === 3
+}
+
+const getStatusLabel = (
+    galleryType: GalleryType | undefined,
+    status: UserClientGalleryStatus,
+    isBg: boolean
+) => {
+    if (isClientPrintUpload(galleryType)) {
+        if (status === "Processed" || status === 2) return isBg ? "Обработена" : "Processed"
+        if (status === "Expired" || status === 3) return isBg ? "Изтекла" : "Expired"
+
+        return isBg ? "Качена за печат" : "Uploaded for print"
+    }
+
+    if (status === "PhotoshootInProgress" || status === 5) return isBg ? "В обработка" : "In progress"
+    if (status === "PhotoshootReadyForPickup" || status === 6) return isBg ? "Готова за вземане" : "Ready for pickup"
+    if (status === "PhotoshootCancelled" || status === 7) return isBg ? "Отказана" : "Cancelled"
+
+    return isBg ? "Качена" : "Uploaded"
 }
 
 export default function ProfileGalleriesTab({
@@ -35,7 +62,13 @@ export default function ProfileGalleriesTab({
     const [creating, setCreating] = useState(false)
     const [uploadingId, setUploadingId] = useState<number | null>(null)
 
-    const userUploadedCount = galleries.filter((x) => x.isUserUploaded && x.userGalleryStatus !== "Expired" && x.userGalleryStatus !== 3).length
+    const photosSectionRef = useRef<HTMLDivElement | null>(null)
+
+    const userUploadedCount = galleries.filter(
+        (x) => isClientPrintUpload(x.galleryType) && x.isUserUploaded && !isExpiredStatus(x.userGalleryStatus)
+    ).length
+
+    const openedGalleryIsClientPrintUpload = isClientPrintUpload(openedGallery?.galleryType)
 
     const lightboxImages = useMemo(
         () =>
@@ -50,6 +83,17 @@ export default function ProfileGalleriesTab({
                 .filter((item) => item.src),
         [openedGallery]
     )
+
+    useEffect(() => {
+        if (!openedGallery || !openedGallery.photos.length) return
+
+        window.setTimeout(() => {
+            photosSectionRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            })
+        }, 100)
+    }, [openedGallery])
 
     const reloadAll = async () => {
         await onReload?.()
@@ -122,7 +166,7 @@ export default function ProfileGalleriesTab({
     }
 
     const openGallery = async (gallery: MyClientGalleryDto) => {
-        if (!gallery.previewEnabled || gallery.isExpired || gallery.userGalleryStatus === "Expired" || gallery.userGalleryStatus === 3) {
+        if (!gallery.previewEnabled || gallery.isExpired || isExpiredStatus(gallery.userGalleryStatus)) {
             setGalleryError(
                 isBg
                     ? "Нямаш активен достъп за преглед до тази галерия."
@@ -192,8 +236,8 @@ export default function ProfileGalleriesTab({
                         </h2>
                         <p className="mt-1 text-[14px] text-neutral-600 dark:text-zinc-300">
                             {isBg
-                                ? "Можеш да създадеш до 10 галерии. Всяка user галерия живее 7 дни."
-                                : "You can create up to 10 galleries. Each user gallery stays active for 7 days."}
+                                ? "Можеш да създадеш до 10 галерии за печат. Всяка такава галерия живее 7 дни."
+                                : "You can create up to 10 print galleries. Each print gallery stays active for 7 days."}
                         </p>
                     </div>
 
@@ -254,43 +298,63 @@ export default function ProfileGalleriesTab({
                 </div>
             ) : (
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                    {galleries.map((gallery) => (
-                        <div key={gallery.id} className="space-y-3">
-                            <ClientGalleryCard
-                                gallery={gallery}
-                                isBg={isBg}
-                                loading={galleryLoadingId === gallery.id}
-                                onOpen={
-                                    gallery.previewEnabled && !gallery.isExpired
-                                        ? () => void openGallery(gallery)
-                                        : undefined
-                                }
-                                onDownloadAll={() => {
-                                    window.location.href = getGalleryZipDownloadUrl(gallery.id)
-                                }}
-                            />
+                    {galleries.map((gallery) => {
+                        const galleryIsClientPrintUpload = isClientPrintUpload(gallery.galleryType)
 
-                            {gallery.isUserUploaded ? (
-                                <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
-                                    {uploadingId === gallery.id
-                                        ? isBg
-                                            ? "Качване..."
-                                            : "Uploading..."
-                                        : isBg
-                                          ? "Качи снимки"
-                                          : "Upload photos"}
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        multiple
-                                        className="hidden"
-                                        disabled={uploadingId === gallery.id}
-                                        onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
-                                    />
-                                </label>
-                            ) : null}
-                        </div>
-                    ))}
+                        return (
+                            <div key={gallery.id} className="space-y-3">
+                                <div className="rounded-[24px] border border-neutral-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-[13px] font-semibold text-neutral-700 dark:text-zinc-300">
+                                            {isBg ? "Статус" : "Status"}
+                                        </span>
+
+                                        <span className="rounded-full bg-neutral-950 px-3 py-1 text-[12px] font-semibold text-white dark:bg-white dark:text-black">
+                                            {getStatusLabel(gallery.galleryType, gallery.userGalleryStatus, isBg)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <ClientGalleryCard
+                                    gallery={gallery}
+                                    isBg={isBg}
+                                    loading={galleryLoadingId === gallery.id}
+                                    onOpen={
+                                        gallery.previewEnabled && !gallery.isExpired && !isExpiredStatus(gallery.userGalleryStatus)
+                                            ? () => void openGallery(gallery)
+                                            : undefined
+                                    }
+                                    onDownloadAll={
+                                        galleryIsClientPrintUpload
+                                            ? undefined
+                                            : () => {
+                                                window.location.href = getGalleryZipDownloadUrl(gallery.id)
+                                            }
+                                    }
+                                />
+
+                                {galleryIsClientPrintUpload && gallery.isUserUploaded ? (
+                                    <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
+                                        {uploadingId === gallery.id
+                                            ? isBg
+                                                ? "Качване..."
+                                                : "Uploading..."
+                                            : isBg
+                                              ? "Качи снимки"
+                                              : "Upload photos"}
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            multiple
+                                            className="hidden"
+                                            disabled={uploadingId === gallery.id}
+                                            onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
+                                        />
+                                    </label>
+                                ) : null}
+                            </div>
+                        )
+                    })}
                 </div>
             )}
 
@@ -302,6 +366,11 @@ export default function ProfileGalleriesTab({
                                 <h3 className="text-[28px] font-semibold tracking-tight text-neutral-950 dark:text-white">
                                     {openedGallery.title}
                                 </h3>
+
+                                <div className="mt-3 inline-flex rounded-full bg-neutral-950 px-4 py-2 text-[13px] font-semibold text-white dark:bg-white dark:text-black">
+                                    {getStatusLabel(openedGallery.galleryType, openedGallery.userGalleryStatus, isBg)}
+                                </div>
+
                                 {openedGallery.description ? (
                                     <p className="mt-2 max-w-4xl text-[15px] leading-7 text-neutral-600 dark:text-zinc-300">
                                         {openedGallery.description}
@@ -320,15 +389,15 @@ export default function ProfileGalleriesTab({
                     </div>
 
                     <div className="space-y-6 px-6 py-6 sm:px-8 sm:py-8">
-                        {openedGallery.isUserUploaded ? (
+                        {openedGalleryIsClientPrintUpload ? (
                             <div className="rounded-[24px] border border-neutral-200 bg-neutral-50 px-5 py-4 text-[14px] text-neutral-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                                 {isBg
-                                    ? `Статус: ${openedGallery.userGalleryStatus}. Остават ${openedGallery.remainingLifetimeDays ?? 0} дни.`
-                                    : `Status: ${openedGallery.userGalleryStatus}. ${openedGallery.remainingLifetimeDays ?? 0} days remaining.`}
+                                    ? `Остават ${openedGallery.remainingLifetimeDays ?? 0} дни.`
+                                    : `${openedGallery.remainingLifetimeDays ?? 0} days remaining.`}
                             </div>
                         ) : null}
 
-                        {openedGallery.downloadEnabled && !openedGallery.isExpired ? (
+                        {openedGallery.downloadEnabled && !openedGallery.isExpired && !openedGalleryIsClientPrintUpload ? (
                             <div className="flex flex-col gap-3 rounded-[24px] border border-emerald-200 bg-emerald-50 px-5 py-4 dark:border-emerald-500/30 dark:bg-emerald-500/10 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-[14px] font-semibold text-emerald-700 dark:text-emerald-300">
@@ -350,9 +419,13 @@ export default function ProfileGalleriesTab({
                                 {isBg ? "Няма снимки в тази галерия." : "There are no photos in this gallery."}
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div ref={photosSectionRef} className="space-y-4 scroll-mt-24">
                                 {openedGallery.photos.map((photo, index) => {
-                                    const canDownload = openedGallery.downloadEnabled && !openedGallery.isExpired
+                                    const canDownload =
+                                        openedGallery.downloadEnabled &&
+                                        !openedGallery.isExpired &&
+                                        !openedGalleryIsClientPrintUpload
+
                                     const imageSrc = photo.previewUrl || photo.originalUrl || ""
 
                                     return (

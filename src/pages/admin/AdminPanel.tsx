@@ -6,9 +6,13 @@ import ConfirmDialog from "../../components/admin/ConfirmDialog"
 
 type DashboardStats = {
     users: number
+    newUsers: number
     contacts: number
+    newContactRequests: number
     services: number
     testimonials: number
+    printRequests: number
+    newPrintRequests: number
     portfolioCategories: number
     portfolioAlbums: number
     portfolioImages: number
@@ -38,18 +42,60 @@ type PortfolioAlbumRow = {
     portfolioCategory?: PortfolioCategoryRow | null
 }
 
+type NotificationKey = "users" | "contacts" | "printRequests"
+
+type NotificationSeenState = Record<NotificationKey, number>
+
+const NOTIFICATION_SEEN_STORAGE_KEY = "dgvisionstudio.admin.notificationSeenCounts"
+
+const defaultNotificationSeenState: NotificationSeenState = {
+    users: 0,
+    contacts: 0,
+    printRequests: 0,
+}
+
+const readNotificationSeenState = (): NotificationSeenState => {
+    if (typeof window === "undefined") return defaultNotificationSeenState
+
+    try {
+        const raw = window.localStorage.getItem(NOTIFICATION_SEEN_STORAGE_KEY)
+        if (!raw) return defaultNotificationSeenState
+
+        const parsed = JSON.parse(raw) as Partial<NotificationSeenState>
+
+        return {
+            users: Number(parsed.users) || 0,
+            contacts: Number(parsed.contacts) || 0,
+            printRequests: Number(parsed.printRequests) || 0,
+        }
+    } catch {
+        return defaultNotificationSeenState
+    }
+}
+
+const saveNotificationSeenState = (state: NotificationSeenState) => {
+    if (typeof window === "undefined") return
+
+    window.localStorage.setItem(NOTIFICATION_SEEN_STORAGE_KEY, JSON.stringify(state))
+}
+
 export default function AdminPanel() {
     const [stats, setStats] = useState<DashboardStats>({
         users: 0,
+        newUsers: 0,
         contacts: 0,
+        newContactRequests: 0,
         services: 0,
         testimonials: 0,
+        printRequests: 0,
+        newPrintRequests: 0,
         portfolioCategories: 0,
         portfolioAlbums: 0,
         portfolioImages: 0,
     })
 
     const [statsLoading, setStatsLoading] = useState(true)
+    const [notificationSeen, setNotificationSeen] = useState<NotificationSeenState>(() => readNotificationSeenState())
 
     const [albums, setAlbums] = useState<PortfolioAlbumRow[]>([])
     const [albumsLoading, setAlbumsLoading] = useState(true)
@@ -80,9 +126,13 @@ export default function AdminPanel() {
 
             setStats({
                 users: data?.users ?? 0,
+                newUsers: data?.newUsers ?? 0,
                 contacts: data?.contacts ?? 0,
+                newContactRequests: data?.newContactRequests ?? 0,
                 services: data?.services ?? 0,
                 testimonials: data?.testimonials ?? 0,
+                printRequests: data?.printRequests ?? 0,
+                newPrintRequests: data?.newPrintRequests ?? 0,
                 portfolioCategories: data?.portfolioCategories ?? data?.categories ?? 0,
                 portfolioAlbums: data?.portfolioAlbums ?? data?.albums ?? 0,
                 portfolioImages: data?.portfolioImages ?? data?.images ?? 0,
@@ -90,9 +140,13 @@ export default function AdminPanel() {
         } catch {
             setStats({
                 users: 0,
+                newUsers: 0,
                 contacts: 0,
+                newContactRequests: 0,
                 services: 0,
                 testimonials: 0,
+                printRequests: 0,
+                newPrintRequests: 0,
                 portfolioCategories: 0,
                 portfolioAlbums: 0,
                 portfolioImages: 0,
@@ -341,24 +395,57 @@ export default function AdminPanel() {
         }
     }, [albums])
 
+    const getUnseenCount = (key: NotificationKey, currentTotal: number, fallbackNewCount: number) => {
+        const seenCount = notificationSeen[key] ?? 0
+
+        if (seenCount <= 0) return fallbackNewCount
+
+        return Math.max(0, currentTotal - seenCount)
+    }
+
+    const markNotificationAsSeen = (key: NotificationKey, currentTotal: number) => {
+        const nextState = {
+            ...notificationSeen,
+            [key]: currentTotal,
+        }
+
+        setNotificationSeen(nextState)
+        saveNotificationSeenState(nextState)
+    }
+
     const mainCards = [
         {
             title: "Потребители",
             value: statsLoading ? "..." : stats.users,
             link: "/admin/users",
-            desc: "Управление на потребители",
+            desc: statsLoading
+                ? "Управление на потребители"
+                : `Нови потребители: ${getUnseenCount("users", stats.users, stats.newUsers)}`,
+            hasNew: getUnseenCount("users", stats.users, stats.newUsers) > 0,
+            notificationKey: "users" as NotificationKey,
+            currentTotal: stats.users,
         },
         {
             title: "Запитвания",
             value: statsLoading ? "..." : stats.contacts,
             link: "/admin/contact-requests",
-            desc: "Управление на съобщения",
+            desc: statsLoading
+                ? "Управление на съобщения"
+                : `Нови запитвания: ${getUnseenCount("contacts", stats.contacts, stats.newContactRequests)}`,
+            hasNew: getUnseenCount("contacts", stats.contacts, stats.newContactRequests) > 0,
+            notificationKey: "contacts" as NotificationKey,
+            currentTotal: stats.contacts,
         },
         {
-            title: "Отзиви",
-            value: statsLoading ? "..." : stats.testimonials,
-            link: "/admin/testimonials",
-            desc: "Управление на отзиви",
+            title: "Заявки за принтиране",
+            value: statsLoading ? "..." : stats.printRequests,
+            link: "/admin/print-requests",
+            desc: statsLoading
+                ? "Управление на заявки за принтиране"
+                : `Нови заявки: ${getUnseenCount("printRequests", stats.printRequests, stats.newPrintRequests)}`,
+            hasNew: getUnseenCount("printRequests", stats.printRequests, stats.newPrintRequests) > 0,
+            notificationKey: "printRequests" as NotificationKey,
+            currentTotal: stats.printRequests,
         },
     ]
 
@@ -388,8 +475,17 @@ export default function AdminPanel() {
                     <Link
                         key={card.title}
                         to={card.link}
-                        className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+                        onClick={() => markNotificationAsSeen(card.notificationKey, Number(card.currentTotal) || 0)}
+                        className={`relative rounded-2xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-zinc-900 ${
+                            card.hasNew
+                                ? "border-red-300 ring-2 ring-red-100 dark:border-red-500/40 dark:ring-red-500/10"
+                                : "border-gray-200 dark:border-zinc-800"
+                        }`}
                     >
+                        {card.hasNew ? (
+                            <span className="absolute right-4 top-4 inline-flex h-3 w-3 rounded-full bg-red-600" />
+                        ) : null}
+
                         <h3 className="text-sm font-medium text-gray-500 dark:text-zinc-400">
                             {card.title}
                         </h3>
@@ -419,11 +515,11 @@ export default function AdminPanel() {
                         </button>
 
                         <Link
-    to="/admin/client-galleries/new"
-    className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
->
-    Създай нов албум
-</Link>
+                            to="/admin/client-galleries/new"
+                            className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        >
+                            Създай нов албум
+                        </Link>
                     </div>
                 </div>
 

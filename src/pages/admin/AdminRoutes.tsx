@@ -10,17 +10,7 @@ import ClientGalleryAccessAdmin from "./ClientGalleryAccessAdmin"
 import PortfolioCategoryCreateAdmin from "./PortfolioCategoryCreateAdmin"
 import PortfolioCategoryEditAdmin from "./PortfolioCategoryEditAdmin"
 import PortfolioCategoryAlbumsAdmin from "./PortfolioCategoryAlbumsAdmin"
-
-function Placeholder({ title }: { title: string }) {
-    return (
-        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
-            <h2 className="text-2xl font-bold">{title}</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">
-                Тази секция още не е свързана.
-            </p>
-        </div>
-    )
-}
+import PrintRequestsAdmin from "./PrintRequestsAdmin"
 
 export default function AdminRoutes() {
     return (
@@ -30,7 +20,7 @@ export default function AdminRoutes() {
                 <Route path="users" element={<UsersAdmin />} />
                 <Route path="users/:id/albums" element={<UserAlbumsAdmin />} />
                 <Route path="contact-requests" element={<ContactRequestsAdmin />} />
-                <Route path="testimonials" element={<Placeholder title="Админ отзиви" />} />
+                <Route path="print-requests" element={<PrintRequestsAdmin />} />
 
                 <Route path="client-galleries/new" element={<ClientGalleryEditAdmin />} />
                 <Route path="client-galleries/edit" element={<ClientGalleryEditAdmin />} />
