@@ -68,6 +68,13 @@ function reorderItems<T extends { displayOrder: number }>(items: T[]) {
     }))
 }
 
+function toBoolean(value: unknown, fallback = false) {
+    if (typeof value === "boolean") return value
+    if (typeof value === "string") return value.toLowerCase() === "true"
+    if (typeof value === "number") return value === 1
+    return fallback
+}
+
 export default function ClientGalleryEditAdmin() {
     const navigate = useNavigate()
     const { i18n } = useTranslation()
@@ -76,7 +83,7 @@ export default function ClientGalleryEditAdmin() {
 
     const galleryIdParam = searchParams.get("id")
     const galleryId = galleryIdParam ? Number(galleryIdParam) : null
-    const isEditMode = galleryId !== null && Number.isFinite(galleryId)
+    const isEditMode = galleryId !== null && Number.isFinite(galleryId) && galleryId > 0
 
     const [titleBg, setTitleBg] = useState("")
     const [titleEn, setTitleEn] = useState("")
@@ -304,19 +311,33 @@ export default function ClientGalleryEditAdmin() {
         if (!isEditMode || !galleryId) return
 
         const data = await getAdminClientGalleryById(galleryId)
+
+        const nextPortfolioCategoryId =
+            typeof (data as any).portfolioCategoryId === "number"
+                ? (data as any).portfolioCategoryId
+                : null
+
+        const nextIsPublished = toBoolean((data as any).isPublished, true)
+        const explicitIsPublic = typeof (data as any).isPublic === "boolean"
+        const nextIsPublic = explicitIsPublic
+            ? Boolean((data as any).isPublic)
+            : Boolean(nextIsPublished && nextPortfolioCategoryId)
+
         setTitleBg(data.title || "")
         setTitleEn((data as any).titleEn || "")
         setDescription(data.description || "")
-        setIsActive(data.isActive ?? true)
-        setIsPublic(Boolean((data as any).isPublic || (data as any).portfolioCategoryId))
-        setPortfolioCategoryId((data as any).portfolioCategoryId ?? null)
-        setIsPublished((data as any).isPublished ?? true)
+        setIsActive(toBoolean((data as any).isActive ?? (data as any).allowClientAccess, true))
+        setIsPublic(nextIsPublic)
+        setPortfolioCategoryId(nextPortfolioCategoryId)
+        setIsPublished(nextIsPublished)
         setGalleryType(((data as any).galleryType ?? "Photoshoot") as GalleryType)
         setUserGalleryStatus(((data as any).userGalleryStatus ?? "PhotoshootUploaded") as UserClientGalleryStatus)
 
         if (Array.isArray(data.availableUsers) && data.availableUsers.length > 0) {
             setAvailableUsers(data.availableUsers)
         }
+
+        const coverImageUrl = data.coverImageUrl || ""
 
         const mappedPhotos: DraftPhotoItem[] = (data.photos || []).map((photo) => ({
             localId: `saved-${photo.id}`,
@@ -326,7 +347,7 @@ export default function ClientGalleryEditAdmin() {
             altText: photo.altText || "",
             caption: photo.caption || "",
             displayOrder: photo.displayOrder,
-            isCover: photo.previewUrl === data.coverImageUrl,
+            isCover: Boolean((photo as any).isCover) || photo.previewUrl === coverImageUrl,
             isExisting: true,
             isPublished: photo.isPublished ?? true,
             showInPublicGallery: photo.showInPublicGallery ?? false,
@@ -336,11 +357,20 @@ export default function ClientGalleryEditAdmin() {
 
         setPhotos(mappedPhotos)
 
+        if (mappedPhotos.length > 0 && !mappedPhotos.some((photo) => photo.isCover)) {
+            setPhotos((current) =>
+                current.map((photo, index) => ({
+                    ...photo,
+                    isCover: index === 0,
+                }))
+            )
+        }
+
         const existingAccesses = (((data as any).userAccesses as any[]) || []).map((item) => ({
             userId: item.userId,
-            email: item.email,
-            previewEnabled: item.previewEnabled,
-            downloadEnabled: item.downloadEnabled,
+            email: item.email || item.userEmail || "",
+            previewEnabled: Boolean(item.previewEnabled),
+            downloadEnabled: Boolean(item.downloadEnabled),
         })) as SelectedUserAccess[]
 
         setSelectedAccesses(existingAccesses)
@@ -868,12 +898,12 @@ export default function ClientGalleryEditAdmin() {
                     </div>
 
                     <AlbumBulkActionsBar
-    isBg={isBg}
-    canMove={selectedPhotoIds.length > 0}
-    selectedCount={selectedPhotoIds.length}
-    onDeleteSelected={() => void handleDeleteSelected()}
-    onClearSelection={() => setSelectedPhotoIds([])}
-/>
+                        isBg={isBg}
+                        canMove={selectedPhotoIds.length > 0}
+                        selectedCount={selectedPhotoIds.length}
+                        onDeleteSelected={() => void handleDeleteSelected()}
+                        onClearSelection={() => setSelectedPhotoIds([])}
+                    />
 
                     {!sortedPhotos.length ? (
                         <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-8 text-sm text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">

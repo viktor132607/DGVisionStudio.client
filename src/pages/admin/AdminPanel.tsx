@@ -39,6 +39,7 @@ type PortfolioAlbumRow = {
     displayOrder: number
     columnNumber?: number | null
     isPublished: boolean
+    allowClientAccess?: boolean
     portfolioCategory?: PortfolioCategoryRow | null
 }
 

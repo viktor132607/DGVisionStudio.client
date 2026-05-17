@@ -61,6 +61,9 @@ export type PortfolioAlbumDto = {
     displayOrder: number
     columnNumber?: number | null
     isPublished: boolean
+    allowClientAccess?: boolean
+    isActive?: boolean
+    isPublic?: boolean
     portfolioCategory?: PortfolioCategoryDto | null
 }
 
@@ -117,18 +120,44 @@ function normalizePortfolioAlbum(album: PortfolioAlbumDto): PortfolioAlbumDto {
     return {
         ...album,
         coverImageUrl: album.coverImageUrl ? resolveAssetUrl(album.coverImageUrl) : album.coverImageUrl,
+        isPublic:
+            typeof album.isPublic === "boolean"
+                ? album.isPublic
+                : Boolean(album.portfolioCategoryId || album.isPublished),
+        isActive:
+            typeof album.isActive === "boolean"
+                ? album.isActive
+                : typeof album.allowClientAccess === "boolean"
+                  ? album.allowClientAccess
+                  : true,
     }
 }
 
 function normalizeGalleryDetails(gallery: ClientGalleryDetailsDto): ClientGalleryDetailsDto {
+    const normalized = normalizeGallery(gallery)
+
     return {
-        ...normalizeGallery(gallery),
+        ...normalized,
         photos: Array.isArray(gallery.photos) ? gallery.photos.map(normalizePhoto) : [],
-    }
+        isPublic:
+            typeof (gallery as any).isPublic === "boolean"
+                ? (gallery as any).isPublic
+                : Boolean((gallery as any).portfolioCategoryId || (gallery as any).isPublished),
+        isActive:
+            typeof (gallery as any).isActive === "boolean"
+                ? (gallery as any).isActive
+                : typeof (gallery as any).allowClientAccess === "boolean"
+                  ? (gallery as any).allowClientAccess
+                  : true,
+    } as ClientGalleryDetailsDto
 }
 
 async function parseJsonSafe<T>(response: Response): Promise<T | null> {
     return (await response.json().catch(() => null)) as T | null
+}
+
+function getErrorMessage(data: { message?: string } | null, fallback: string) {
+    return data?.message || fallback
 }
 
 export async function getAdminPortfolioAlbums(
@@ -140,17 +169,26 @@ export async function getAdminPortfolioAlbums(
         skipJsonContentType: true,
     })
 
+    const data = await parseJsonSafe<PagedResultDto<PortfolioAlbumDto> | PortfolioAlbumDto[]>(response)
+
     if (!response.ok) {
         throw new Error("Failed to load portfolio albums.")
     }
 
-    const data = (await response.json()) as PagedResultDto<PortfolioAlbumDto>
+    if (Array.isArray(data)) {
+        return {
+            page,
+            pageSize,
+            total: data.length,
+            items: data.map(normalizePortfolioAlbum),
+        }
+    }
 
     return {
-        page: data.page ?? page,
-        pageSize: data.pageSize ?? pageSize,
-        total: data.total ?? 0,
-        items: Array.isArray(data.items) ? data.items.map(normalizePortfolioAlbum) : [],
+        page: data?.page ?? page,
+        pageSize: data?.pageSize ?? pageSize,
+        total: data?.total ?? 0,
+        items: Array.isArray(data?.items) ? data.items.map(normalizePortfolioAlbum) : [],
     }
 }
 
@@ -159,8 +197,10 @@ export async function deleteAdminPortfolioAlbum(albumId: number): Promise<void> 
         method: "DELETE",
     })
 
+    const data = await parseJsonSafe<{ message?: string }>(response)
+
     if (!response.ok) {
-        throw new Error("Failed to delete portfolio album.")
+        throw new Error(getErrorMessage(data, "Failed to delete portfolio album."))
     }
 }
 
@@ -170,12 +210,13 @@ export async function getMyClientGalleries(): Promise<MyClientGalleryDto[]> {
         skipJsonContentType: true,
     })
 
+    const data = await parseJsonSafe<MyClientGalleryDto[]>(response)
+
     if (!response.ok) {
         throw new Error("Failed to load client galleries.")
     }
 
-    const data = (await response.json()) as MyClientGalleryDto[]
-    return data.map(normalizeGallery)
+    return Array.isArray(data) ? data.map(normalizeGallery) : []
 }
 
 export async function createMyClientGallery(
@@ -189,7 +230,7 @@ export async function createMyClientGallery(
     const data = await parseJsonSafe<{ id: number; message?: string }>(response)
 
     if (!response.ok || !data) {
-        throw new Error(data?.message || "Failed to create gallery.")
+        throw new Error(getErrorMessage(data, "Failed to create gallery."))
     }
 
     return data
@@ -213,7 +254,7 @@ export async function uploadMyClientGalleryPhoto(
     const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
 
     if (!response.ok || !data) {
-        throw new Error(data?.message || "Failed to upload photo.")
+        throw new Error(getErrorMessage(data, "Failed to upload photo."))
     }
 
     return normalizePhoto(data)
@@ -225,11 +266,12 @@ export async function getClientGalleryDetails(galleryId: number): Promise<Client
         skipJsonContentType: true,
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to load client gallery.")
+    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string }>(response)
+
+    if (!response.ok || !data) {
+        throw new Error(getErrorMessage(data, "Failed to load client gallery."))
     }
 
-    const data = (await response.json()) as ClientGalleryDetailsDto
     return normalizeGalleryDetails(data)
 }
 
@@ -251,12 +293,13 @@ export async function getAdminClientGalleries(): Promise<MyClientGalleryDto[]> {
         skipJsonContentType: true,
     })
 
+    const data = await parseJsonSafe<MyClientGalleryDto[]>(response)
+
     if (!response.ok) {
         throw new Error("Failed to load admin client galleries.")
     }
 
-    const data = (await response.json()) as MyClientGalleryDto[]
-    return data.map(normalizeGallery)
+    return Array.isArray(data) ? data.map(normalizeGallery) : []
 }
 
 export async function getAdminClientGalleryById(galleryId: number): Promise<ClientGalleryDetailsDto> {
@@ -265,11 +308,12 @@ export async function getAdminClientGalleryById(galleryId: number): Promise<Clie
         skipJsonContentType: true,
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to load client gallery.")
+    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string }>(response)
+
+    if (!response.ok || !data) {
+        throw new Error(getErrorMessage(data, "Failed to load client gallery."))
     }
 
-    const data = (await response.json()) as ClientGalleryDetailsDto
     return normalizeGalleryDetails(data)
 }
 
@@ -283,13 +327,13 @@ export async function createAdminClientGallery(
 
     const data = await parseJsonSafe<{ id: number; message?: string }>(response)
 
-    if (!response.ok) {
-        throw new Error(data?.message || "Failed to create client gallery.")
+    if (!response.ok || !data) {
+        throw new Error(getErrorMessage(data, "Failed to create client gallery."))
     }
 
     return {
-        id: data?.id ?? 0,
-        message: data?.message,
+        id: data.id ?? 0,
+        message: data.message,
     }
 }
 
@@ -305,7 +349,7 @@ export async function updateAdminClientGallery(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to update client gallery.")
+        throw new Error(getErrorMessage(data, "Failed to update client gallery."))
     }
 
     return { message: data?.message }
@@ -321,7 +365,7 @@ export async function deleteAdminClientGallery(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to delete client gallery.")
+        throw new Error(getErrorMessage(data, "Failed to delete client gallery."))
     }
 
     return { message: data?.message }
@@ -333,11 +377,13 @@ export async function getGalleryAccesses(galleryId: number): Promise<GalleryAcce
         skipJsonContentType: true,
     })
 
+    const data = await parseJsonSafe<GalleryAccessDto[] | { message?: string }>(response)
+
     if (!response.ok) {
-        throw new Error("Failed to load gallery access.")
+        throw new Error(getErrorMessage(data as { message?: string } | null, "Failed to load gallery access."))
     }
 
-    return (await response.json()) as GalleryAccessDto[]
+    return Array.isArray(data) ? data : []
 }
 
 export async function grantGalleryAccess(
@@ -352,7 +398,7 @@ export async function grantGalleryAccess(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to grant gallery access.")
+        throw new Error(getErrorMessage(data, "Failed to grant gallery access."))
     }
 
     return { message: data?.message }
@@ -371,7 +417,7 @@ export async function updateGalleryAccess(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to update gallery access.")
+        throw new Error(getErrorMessage(data, "Failed to update gallery access."))
     }
 
     return { message: data?.message }
@@ -388,7 +434,7 @@ export async function removeGalleryAccess(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to remove gallery access.")
+        throw new Error(getErrorMessage(data, "Failed to remove gallery access."))
     }
 
     return { message: data?.message }
@@ -412,7 +458,7 @@ export async function uploadGalleryPhoto(
     const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
 
     if (!response.ok || !data) {
-        throw new Error((data as { message?: string } | null)?.message || "Failed to upload photo.")
+        throw new Error(getErrorMessage(data, "Failed to upload photo."))
     }
 
     return normalizePhoto(data)
@@ -431,7 +477,7 @@ export async function updateGalleryPhoto(
     const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
 
     if (!response.ok || !data) {
-        throw new Error((data as { message?: string } | null)?.message || "Failed to update photo.")
+        throw new Error(getErrorMessage(data, "Failed to update photo."))
     }
 
     return normalizePhoto(data)
@@ -448,7 +494,7 @@ export async function deleteGalleryPhoto(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to delete photo.")
+        throw new Error(getErrorMessage(data, "Failed to delete photo."))
     }
 
     return { message: data?.message }
@@ -466,7 +512,7 @@ export async function setGalleryCoverImage(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to update gallery cover.")
+        throw new Error(getErrorMessage(data, "Failed to update gallery cover."))
     }
 
     return { message: data?.message }
@@ -484,7 +530,7 @@ export async function reorderGalleryPhotos(
     const data = await parseJsonSafe<{ message?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(data?.message || "Failed to reorder photos.")
+        throw new Error(getErrorMessage(data, "Failed to reorder photos."))
     }
 
     return { message: data?.message }

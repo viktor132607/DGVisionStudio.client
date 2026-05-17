@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import {
+    getAdminClientGalleryById,
     getGalleryAccesses,
     grantGalleryAccess,
     removeGalleryAccess,
     updateGalleryAccess,
 } from "../../services/clientGalleries"
 import { apiFetch } from "../../services/api"
+import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 import type { PagedResultDto } from "../../types/pagination"
 
 type GalleryAccessDto = {
@@ -22,6 +24,20 @@ type UserOption = {
     id: string
     email: string
     isBlocked: boolean
+}
+
+type GallerySummary = {
+    id: number
+    title: string
+    titleEn?: string | null
+    description?: string | null
+    coverImageUrl?: string | null
+    portfolioCategoryId?: number | null
+    isPublic?: boolean
+    isPublished?: boolean
+    isActive?: boolean
+    allowClientAccess?: boolean
+    photosCount: number
 }
 
 function toDateInputValue(date: Date): string {
@@ -58,11 +74,19 @@ function fromUtcToDateInput(dateValue?: string | null): string {
     return toDateInputValue(date)
 }
 
+function toBoolean(value: unknown, fallback = false) {
+    if (typeof value === "boolean") return value
+    if (typeof value === "string") return value.toLowerCase() === "true"
+    if (typeof value === "number") return value === 1
+    return fallback
+}
+
 export default function ClientGalleryAccessAdmin() {
     const [searchParams] = useSearchParams()
     const galleryIdParam = searchParams.get("id")
     const galleryId = galleryIdParam ? Number(galleryIdParam) : 0
 
+    const [gallery, setGallery] = useState<GallerySummary | null>(null)
     const [accesses, setAccesses] = useState<GalleryAccessDto[]>([])
     const [users, setUsers] = useState<UserOption[]>([])
     const [selectedUserEmail, setSelectedUserEmail] = useState("")
@@ -77,6 +101,33 @@ export default function ClientGalleryAccessAdmin() {
         Record<string, { previewEnabled: boolean; downloadEnabled: boolean; downloadExpiresAt: string }>
     >({})
 
+    const loadGallery = async () => {
+        if (!galleryId) return
+
+        const data = await getAdminClientGalleryById(galleryId)
+        const photos = Array.isArray((data as any).photos) ? (data as any).photos : []
+
+        setGallery({
+            id: galleryId,
+            title: data.title || "",
+            titleEn: (data as any).titleEn || null,
+            description: data.description || null,
+            coverImageUrl: data.coverImageUrl || null,
+            portfolioCategoryId:
+                typeof (data as any).portfolioCategoryId === "number"
+                    ? (data as any).portfolioCategoryId
+                    : null,
+            isPublic:
+                typeof (data as any).isPublic === "boolean"
+                    ? (data as any).isPublic
+                    : Boolean((data as any).portfolioCategoryId || (data as any).isPublished),
+            isPublished: toBoolean((data as any).isPublished, false),
+            isActive: toBoolean((data as any).isActive ?? (data as any).allowClientAccess, false),
+            allowClientAccess: toBoolean((data as any).allowClientAccess ?? (data as any).isActive, false),
+            photosCount: photos.length,
+        })
+    }
+
     const loadUsers = async () => {
         const response = await apiFetch("/admin/users?page=1&pageSize=200", {
             method: "GET",
@@ -84,7 +135,7 @@ export default function ClientGalleryAccessAdmin() {
         })
 
         if (!response.ok) {
-            throw new Error("Failed to load users.")
+            throw new Error("Неуспешно зареждане на потребителите.")
         }
 
         const data = (await response.json().catch(() => null)) as PagedResultDto<UserOption> | UserOption[] | null
@@ -110,17 +161,19 @@ export default function ClientGalleryAccessAdmin() {
         if (!galleryId) return
 
         const data = await getGalleryAccesses(galleryId)
-        setAccesses(data)
+        const normalizedAccesses = Array.isArray(data) ? data : []
+
+        setAccesses(normalizedAccesses)
 
         const nextEditingState: Record<
             string,
             { previewEnabled: boolean; downloadEnabled: boolean; downloadExpiresAt: string }
         > = {}
 
-        for (const access of data) {
+        for (const access of normalizedAccesses) {
             nextEditingState[access.userId] = {
-                previewEnabled: access.previewEnabled,
-                downloadEnabled: access.downloadEnabled,
+                previewEnabled: Boolean(access.previewEnabled),
+                downloadEnabled: Boolean(access.downloadEnabled),
                 downloadExpiresAt: fromUtcToDateInput(access.downloadExpiresAtUtc) || getDefaultExpiryDate(),
             }
         }
@@ -132,9 +185,10 @@ export default function ClientGalleryAccessAdmin() {
         try {
             setLoading(true)
             setError("")
-            await Promise.all([loadAccesses(), loadUsers()])
+
+            await Promise.all([loadGallery(), loadAccesses(), loadUsers()])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load gallery access.")
+            setError(err instanceof Error ? err.message : "Неуспешно зареждане на достъпите.")
         } finally {
             setLoading(false)
         }
@@ -181,9 +235,10 @@ export default function ClientGalleryAccessAdmin() {
             setDownloadEnabled(false)
             setDownloadExpiresAt(getDefaultExpiryDate())
             setSelectedUserEmail("")
+
             await loadAll()
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to create gallery access.")
+            setError(err instanceof Error ? err.message : "Неуспешно създаване на достъп.")
         } finally {
             setSaving(false)
         }
@@ -207,7 +262,7 @@ export default function ClientGalleryAccessAdmin() {
 
             await loadAccesses()
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to update gallery access.")
+            setError(err instanceof Error ? err.message : "Неуспешно обновяване на достъпа.")
         } finally {
             setSaving(false)
         }
@@ -221,13 +276,13 @@ export default function ClientGalleryAccessAdmin() {
             await removeGalleryAccess(galleryId, userId)
             await loadAll()
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to remove gallery access.")
+            setError(err instanceof Error ? err.message : "Неуспешно премахване на достъпа.")
         } finally {
             setSaving(false)
         }
     }
 
-    if (!galleryId) {
+    if (!galleryId || !Number.isFinite(galleryId)) {
         return (
             <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -251,9 +306,15 @@ export default function ClientGalleryAccessAdmin() {
                     Управление на достъп
                 </h1>
                 <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">
-                    Давай и редактирай достъп до клиентска галерия
+                    Давай и редактирай достъп до клиентска галерия или portfolio албум.
                 </p>
             </div>
+
+            {loading ? (
+                <div className="mb-5 rounded-2xl border border-gray-200 bg-white px-4 py-10 text-sm text-gray-500 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                    Зареждане...
+                </div>
+            ) : null}
 
             {error ? (
                 <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
@@ -261,8 +322,97 @@ export default function ClientGalleryAccessAdmin() {
                 </div>
             ) : null}
 
+            {gallery ? (
+                <div className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="grid gap-0 lg:grid-cols-[260px_1fr]">
+                        <div className="aspect-[4/3] bg-gray-100 dark:bg-zinc-800 lg:aspect-auto">
+                            {gallery.coverImageUrl ? (
+                                <img
+                                    src={resolveAssetUrl(gallery.coverImageUrl)}
+                                    alt={gallery.title || "Album cover"}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full min-h-[220px] items-center justify-center text-sm font-medium text-gray-400 dark:text-zinc-500">
+                                    Няма корица
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-5">
+                            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                        {gallery.title || "Без име"}
+                                    </h2>
+
+                                    {gallery.titleEn ? (
+                                        <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
+                                            {gallery.titleEn}
+                                        </p>
+                                    ) : null}
+
+                                    {gallery.description ? (
+                                        <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600 dark:text-zinc-300">
+                                            {gallery.description}
+                                        </p>
+                                    ) : null}
+                                </div>
+
+                                <Link
+                                    to={`/admin/client-galleries/edit?id=${gallery.id}`}
+                                    className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
+                                >
+                                    Редакция
+                                </Link>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                        Снимки
+                                    </div>
+                                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                        {gallery.photosCount}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                        В портфолио
+                                    </div>
+                                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                        {gallery.isPublished ? "Да" : "Не"}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                        Public
+                                    </div>
+                                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                        {gallery.isPublic ? "Да" : "Не"}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                        Client access
+                                    </div>
+                                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                        {gallery.allowClientAccess || accesses.length > 0 ? "Да" : "Не"}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
             <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-5">
-                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Добави достъп</h2>
+                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                    Добави достъп
+                </h2>
 
                 <div className="grid gap-4">
                     <div>
@@ -325,13 +475,15 @@ export default function ClientGalleryAccessAdmin() {
                         disabled={saving || loading || !selectedUserEmail}
                         className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                     >
-                        Запази достъп
+                        {saving ? "Запазване..." : "Запази достъп"}
                     </button>
                 </div>
             </div>
 
             <div>
-                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Активни достъпи</h2>
+                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                    Активни достъпи
+                </h2>
 
                 {loading ? (
                     <div className="rounded-2xl border border-gray-200 bg-white px-4 py-10 text-sm text-gray-500 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
@@ -360,9 +512,11 @@ export default function ClientGalleryAccessAdmin() {
                                             <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                                                 Preview: {current?.previewEnabled ? "ON" : "OFF"}
                                             </span>
+
                                             <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                                                 Download: {current?.downloadEnabled ? "ON" : "OFF"}
                                             </span>
+
                                             <span
                                                 className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${
                                                     access.isExpired
@@ -445,7 +599,7 @@ export default function ClientGalleryAccessAdmin() {
                                             disabled={saving}
                                             className="inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                                         >
-                                            Обнови
+                                            {saving ? "Запазване..." : "Обнови"}
                                         </button>
 
                                         <button
