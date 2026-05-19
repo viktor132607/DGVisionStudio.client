@@ -111,6 +111,37 @@ function toStoredImagePath(url?: string | null): string {
     }
 }
 
+function toGalleryTypeValue(value: unknown): number {
+    if (value === "Photoshoot") return 1
+    if (value === "ClientPrintUpload") return 2
+
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 1
+}
+
+function toUserGalleryStatusValue(value: unknown): number {
+    if (value === "Pending") return 1
+    if (value === "Processed") return 2
+    if (value === "Expired") return 3
+    if (value === "PhotoshootUploaded") return 4
+    if (value === "PhotoshootInProgress") return 5
+    if (value === "PhotoshootReadyForPickup") return 6
+    if (value === "PhotoshootCancelled") return 7
+
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 1
+}
+
+function normalizeAdminGalleryPayload<
+    T extends CreateAdminClientGalleryRequest | UpdateAdminClientGalleryRequest
+>(payload: T): T {
+    return {
+        ...payload,
+        galleryType: toGalleryTypeValue(payload.galleryType) as T["galleryType"],
+        userGalleryStatus: toUserGalleryStatusValue(payload.userGalleryStatus) as T["userGalleryStatus"],
+    }
+}
+
 function normalizePhoto(photo: ClientPhotoDto): ClientPhotoDto {
     return {
         ...photo,
@@ -335,7 +366,7 @@ export async function createAdminClientGallery(
 ): Promise<{ id: number; message?: string }> {
     const response = await apiFetch("/admin/client-galleries", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizeAdminGalleryPayload(payload)),
     })
 
     const data = await parseJsonSafe<{ id: number; message?: string }>(response)
@@ -356,7 +387,7 @@ export async function updateAdminClientGallery(
 ): Promise<{ message?: string }> {
     const response = await apiFetch(`/admin/client-galleries/${galleryId}`, {
         method: "PUT",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizeAdminGalleryPayload(payload)),
     })
 
     const data = await parseJsonSafe<{ message?: string }>(response)
