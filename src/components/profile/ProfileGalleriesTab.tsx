@@ -4,6 +4,7 @@ import ClientGalleryCard from "../client-galleries/ClientGalleryCard"
 import type { MyClientGalleryDto, ClientGalleryDetailsDto, GalleryType, UserClientGalleryStatus } from "../../types/clientGallery"
 import {
     createMyClientGallery,
+    deleteMyClientGallery,
     getClientGalleryDetails,
     getGalleryPhotoDownloadUrl,
     getGalleryZipDownloadUrl,
@@ -61,6 +62,7 @@ export default function ProfileGalleriesTab({
     const [newDescription, setNewDescription] = useState("")
     const [creating, setCreating] = useState(false)
     const [uploadingId, setUploadingId] = useState<number | null>(null)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const photosSectionRef = useRef<HTMLDivElement | null>(null)
 
@@ -162,6 +164,39 @@ export default function ProfileGalleriesTab({
             )
         } finally {
             setUploadingId(null)
+        }
+    }
+
+    const deleteGallery = async (gallery: MyClientGalleryDto) => {
+        const confirmed = window.confirm(
+            isBg
+                ? `Сигурен ли си, че искаш да изтриеш галерията "${gallery.title}"? Това действие не може да се върне.`
+                : `Are you sure you want to delete "${gallery.title}"? This action cannot be undone.`
+        )
+
+        if (!confirmed) return
+
+        try {
+            setGalleryError("")
+            setDeletingId(gallery.id)
+
+            await deleteMyClientGallery(gallery.id)
+
+            if (openedGallery?.id === gallery.id) {
+                closeGallery()
+            }
+
+            await onReload?.()
+        } catch (err) {
+            setGalleryError(
+                err instanceof Error
+                    ? err.message
+                    : isBg
+                      ? "Грешка при изтриване на галерия."
+                      : "Failed to delete gallery."
+            )
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -334,23 +369,40 @@ export default function ProfileGalleriesTab({
                                 />
 
                                 {galleryIsClientPrintUpload && gallery.isUserUploaded ? (
-                                    <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
-                                        {uploadingId === gallery.id
-                                            ? isBg
-                                                ? "Качване..."
-                                                : "Uploading..."
-                                            : isBg
-                                              ? "Качи снимки"
-                                              : "Upload photos"}
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/webp"
-                                            multiple
-                                            className="hidden"
-                                            disabled={uploadingId === gallery.id}
-                                            onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
-                                        />
-                                    </label>
+                                    <div className="space-y-2">
+                                        <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
+                                            {uploadingId === gallery.id
+                                                ? isBg
+                                                    ? "Качване..."
+                                                    : "Uploading..."
+                                                : isBg
+                                                  ? "Качи снимки"
+                                                  : "Upload photos"}
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp"
+                                                multiple
+                                                className="hidden"
+                                                disabled={uploadingId === gallery.id || deletingId === gallery.id}
+                                                onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
+                                            />
+                                        </label>
+
+                                        <button
+                                            type="button"
+                                            disabled={deletingId === gallery.id || uploadingId === gallery.id}
+                                            onClick={() => void deleteGallery(gallery)}
+                                            className="flex h-11 w-full items-center justify-center rounded-full border border-red-300 bg-red-50 px-4 text-[13px] font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
+                                        >
+                                            {deletingId === gallery.id
+                                                ? isBg
+                                                    ? "Изтриване..."
+                                                    : "Deleting..."
+                                                : isBg
+                                                  ? "Изтрий галерията"
+                                                  : "Delete gallery"}
+                                        </button>
+                                    </div>
                                 ) : null}
                             </div>
                         )
