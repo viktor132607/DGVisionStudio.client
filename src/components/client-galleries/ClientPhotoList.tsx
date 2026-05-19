@@ -10,6 +10,19 @@ type ClientPhotoListProps = {
     settingCoverUrl?: string | null
 }
 
+function normalizeImageUrl(value?: string | null) {
+    if (!value) return ""
+
+    const trimmed = value.trim().replaceAll("\\", "/")
+
+    try {
+        const url = new URL(trimmed)
+        return url.pathname.replace(/^\/+/, "")
+    } catch {
+        return trimmed.replace(/^\/+/, "")
+    }
+}
+
 export default function ClientPhotoList({
     photos,
     coverImageUrl,
@@ -53,6 +66,9 @@ export default function ClientPhotoList({
               hidden: "Hidden",
           }
 
+    const normalizedCoverImageUrl = normalizeImageUrl(coverImageUrl)
+    const normalizedSettingCoverUrl = normalizeImageUrl(settingCoverUrl)
+
     return (
         <div className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
             <h3 className="text-[16px] font-semibold text-neutral-950 dark:text-white">
@@ -66,7 +82,20 @@ export default function ClientPhotoList({
             {photos.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {photos.map((photo) => {
-                        const isCurrentCover = !!coverImageUrl && coverImageUrl === photo.previewUrl
+                        const normalizedPreviewUrl = normalizeImageUrl(photo.previewUrl)
+                        const normalizedOriginalUrl = normalizeImageUrl(photo.originalUrl)
+
+                        const isCurrentCover =
+                            !!normalizedCoverImageUrl &&
+                            (normalizedCoverImageUrl === normalizedPreviewUrl ||
+                                normalizedCoverImageUrl === normalizedOriginalUrl)
+
+                        const isSettingCover =
+                            !!normalizedSettingCoverUrl &&
+                            (normalizedSettingCoverUrl === normalizedPreviewUrl ||
+                                normalizedSettingCoverUrl === normalizedOriginalUrl)
+
+                        const coverPayload = photo.originalUrl || photo.previewUrl
 
                         return (
                             <div
@@ -133,11 +162,11 @@ export default function ClientPhotoList({
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
                                             type="button"
-                                            onClick={() => onSetCover?.(photo.previewUrl)}
-                                            disabled={!onSetCover || settingCoverUrl === photo.previewUrl}
+                                            onClick={() => onSetCover?.(coverPayload)}
+                                            disabled={!onSetCover || isCurrentCover || isSettingCover}
                                             className="rounded-full border border-neutral-300 bg-white px-3 py-2 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
                                         >
-                                            {settingCoverUrl === photo.previewUrl ? t.settingCover : t.setCover}
+                                            {isSettingCover ? t.settingCover : t.setCover}
                                         </button>
 
                                         <button

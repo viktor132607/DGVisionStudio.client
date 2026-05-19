@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../../services/api"
 import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
+import { useAdminToast } from "../../hooks/useAdminToast"
 
 type DashboardStats = {
     users: number
@@ -81,6 +82,8 @@ const saveNotificationSeenState = (state: NotificationSeenState) => {
 }
 
 export default function AdminPanel() {
+    const { showToast } = useAdminToast()
+
     const [stats, setStats] = useState<DashboardStats>({
         users: 0,
         newUsers: 0,
@@ -183,8 +186,15 @@ export default function AdminPanel() {
                 )
             )
         } catch (err) {
-            setAlbumsError(err instanceof Error ? err.message : "Грешка при зареждане на албумите.")
+            const message = err instanceof Error ? err.message : "Грешка при зареждане на албумите."
+            setAlbumsError(message)
             setAlbums([])
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setAlbumsLoading(false)
         }
@@ -213,8 +223,15 @@ export default function AdminPanel() {
                 )
             )
         } catch (err) {
-            setCategoriesError(err instanceof Error ? err.message : "Грешка при зареждане на категориите.")
+            const message = err instanceof Error ? err.message : "Грешка при зареждане на категориите."
+            setCategoriesError(message)
             setCategories([])
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setCategoriesLoading(false)
         }
@@ -226,6 +243,7 @@ export default function AdminPanel() {
 
     useEffect(() => {
         void loadAll()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleDeleteAlbum = async () => {
@@ -246,8 +264,21 @@ export default function AdminPanel() {
             setAlbums((current) => current.filter((x) => x.id !== deleteAlbumId))
             setDeleteAlbumId(null)
             await loadStats()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Албумът беше изтрит успешно.",
+            })
         } catch (err) {
-            setAlbumsError(err instanceof Error ? err.message : "Изтриването беше неуспешно.")
+            const message = err instanceof Error ? err.message : "Изтриването беше неуспешно."
+            setAlbumsError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyAlbumId(null)
         }
@@ -281,8 +312,23 @@ export default function AdminPanel() {
                         : x
                 )
             )
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: !category.isActive
+                    ? "Категорията беше активирана."
+                    : "Категорията беше направена неактивна.",
+            })
         } catch (err) {
-            setCategoriesError(err instanceof Error ? err.message : "Неуспешна промяна на категорията.")
+            const message = err instanceof Error ? err.message : "Неуспешна промяна на категорията."
+            setCategoriesError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyCategoryId(null)
         }
@@ -306,8 +352,21 @@ export default function AdminPanel() {
             setCategories((current) => current.filter((x) => x.id !== deleteCategoryId))
             setDeleteCategoryId(null)
             await Promise.all([loadStats(), loadAlbums()])
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Категорията беше изтрита успешно.",
+            })
         } catch (err) {
-            setCategoriesError(err instanceof Error ? err.message : "Неуспешно изтриване на категорията.")
+            const message = err instanceof Error ? err.message : "Неуспешно изтриване на категорията."
+            setCategoriesError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyCategoryId(null)
         }
@@ -330,10 +389,21 @@ export default function AdminPanel() {
             }
 
             await loadCategories()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Редът на категорията беше обновен.",
+            })
         } catch (err) {
-            setCategoriesError(
-                err instanceof Error ? err.message : "Неуспешна промяна на реда на категорията."
-            )
+            const message = err instanceof Error ? err.message : "Неуспешна промяна на реда на категорията."
+            setCategoriesError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyCategoryId(null)
             setDraggedCategoryId(null)

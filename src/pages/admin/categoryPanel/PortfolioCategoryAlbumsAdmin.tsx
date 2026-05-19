@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { apiFetch } from "../../services/api"
-import type { PagedResultDto } from "../../types/pagination"
+import { apiFetch } from "../../../services/api"
+import type { PagedResultDto } from "../../../types/pagination"
+import { resolveAssetUrl } from "../../../utils/resolveAssetUrl"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type CategorySummary = {
     id: number
@@ -28,6 +30,8 @@ type CategoryAlbumsResponse = {
 }
 
 export default function PortfolioCategoryAlbumsAdmin() {
+    const { showToast } = useAdminToast()
+
     const [searchParams] = useSearchParams()
     const categoryIdParam = searchParams.get("id")
     const categoryId = categoryIdParam ? Number(categoryIdParam) : 0
@@ -49,8 +53,17 @@ export default function PortfolioCategoryAlbumsAdmin() {
 
     const load = async () => {
         if (!categoryId || !Number.isFinite(categoryId)) {
-            setError("Невалиден category id.")
+            const message = "Невалиден category id."
+
+            setError(message)
             setLoading(false)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
@@ -94,14 +107,21 @@ export default function PortfolioCategoryAlbumsAdmin() {
                 return Array.from(next)
             })
         } catch (err) {
-            setError(
+            const message =
                 err instanceof Error
                     ? err.message
                     : "Неуспешно зареждане на албумите за категорията."
-            )
+
+            setError(message)
             setCategory(null)
             setAlbums([])
             setTotal(0)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setLoading(false)
         }
@@ -109,6 +129,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
 
     useEffect(() => {
         void load()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [categoryId, currentPage, pageSize])
 
     const filteredAlbums = useMemo(() => {
@@ -153,16 +174,38 @@ export default function PortfolioCategoryAlbumsAdmin() {
             filteredAlbums.forEach((album) => next.add(album.id))
             return Array.from(next)
         })
+
+        showToast({
+            type: "info",
+            title: "Избрано",
+            message: "Видимите албуми бяха маркирани.",
+        })
     }
 
     const clearAllVisible = () => {
         const visibleIds = new Set(filteredAlbums.map((album) => album.id))
+
         setSelectedAlbumIds((current) => current.filter((id) => !visibleIds.has(id)))
+
+        showToast({
+            type: "info",
+            title: "Обновено",
+            message: "Видимите албуми бяха премахнати от избора.",
+        })
     }
 
     const handleSave = async () => {
         if (!categoryId || !Number.isFinite(categoryId)) {
-            setError("Невалиден category id.")
+            const message = "Невалиден category id."
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
@@ -183,12 +226,28 @@ export default function PortfolioCategoryAlbumsAdmin() {
                 throw new Error(message || "Неуспешно записване на албумите.")
             }
 
-            setSuccess("Албумите към категорията бяха обновени успешно.")
+            const message = "Албумите към категорията бяха обновени успешно."
+
+            setSuccess(message)
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message,
+            })
+
             await load()
         } catch (err) {
-            setError(
+            const message =
                 err instanceof Error ? err.message : "Неуспешно записване на албумите."
-            )
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -280,7 +339,8 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             <button
                                 type="button"
                                 onClick={selectAllVisible}
-                                className="rounded-xl border border-sky-300 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50 dark:border-sky-500/40 dark:text-sky-300 dark:hover:bg-sky-500/10"
+                                disabled={saving || loading || filteredAlbums.length === 0}
+                                className="rounded-xl border border-sky-300 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-sky-500/40 dark:text-sky-300 dark:hover:bg-sky-500/10"
                             >
                                 Избери видимите
                             </button>
@@ -288,7 +348,8 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             <button
                                 type="button"
                                 onClick={clearAllVisible}
-                                className="rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                                disabled={saving || loading || filteredAlbums.length === 0}
+                                className="rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                             >
                                 Махни видимите
                             </button>
@@ -355,7 +416,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
                                                     <td className="p-3">
                                                         {album.coverImageUrl ? (
                                                             <img
-                                                                src={album.coverImageUrl}
+                                                                src={resolveAssetUrl(album.coverImageUrl)}
                                                                 alt={album.title}
                                                                 className="h-14 w-20 rounded-xl border border-gray-200 object-cover dark:border-zinc-800"
                                                             />
@@ -414,7 +475,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             <button
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                                disabled={currentPage === 1 || loading}
+                                disabled={currentPage === 1 || loading || saving}
                                 className="inline-flex items-center justify-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                             >
                                 Предишна
@@ -423,7 +484,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             <button
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                                disabled={currentPage === totalPages || loading}
+                                disabled={currentPage === totalPages || loading || saving}
                                 className="inline-flex items-center justify-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                             >
                                 Следваща
@@ -433,8 +494,8 @@ export default function PortfolioCategoryAlbumsAdmin() {
                         <div className="flex flex-wrap gap-3">
                             <button
                                 type="button"
-                                onClick={handleSave}
-                                disabled={saving}
+                                onClick={() => void handleSave()}
+                                disabled={saving || loading}
                                 className="inline-flex items-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                             >
                                 {saving ? "Запазване..." : "Запази"}
@@ -443,7 +504,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
                             <button
                                 type="button"
                                 onClick={() => void load()}
-                                disabled={saving}
+                                disabled={saving || loading}
                                 className="inline-flex items-center rounded-2xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                             >
                                 Обнови

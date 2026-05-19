@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
+import type { FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { apiFetch } from "../../services/api"
-import ConfirmDialog from "../../components/admin/ConfirmDialog"
-import { ensureUniqueSlug } from "../../utils/slugify"
+import { apiFetch } from "../../../services/api"
+import ConfirmDialog from "../../../components/admin/ConfirmDialog"
+import { ensureUniqueSlug } from "../../../utils/slugify"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type CategoryDetails = {
     id: number
@@ -21,6 +23,7 @@ type ExistingCategory = {
 
 export default function PortfolioCategoryEditAdmin() {
     const navigate = useNavigate()
+    const { showToast } = useAdminToast()
     const [searchParams] = useSearchParams()
 
     const categoryIdParam = searchParams.get("id")
@@ -42,20 +45,33 @@ export default function PortfolioCategoryEditAdmin() {
     const [deleteOpen, setDeleteOpen] = useState(false)
 
     const usedSlugs = useMemo(
-        () => allCategories.map((item) => item.key).filter(Boolean),
-        [allCategories]
+        () =>
+            allCategories
+                .filter((item) => item.id !== categoryId)
+                .map((item) => item.key)
+                .filter(Boolean),
+        [allCategories, categoryId]
     )
 
     useEffect(() => {
         const load = async () => {
             if (!categoryId || !Number.isFinite(categoryId)) {
-                setError("Невалиден category id.")
+                const message = "Невалиден category id."
+                setError(message)
                 setLoading(false)
+
+                showToast({
+                    type: "error",
+                    title: "Грешка",
+                    message,
+                })
+
                 return
             }
 
             setLoading(true)
             setError("")
+            setSuccess("")
 
             try {
                 const [categoryResponse, categoriesResponse] = await Promise.all([
@@ -63,7 +79,7 @@ export default function PortfolioCategoryEditAdmin() {
                         method: "GET",
                         skipJsonContentType: true,
                     }),
-                    apiFetch("/portfolio/categories", {
+                    apiFetch("/admin/portfolio/categories", {
                         method: "GET",
                         skipJsonContentType: true,
                     }),
@@ -71,6 +87,10 @@ export default function PortfolioCategoryEditAdmin() {
 
                 if (!categoryResponse.ok) {
                     throw new Error("Неуспешно зареждане на категорията.")
+                }
+
+                if (!categoriesResponse.ok) {
+                    throw new Error("Неуспешно зареждане на категориите.")
                 }
 
                 const category = (await categoryResponse.json()) as CategoryDetails
@@ -83,26 +103,34 @@ export default function PortfolioCategoryEditAdmin() {
                 setIsActive(category.isActive)
                 setAllCategories(Array.isArray(categories) ? categories : [])
             } catch (err) {
-                setError(
+                const message =
                     err instanceof Error
                         ? err.message
                         : "Неуспешно зареждане на категорията."
-                )
+
+                setError(message)
+
+                showToast({
+                    type: "error",
+                    title: "Грешка",
+                    message,
+                })
             } finally {
                 setLoading(false)
             }
         }
 
         void load()
-    }, [categoryId])
+    }, [categoryId, showToast])
 
     useEffect(() => {
         if (keyTouched) return
+
         const source = nameEn.trim() || nameBg.trim()
         setKey(ensureUniqueSlug(source, usedSlugs, key))
     }, [keyTouched, key, nameBg, nameEn, usedSlugs])
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
         setError("")
         setSuccess("")
@@ -112,22 +140,54 @@ export default function PortfolioCategoryEditAdmin() {
         const finalKey = ensureUniqueSlug(key.trim() || finalNameEn || finalNameBg, usedSlugs, key)
 
         if (!categoryId || !Number.isFinite(categoryId)) {
-            setError("Невалиден category id.")
+            const message = "Невалиден category id."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
         if (!finalNameBg) {
-            setError("Името на български е задължително.")
+            const message = "Името на български е задължително."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
         if (!finalNameEn) {
-            setError("Името на английски е задължително.")
+            const message = "Името на английски е задължително."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
         if (!finalKey) {
-            setError("Ключът е задължителен.")
+            const message = "Ключът е задължителен."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
             return
         }
 
@@ -150,18 +210,46 @@ export default function PortfolioCategoryEditAdmin() {
                 throw new Error(message || "Неуспешно обновяване на категория.")
             }
 
-            setSuccess("Категорията беше обновена успешно.")
+            const message = "Категорията беше обновена успешно."
+
+            setSuccess(message)
+            setKey(finalKey)
+            setKeyTouched(false)
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message,
+            })
         } catch (err) {
-            setError(
+            const message =
                 err instanceof Error ? err.message : "Неуспешно обновяване на категория."
-            )
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
     }
 
     const handleDelete = async () => {
-        if (!categoryId || !Number.isFinite(categoryId)) return
+        if (!categoryId || !Number.isFinite(categoryId)) {
+            const message = "Невалиден category id."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
+
+            return
+        }
 
         setDeleting(true)
         setError("")
@@ -177,11 +265,25 @@ export default function PortfolioCategoryEditAdmin() {
                 throw new Error(message || "Неуспешно изтриване на категорията.")
             }
 
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Категорията беше изтрита успешно.",
+            })
+
+            setDeleteOpen(false)
             navigate("/admin")
         } catch (err) {
-            setError(
+            const message =
                 err instanceof Error ? err.message : "Неуспешно изтриване на категорията."
-            )
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setDeleting(false)
             setDeleteOpen(false)
@@ -309,7 +411,7 @@ export default function PortfolioCategoryEditAdmin() {
                         <div className="mt-8 flex flex-wrap gap-3">
                             <button
                                 type="submit"
-                                disabled={saving}
+                                disabled={saving || deleting}
                                 className="inline-flex items-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                             >
                                 {saving ? "Запазване..." : "Запази"}
@@ -318,10 +420,10 @@ export default function PortfolioCategoryEditAdmin() {
                             <button
                                 type="button"
                                 onClick={() => setDeleteOpen(true)}
-                                disabled={deleting}
+                                disabled={deleting || saving}
                                 className="inline-flex items-center rounded-2xl border border-red-300 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/40 dark:text-red-300 dark:hover:bg-red-500/10"
                             >
-                                Delete category
+                                {deleting ? "Изтриване..." : "Delete category"}
                             </button>
                         </div>
                     </form>
@@ -336,8 +438,12 @@ export default function PortfolioCategoryEditAdmin() {
                 cancelText="Отказ"
                 confirmVariant="danger"
                 busy={deleting}
-                onConfirm={handleDelete}
-                onCancel={() => setDeleteOpen(false)}
+                onConfirm={() => void handleDelete()}
+                onCancel={() => {
+                    if (!deleting) {
+                        setDeleteOpen(false)
+                    }
+                }}
             />
         </div>
     )

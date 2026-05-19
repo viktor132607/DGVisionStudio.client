@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
-import { createPost } from "../../services/blogService"
+import { createPost } from "../../../services/blogService"
 
 export default function CreateBlogPost() {
     const navigate = useNavigate()

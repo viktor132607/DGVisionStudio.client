@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { apiFetch } from "../../services/api"
 import { markAdminContactRequestsSeen } from "../../services/adminNotifications"
+import ConfirmDialog from "../../components/admin/ConfirmDialog"
+import { useAdminToast } from "../../hooks/useAdminToast"
 
 type ContactRequest = {
     id: string
@@ -18,6 +20,8 @@ type ContactRequest = {
 }
 
 export default function ContactRequestsAdmin() {
+    const { showToast } = useAdminToast()
+
     const [requests, setRequests] = useState<ContactRequest[]>([])
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
@@ -26,6 +30,7 @@ export default function ContactRequestsAdmin() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const [busyId, setBusyId] = useState<string | null>(null)
+    const [deleteRequestId, setDeleteRequestId] = useState<string | null>(null)
 
     const normalizeStatus = (status?: string | number | null) => {
         if (status === null || status === undefined || status === "") return "New"
@@ -58,8 +63,16 @@ export default function ContactRequestsAdmin() {
             const data = await response.json().catch(() => [])
             setRequests(Array.isArray(data) ? data : [])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Грешка при зареждане на запитванията.")
+            const message = err instanceof Error ? err.message : "Грешка при зареждане на запитванията."
+
+            setError(message)
             setRequests([])
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setLoading(false)
         }
@@ -71,8 +84,9 @@ export default function ContactRequestsAdmin() {
 
             try {
                 await markAdminContactRequestsSeen()
-                setRequests(current =>
-                    current.map(request => ({
+
+                setRequests((current) =>
+                    current.map((request) => ({
                         ...request,
                         isSeenByAdmin: true,
                     }))
@@ -83,18 +97,17 @@ export default function ContactRequestsAdmin() {
         }
 
         void init()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const remove = async (id: string) => {
-        const confirmed = window.confirm("Сигурен ли си, че искаш да изтриеш това запитване?")
+    const remove = async () => {
+        if (!deleteRequestId) return
 
-        if (!confirmed) return
-
-        setBusyId(id)
+        setBusyId(deleteRequestId)
         setError("")
 
         try {
-            const response = await apiFetch(`/admin/contact-requests/${id}`, {
+            const response = await apiFetch(`/admin/contact-requests/${deleteRequestId}`, {
                 method: "DELETE",
             })
 
@@ -102,9 +115,24 @@ export default function ContactRequestsAdmin() {
                 throw new Error("Изтриването беше неуспешно.")
             }
 
-            setRequests(current => current.filter(request => request.id !== id))
+            setRequests((current) => current.filter((request) => request.id !== deleteRequestId))
+            setDeleteRequestId(null)
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Запитването беше изтрито успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Изтриването беше неуспешно.")
+            const message = err instanceof Error ? err.message : "Изтриването беше неуспешно."
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
@@ -126,13 +154,13 @@ export default function ContactRequestsAdmin() {
     }
 
     const statuses = useMemo(() => {
-        return Array.from(new Set(requests.map(x => normalizeStatus(x.status)).filter(Boolean)))
+        return Array.from(new Set(requests.map((x) => normalizeStatus(x.status)).filter(Boolean)))
     }, [requests])
 
     const filteredRequests = useMemo(() => {
         const term = search.trim().toLowerCase()
 
-        return requests.filter(request => {
+        return requests.filter((request) => {
             const status = normalizeStatus(request.status)
 
             const matchesSearch =
@@ -177,7 +205,8 @@ export default function ContactRequestsAdmin() {
                         <button
                             type="button"
                             onClick={() => void load()}
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            disabled={loading}
+                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Обнови
                         </button>
@@ -196,17 +225,17 @@ export default function ContactRequestsAdmin() {
                         type="text"
                         placeholder="Търси по име, email, телефон, тема, съобщение..."
                         value={search}
-                        onChange={event => handleSearchChange(event.target.value)}
+                        onChange={(event) => handleSearchChange(event.target.value)}
                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 outline-none focus:ring-2 focus:ring-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-700 lg:flex-1"
                     />
 
                     <select
                         value={statusFilter}
-                        onChange={event => handleStatusFilterChange(event.target.value)}
+                        onChange={(event) => handleStatusFilterChange(event.target.value)}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value="all">Всички статуси</option>
-                        {statuses.map(status => (
+                        {statuses.map((status) => (
                             <option key={status} value={status}>
                                 {status}
                             </option>
@@ -215,7 +244,7 @@ export default function ContactRequestsAdmin() {
 
                     <select
                         value={pageSize}
-                        onChange={event => handlePageSizeChange(Number(event.target.value))}
+                        onChange={(event) => handlePageSizeChange(Number(event.target.value))}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value={20}>20 / страница</option>
@@ -257,7 +286,7 @@ export default function ContactRequestsAdmin() {
 
                             <tbody>
                                 {pagedRequests.length > 0 ? (
-                                    pagedRequests.map(request => (
+                                    pagedRequests.map((request) => (
                                         <tr
                                             key={request.id}
                                             className={`border-b transition last:border-b-0 hover:bg-gray-50 dark:border-zinc-800 dark:hover:bg-zinc-950 ${
@@ -324,7 +353,7 @@ export default function ContactRequestsAdmin() {
 
                                                     <button
                                                         type="button"
-                                                        onClick={() => void remove(request.id)}
+                                                        onClick={() => setDeleteRequestId(request.id)}
                                                         disabled={busyId === request.id}
                                                         className="rounded-lg bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                                                     >
@@ -348,13 +377,13 @@ export default function ContactRequestsAdmin() {
                     <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                         <button
                             disabled={safeCurrentPage === 1}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Prev
                         </button>
 
-                        {pageNumbers.map(page => (
+                        {pageNumbers.map((page) => (
                             <button
                                 key={page}
                                 onClick={() => setCurrentPage(page)}
@@ -370,7 +399,7 @@ export default function ContactRequestsAdmin() {
 
                         <button
                             disabled={safeCurrentPage === totalPages}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Next
@@ -378,6 +407,22 @@ export default function ContactRequestsAdmin() {
                     </div>
                 </>
             ) : null}
+
+            <ConfirmDialog
+                open={deleteRequestId !== null}
+                title="Изтриване на запитване"
+                description="Сигурен ли си, че искаш да изтриеш това запитване?"
+                confirmText="Изтрий"
+                cancelText="Отказ"
+                confirmVariant="danger"
+                busy={busyId === deleteRequestId}
+                onConfirm={() => void remove()}
+                onCancel={() => {
+                    if (busyId !== deleteRequestId) {
+                        setDeleteRequestId(null)
+                    }
+                }}
+            />
         </div>
     )
-}
+} 

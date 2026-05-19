@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { apiFetch } from "../../services/api"
-import { markAdminUsersSeen } from "../../services/adminNotifications"
+import { apiFetch } from "../../../services/api"
+import { markAdminUsersSeen } from "../../../services/adminNotifications"
+import ConfirmDialog from "../../../components/admin/ConfirmDialog"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type UserRow = {
     id: string
@@ -22,6 +24,8 @@ type PagedUsersResponse = {
 }
 
 export default function UsersAdmin() {
+    const { showToast } = useAdminToast()
+
     const [users, setUsers] = useState<UserRow[]>([])
     const [search, setSearch] = useState("")
     const [roleFilter, setRoleFilter] = useState("all")
@@ -31,6 +35,7 @@ export default function UsersAdmin() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const [busyId, setBusyId] = useState<string | null>(null)
+    const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
 
     const load = async () => {
         setLoading(true)
@@ -46,11 +51,18 @@ export default function UsersAdmin() {
                 throw new Error("Грешка при зареждане на потребителите.")
             }
 
-            const data = await response.json().catch(() => null) as PagedUsersResponse | null
+            const data = (await response.json().catch(() => null)) as PagedUsersResponse | null
             setUsers(Array.isArray(data?.items) ? data.items : [])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Грешка при зареждане на потребителите.")
+            const message = err instanceof Error ? err.message : "Грешка при зареждане на потребителите."
+            setError(message)
             setUsers([])
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setLoading(false)
         }
@@ -63,8 +75,8 @@ export default function UsersAdmin() {
             try {
                 await markAdminUsersSeen()
 
-                setUsers(current =>
-                    current.map(user => ({
+                setUsers((current) =>
+                    current.map((user) => ({
                         ...user,
                         isSeenByAdmin: true,
                     }))
@@ -75,6 +87,7 @@ export default function UsersAdmin() {
         }
 
         void init()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const makeAdmin = async (id: string) => {
@@ -91,8 +104,21 @@ export default function UsersAdmin() {
             }
 
             await load()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Admin ролята беше добавена успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно добавяне на Admin роля.")
+            const message = err instanceof Error ? err.message : "Неуспешно добавяне на Admin роля."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
@@ -112,8 +138,21 @@ export default function UsersAdmin() {
             }
 
             await load()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Admin ролята беше премахната успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно премахване на Admin роля.")
+            const message = err instanceof Error ? err.message : "Неуспешно премахване на Admin роля."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
@@ -133,8 +172,21 @@ export default function UsersAdmin() {
             }
 
             await load()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Потребителят беше блокиран успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно блокиране на потребителя.")
+            const message = err instanceof Error ? err.message : "Неуспешно блокиране на потребителя."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
@@ -154,23 +206,34 @@ export default function UsersAdmin() {
             }
 
             await load()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Потребителят беше отблокиран успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно отблокиране на потребителя.")
+            const message = err instanceof Error ? err.message : "Неуспешно отблокиране на потребителя."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
     }
 
-    const deleteUser = async (id: string) => {
-        const confirmed = window.confirm("Сигурен ли си, че искаш да изтриеш този потребител?")
+    const deleteUser = async () => {
+        if (!deleteUserId) return
 
-        if (!confirmed) return
-
-        setBusyId(id)
+        setBusyId(deleteUserId)
         setError("")
 
         try {
-            const response = await apiFetch(`/admin/users/${id}`, {
+            const response = await apiFetch(`/admin/users/${deleteUserId}`, {
                 method: "DELETE",
             })
 
@@ -178,9 +241,23 @@ export default function UsersAdmin() {
                 throw new Error("Изтриването беше неуспешно.")
             }
 
-            setUsers(current => current.filter(user => user.id !== id))
+            setUsers((current) => current.filter((user) => user.id !== deleteUserId))
+            setDeleteUserId(null)
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Потребителят беше изтрит успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Изтриването беше неуспешно.")
+            const message = err instanceof Error ? err.message : "Изтриването беше неуспешно."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setBusyId(null)
         }
@@ -207,13 +284,13 @@ export default function UsersAdmin() {
     }
 
     const roles = useMemo(() => {
-        return Array.from(new Set(users.flatMap(user => user.roles || []))).sort()
+        return Array.from(new Set(users.flatMap((user) => user.roles || []))).sort()
     }, [users])
 
     const filteredUsers = useMemo(() => {
         const term = search.trim().toLowerCase()
 
-        return users.filter(user => {
+        return users.filter((user) => {
             const matchesSearch =
                 !term ||
                 user.id.toLowerCase().includes(term) ||
@@ -261,7 +338,8 @@ export default function UsersAdmin() {
                         <button
                             type="button"
                             onClick={() => void load()}
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            disabled={loading}
+                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Обнови
                         </button>
@@ -280,17 +358,17 @@ export default function UsersAdmin() {
                         type="text"
                         placeholder="Търси по email или ID..."
                         value={search}
-                        onChange={event => handleSearchChange(event.target.value)}
+                        onChange={(event) => handleSearchChange(event.target.value)}
                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 outline-none focus:ring-2 focus:ring-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-700 lg:flex-1"
                     />
 
                     <select
                         value={roleFilter}
-                        onChange={event => handleRoleFilterChange(event.target.value)}
+                        onChange={(event) => handleRoleFilterChange(event.target.value)}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value="all">Всички роли</option>
-                        {roles.map(role => (
+                        {roles.map((role) => (
                             <option key={role} value={role}>
                                 {role}
                             </option>
@@ -299,7 +377,7 @@ export default function UsersAdmin() {
 
                     <select
                         value={statusFilter}
-                        onChange={event => handleStatusFilterChange(event.target.value)}
+                        onChange={(event) => handleStatusFilterChange(event.target.value)}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value="all">Всички статуси</option>
@@ -311,7 +389,7 @@ export default function UsersAdmin() {
 
                     <select
                         value={pageSize}
-                        onChange={event => handlePageSizeChange(Number(event.target.value))}
+                        onChange={(event) => handlePageSizeChange(Number(event.target.value))}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value={20}>20 / страница</option>
@@ -350,7 +428,7 @@ export default function UsersAdmin() {
 
                             <tbody>
                                 {pagedUsers.length > 0 ? (
-                                    pagedUsers.map(user => {
+                                    pagedUsers.map((user) => {
                                         const isAdmin = user.roles?.includes("Admin")
                                         const isBusy = busyId === user.id
 
@@ -459,7 +537,7 @@ export default function UsersAdmin() {
                                                         <button
                                                             type="button"
                                                             disabled={isBusy || user.isProtectedAdmin}
-                                                            onClick={() => void deleteUser(user.id)}
+                                                            onClick={() => setDeleteUserId(user.id)}
                                                             className="rounded-lg bg-red-600 px-3 py-1.5 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                                                         >
                                                             {isBusy ? "..." : "Delete"}
@@ -483,13 +561,13 @@ export default function UsersAdmin() {
                     <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                         <button
                             disabled={safeCurrentPage === 1}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Prev
                         </button>
 
-                        {pageNumbers.map(page => (
+                        {pageNumbers.map((page) => (
                             <button
                                 key={page}
                                 onClick={() => setCurrentPage(page)}
@@ -505,7 +583,7 @@ export default function UsersAdmin() {
 
                         <button
                             disabled={safeCurrentPage === totalPages}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
                             Next
@@ -513,6 +591,22 @@ export default function UsersAdmin() {
                     </div>
                 </>
             ) : null}
+
+            <ConfirmDialog
+                open={deleteUserId !== null}
+                title="Изтриване на потребител"
+                description="Сигурен ли си, че искаш да изтриеш този потребител?"
+                confirmText="Изтрий"
+                cancelText="Отказ"
+                confirmVariant="danger"
+                busy={busyId === deleteUserId}
+                onConfirm={() => void deleteUser()}
+                onCancel={() => {
+                    if (busyId !== deleteUserId) {
+                        setDeleteUserId(null)
+                    }
+                }}
+            />
         </div>
     )
 }

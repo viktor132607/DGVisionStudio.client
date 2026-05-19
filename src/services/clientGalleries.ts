@@ -98,6 +98,19 @@ function normalizeApiUrl(url?: string | null): string | null | undefined {
     return resolveAssetUrl(url)
 }
 
+function toStoredImagePath(url?: string | null): string {
+    if (!url) return ""
+
+    const trimmed = url.trim().replaceAll("\\", "/")
+
+    try {
+        const parsed = new URL(trimmed)
+        return parsed.pathname.replace(/^\/+/, "")
+    } catch {
+        return trimmed.replace(/^\/+/, "")
+    }
+}
+
 function normalizePhoto(photo: ClientPhotoDto): ClientPhotoDto {
     return {
         ...photo,
@@ -506,7 +519,10 @@ export async function setGalleryCoverImage(
 ): Promise<{ message?: string }> {
     const response = await apiFetch(`/admin/client-galleries/${galleryId}/cover`, {
         method: "PUT",
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+            ...payload,
+            coverImageUrl: toStoredImagePath(payload.coverImageUrl),
+        }),
     })
 
     const data = await parseJsonSafe<{ message?: string }>(response)

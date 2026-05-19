@@ -21,6 +21,19 @@ type AdminClientPhotoDrawerProps = {
     onSetCover: () => Promise<void>
 }
 
+function normalizeImageUrl(value?: string | null) {
+    if (!value) return ""
+
+    const trimmed = value.trim().replaceAll("\\", "/")
+
+    try {
+        const url = new URL(trimmed)
+        return url.pathname.replace(/^\/+/, "")
+    } catch {
+        return trimmed.replace(/^\/+/, "")
+    }
+}
+
 export default function AdminClientPhotoDrawer({
     open,
     photo,
@@ -96,7 +109,13 @@ export default function AdminClientPhotoDrawer({
 
     if (!open || !photo) return null
 
-    const isCurrentCover = coverImageUrl === photo.previewUrl
+    const normalizedCoverImageUrl = normalizeImageUrl(coverImageUrl)
+    const normalizedPreviewUrl = normalizeImageUrl(photo.previewUrl)
+    const normalizedOriginalUrl = normalizeImageUrl(photo.originalUrl)
+
+    const isCurrentCover =
+        normalizedCoverImageUrl === normalizedPreviewUrl ||
+        normalizedCoverImageUrl === normalizedOriginalUrl
 
     return (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/45">
@@ -231,9 +250,7 @@ export default function AdminClientPhotoDrawer({
                         <div className="grid grid-cols-3 gap-3">
                             <button
                                 type="button"
-                                onClick={() =>
-                                    void onSetCover()
-                                }
+                                onClick={() => void onSetCover()}
                                 disabled={isCurrentCover || settingCover}
                                 className="rounded-full border border-neutral-300 px-4 py-3 text-[13px] font-semibold text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-white"
                             >

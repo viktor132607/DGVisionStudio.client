@@ -31,6 +31,7 @@ export type GalleryUserAccessDto = {
     previewEnabled: boolean
     downloadEnabled: boolean
     downloadExpiresAtUtc?: string | null
+    isExpired?: boolean
 }
 
 export type MyClientGalleryDto = {
@@ -97,7 +98,7 @@ export type ClientGalleryDetailsDto = {
     expiresAtUtc?: string | null
     remainingLifetimeDays?: number | null
     userGalleryStatus: UserClientGalleryStatus
-    availableUsers: AdminGalleryUserOptionDto[]
+    availableUsers?: AdminGalleryUserOptionDto[]
     userAccesses?: GalleryUserAccessDto[]
     photos: ClientPhotoDto[]
 }

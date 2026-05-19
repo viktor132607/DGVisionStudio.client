@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { getMyClientGalleries } from "../services/clientGalleries"
 import type { MyClientGalleryDto } from "../types/clientGallery"
 
@@ -7,49 +7,38 @@ export function useMyClientGalleries() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
+    const mountedRef = useRef(true)
+
     const reload = useCallback(async () => {
         setLoading(true)
         setError("")
 
         try {
             const data = await getMyClientGalleries()
-            setGalleries(data)
+
+            if (mountedRef.current) {
+                setGalleries(data)
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load galleries.")
+            if (mountedRef.current) {
+                setError(err instanceof Error ? err.message : "Failed to load galleries.")
+            }
         } finally {
-            setLoading(false)
+            if (mountedRef.current) {
+                setLoading(false)
+            }
         }
     }, [])
 
     useEffect(() => {
-        let cancelled = false
+        mountedRef.current = true
 
-        const load = async () => {
-            setLoading(true)
-            setError("")
-
-            try {
-                const data = await getMyClientGalleries()
-                if (!cancelled) {
-                    setGalleries(data)
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    setError(err instanceof Error ? err.message : "Failed to load galleries.")
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false)
-                }
-            }
-        }
-
-        void load()
+        void reload()
 
         return () => {
-            cancelled = true
+            mountedRef.current = false
         }
-    }, [])
+    }, [reload])
 
     return {
         galleries,

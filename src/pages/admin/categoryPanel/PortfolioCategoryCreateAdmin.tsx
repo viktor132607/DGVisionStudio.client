@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
+import type { FormEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { apiFetch } from "../../services/api"
-import { ensureUniqueSlug } from "../../utils/slugify"
+import { apiFetch } from "../../../services/api"
+import { ensureUniqueSlug } from "../../../utils/slugify"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type ExistingCategory = {
     id: number
@@ -13,6 +15,7 @@ type ExistingCategory = {
 
 export default function PortfolioCategoryCreateAdmin() {
     const navigate = useNavigate()
+    const { showToast } = useAdminToast()
 
     const [nameBg, setNameBg] = useState("")
     const [nameEn, setNameEn] = useState("")
@@ -31,9 +34,10 @@ export default function PortfolioCategoryCreateAdmin() {
         const load = async () => {
             setLoading(true)
             setError("")
+            setSuccess("")
 
             try {
-                const response = await apiFetch("/portfolio/categories", {
+                const response = await apiFetch("/admin/portfolio/categories", {
                     method: "GET",
                     skipJsonContentType: true,
                 })
@@ -54,18 +58,25 @@ export default function PortfolioCategoryCreateAdmin() {
 
                 setDisplayOrder(maxDisplayOrder + 1 || 1)
             } catch (err) {
-                setError(
+                const message =
                     err instanceof Error
                         ? err.message
                         : "Неуспешно зареждане на категориите."
-                )
+
+                setError(message)
+
+                showToast({
+                    type: "error",
+                    title: "Грешка",
+                    message,
+                })
             } finally {
                 setLoading(false)
             }
         }
 
         void load()
-    }, [])
+    }, [showToast])
 
     const usedSlugs = useMemo(
         () => existingCategories.map((item) => item.key).filter(Boolean),
@@ -74,11 +85,12 @@ export default function PortfolioCategoryCreateAdmin() {
 
     useEffect(() => {
         if (keyTouched) return
+
         const source = nameEn.trim() || nameBg.trim()
         setKey(ensureUniqueSlug(source, usedSlugs))
     }, [keyTouched, nameBg, nameEn, usedSlugs])
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
         setError("")
         setSuccess("")
@@ -88,17 +100,35 @@ export default function PortfolioCategoryCreateAdmin() {
         const finalKey = ensureUniqueSlug(key.trim() || finalNameEn || finalNameBg, usedSlugs)
 
         if (!finalNameBg) {
-            setError("Името на български е задължително.")
+            const message = "Името на български е задължително."
+            setError(message)
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
             return
         }
 
         if (!finalNameEn) {
-            setError("Името на английски е задължително.")
+            const message = "Името на английски е задължително."
+            setError(message)
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
             return
         }
 
         if (!finalKey) {
-            setError("Ключът е задължителен.")
+            const message = "Ключът е задължителен."
+            setError(message)
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
             return
         }
 
@@ -125,7 +155,15 @@ export default function PortfolioCategoryCreateAdmin() {
                 | { id?: number }
                 | null
 
-            setSuccess("Категорията беше създадена успешно.")
+            const message = "Категорията беше създадена успешно."
+
+            setSuccess(message)
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message,
+            })
 
             if (created?.id) {
                 navigate(`/admin/portfolio-categories/edit?id=${created.id}`)
@@ -134,9 +172,16 @@ export default function PortfolioCategoryCreateAdmin() {
 
             navigate("/admin")
         } catch (err) {
-            setError(
+            const message =
                 err instanceof Error ? err.message : "Неуспешно създаване на категория."
-            )
+
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -255,7 +300,7 @@ export default function PortfolioCategoryCreateAdmin() {
                 <div className="mt-8 flex flex-wrap gap-3">
                     <button
                         type="submit"
-                        disabled={saving}
+                        disabled={saving || loading}
                         className="inline-flex items-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                     >
                         {saving ? "Запазване..." : "Създай категория"}

@@ -7,6 +7,19 @@ type AdminClientPhotoGridProps = {
     onSelect: (photo: ClientPhotoDto) => void
 }
 
+function normalizeImageUrl(value?: string | null) {
+    if (!value) return ""
+
+    const trimmed = value.trim().replaceAll("\\", "/")
+
+    try {
+        const url = new URL(trimmed)
+        return url.pathname.replace(/^\/+/, "")
+    } catch {
+        return trimmed.replace(/^\/+/, "")
+    }
+}
+
 export default function AdminClientPhotoGrid({
     photos,
     coverImageUrl,
@@ -31,6 +44,8 @@ export default function AdminClientPhotoGrid({
               hidden: "Hidden",
           }
 
+    const normalizedCoverImageUrl = normalizeImageUrl(coverImageUrl)
+
     return (
         <div className="rounded-3xl border border-neutral-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
             <div className="mb-4 flex items-center justify-between">
@@ -47,7 +62,12 @@ export default function AdminClientPhotoGrid({
             ) : (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                     {photos.map((photo) => {
-                        const isCover = coverImageUrl === photo.previewUrl
+                        const normalizedPreviewUrl = normalizeImageUrl(photo.previewUrl)
+                        const normalizedOriginalUrl = normalizeImageUrl(photo.originalUrl)
+
+                        const isCover =
+                            normalizedCoverImageUrl === normalizedPreviewUrl ||
+                            normalizedCoverImageUrl === normalizedOriginalUrl
 
                         return (
                             <button

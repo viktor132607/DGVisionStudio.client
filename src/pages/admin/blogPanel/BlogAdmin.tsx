@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { deletePost, getPosts } from "../../services/blogService"
+import { deletePost, getPosts } from "../../../services/blogService"
 
 type BlogPost = {
     id: number

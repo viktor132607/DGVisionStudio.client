@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
+import type { DragEvent, FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
     createAdminClientGallery,
+    deleteAdminClientGallery,
     deleteGalleryPhoto,
     getAdminClientGalleryById,
     getAdminClientGalleries,
@@ -10,21 +12,22 @@ import {
     updateAdminClientGallery,
     updateGalleryPhoto,
     uploadGalleryPhoto,
-} from "../../services/clientGalleries"
-import { apiFetch } from "../../services/api"
+} from "../../../services/clientGalleries"
+import { apiFetch } from "../../../services/api"
 import type {
     AdminGalleryUserOptionDto,
     ClientPhotoDto,
     GalleryType,
     MyClientGalleryDto,
     UserClientGalleryStatus,
-} from "../../types/clientGallery"
-import ConfirmDialog from "../../components/admin/ConfirmDialog"
-import AlbumVisibilitySection from "../../components/client-galleries/AlbumVisibilitySection"
-import AlbumBulkActionsBar from "../../components/client-galleries/AlbumBulkActionsBar"
+} from "../../../types/clientGallery"
+import ConfirmDialog from "../../../components/admin/ConfirmDialog"
+import AlbumVisibilitySection from "../../../components/client-galleries/AlbumVisibilitySection"
+import AlbumBulkActionsBar from "../../../components/client-galleries/AlbumBulkActionsBar"
 import UserAccessSelector, {
     type SelectedUserAccess,
-} from "../../components/client-galleries/UserAccessSelector"
+} from "../../../components/client-galleries/UserAccessSelector"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type PortfolioCategoryOption = {
     id: number
@@ -75,9 +78,14 @@ function toBoolean(value: unknown, fallback = false) {
     return fallback
 }
 
+function getStoredCoverImageUrl(photo?: Pick<ClientPhotoDto, "originalUrl" | "previewUrl"> | null) {
+    return photo?.originalUrl || photo?.previewUrl || ""
+}
+
 export default function ClientGalleryEditAdmin() {
     const navigate = useNavigate()
     const { i18n } = useTranslation()
+    const { showToast } = useAdminToast()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const [searchParams] = useSearchParams()
 
@@ -140,6 +148,7 @@ export default function ClientGalleryEditAdmin() {
               loading: "Зареждане...",
               createSuccess: "Албумът беше създаден успешно.",
               updateSuccess: "Албумът беше обновен успешно.",
+              deleteSuccess: "Албумът беше изтрит успешно.",
               deleteTitle: "Изтриване на албум",
               deleteDescription: "Сигурен ли си, че искаш да изтриеш този албум?",
               deleteConfirm: "Изтрий",
@@ -159,6 +168,7 @@ export default function ClientGalleryEditAdmin() {
               photos: "Снимки",
               noPhotos: "Още няма снимки.",
               removePhoto: "Премахни снимка",
+              photoRemoved: "Снимката беше премахната.",
               setCover: "Основна",
               altText: "Alt текст",
               caption: "Надпис",
@@ -171,6 +181,11 @@ export default function ClientGalleryEditAdmin() {
               disabled: "Изключено",
               preview: "Preview",
               download: "Download",
+              done: "Готово",
+              error: "Грешка",
+              saveFailed: "Неуспешен запис.",
+              deleteFailed: "Неуспешно изтриване.",
+              photoDeleteFailed: "Неуспешно премахване на снимката.",
           }
         : {
               back: "Back",
@@ -200,6 +215,7 @@ export default function ClientGalleryEditAdmin() {
               loading: "Loading...",
               createSuccess: "Album created successfully.",
               updateSuccess: "Album updated successfully.",
+              deleteSuccess: "Album deleted successfully.",
               deleteTitle: "Delete album",
               deleteDescription: "Are you sure you want to delete this album?",
               deleteConfirm: "Delete",
@@ -219,6 +235,7 @@ export default function ClientGalleryEditAdmin() {
               photos: "Photos",
               noPhotos: "No photos yet.",
               removePhoto: "Remove photo",
+              photoRemoved: "Photo removed.",
               setCover: "Cover",
               altText: "Alt text",
               caption: "Caption",
@@ -231,6 +248,11 @@ export default function ClientGalleryEditAdmin() {
               disabled: "Disabled",
               preview: "Preview",
               download: "Download",
+              done: "Done",
+              error: "Error",
+              saveFailed: "Failed to save.",
+              deleteFailed: "Failed to delete.",
+              photoDeleteFailed: "Failed to remove photo.",
           }
 
     const inputClassName =
@@ -347,7 +369,10 @@ export default function ClientGalleryEditAdmin() {
             altText: photo.altText || "",
             caption: photo.caption || "",
             displayOrder: photo.displayOrder,
-            isCover: Boolean((photo as any).isCover) || photo.previewUrl === coverImageUrl,
+            isCover:
+                Boolean((photo as any).isCover) ||
+                photo.previewUrl === coverImageUrl ||
+                photo.originalUrl === coverImageUrl,
             isExisting: true,
             isPublished: photo.isPublished ?? true,
             showInPublicGallery: photo.showInPublicGallery ?? false,
@@ -380,6 +405,7 @@ export default function ClientGalleryEditAdmin() {
         const run = async () => {
             setLoading(true)
             setError("")
+            setSuccess("")
 
             try {
                 await Promise.all([
@@ -389,13 +415,21 @@ export default function ClientGalleryEditAdmin() {
                     loadGallery(),
                 ])
             } catch (err) {
-                setError(err instanceof Error ? err.message : "Неуспешно зареждане.")
+                const message = err instanceof Error ? err.message : "Неуспешно зареждане."
+                setError(message)
+
+                showToast({
+                    type: "error",
+                    title: t.error,
+                    message,
+                })
             } finally {
                 setLoading(false)
             }
         }
 
         void run()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [galleryId, isEditMode])
 
     const handleFiles = (files: File[]) => {
@@ -405,6 +439,13 @@ export default function ClientGalleryEditAdmin() {
 
         if (imageFiles.length !== files.length) {
             setError(t.invalidPhotoType)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.invalidPhotoType,
+            })
+
             return
         }
 
@@ -412,6 +453,13 @@ export default function ClientGalleryEditAdmin() {
 
         if (oversizedFiles.length > 0) {
             setError(t.photoTooLarge)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.photoTooLarge,
+            })
+
             return
         }
 
@@ -459,9 +507,10 @@ export default function ClientGalleryEditAdmin() {
 
         window.addEventListener("paste", onPaste)
         return () => window.removeEventListener("paste", onPaste)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [photos.length, selectedPhotoId])
 
-    const handleDropUpload = (event: React.DragEvent<HTMLDivElement>) => {
+    const handleDropUpload = (event: DragEvent<HTMLDivElement>) => {
         event.preventDefault()
 
         const files = Array.from(event.dataTransfer.files || [])
@@ -495,23 +544,47 @@ export default function ClientGalleryEditAdmin() {
         const photo = photos.find((item) => item.localId === localId)
         if (!photo) return
 
-        if (photo.isExisting && galleryId && photo.id) {
-            await deleteGalleryPhoto(galleryId, photo.id)
-        }
+        try {
+            setError("")
+            setSuccess("")
 
-        setPhotos((current) => {
-            const next = current.filter((item) => item.localId !== localId)
-            const reordered = reorderItems(next)
-
-            if (!reordered.some((item) => item.isCover) && reordered[0]) {
-                reordered[0].isCover = true
+            if (photo.isExisting && galleryId && photo.id) {
+                await deleteGalleryPhoto(galleryId, photo.id)
             }
 
-            return reordered
-        })
+            setPhotos((current) => {
+                const next = current.filter((item) => item.localId !== localId)
+                const reordered = reorderItems(next)
 
-        setSelectedPhotoId((current) => (current === localId ? null : current))
-        setSelectedPhotoIds((current) => current.filter((item) => item !== localId))
+                if (!reordered.some((item) => item.isCover) && reordered[0]) {
+                    reordered[0].isCover = true
+                }
+
+                return reordered
+            })
+
+            setSelectedPhotoId((current) => (current === localId ? null : current))
+            setSelectedPhotoIds((current) => current.filter((item) => item !== localId))
+
+            showToast({
+                type: "success",
+                title: t.done,
+                message: t.photoRemoved,
+            })
+
+            if (photo.isExisting && galleryId) {
+                await loadGallery()
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : t.photoDeleteFailed
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message,
+            })
+        }
     }
 
     const handleToggleSelectPhoto = (localId: string) => {
@@ -524,6 +597,7 @@ export default function ClientGalleryEditAdmin() {
 
     const handleDeleteSelected = async () => {
         const ids = [...selectedPhotoIds]
+
         for (const localId of ids) {
             await removePhotoLocal(localId)
         }
@@ -551,36 +625,85 @@ export default function ClientGalleryEditAdmin() {
     const validate = () => {
         if (!titleBg.trim()) {
             setError(t.titleRequired)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.titleRequired,
+            })
+
             return false
         }
 
         if (isPublic && !titleEn.trim()) {
             setError(t.titleEnRequired)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.titleEnRequired,
+            })
+
             return false
         }
 
         if (isPublic && !portfolioCategoryId) {
             setError(t.categoryRequired)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.categoryRequired,
+            })
+
             return false
         }
 
         if (!photos.length) {
             setError(t.photosRequired)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.photosRequired,
+            })
+
             return false
         }
 
         if (photos.some((photo) => photo.file && photo.file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES)) {
             setError(t.photoTooLarge)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.photoTooLarge,
+            })
+
             return false
         }
 
         if (duplicateTitleBg) {
             setError(t.duplicateTitleBg)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.duplicateTitleBg,
+            })
+
             return false
         }
 
         if (isPublic && duplicateTitleEn) {
             setError(t.duplicateTitleEn)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message: t.duplicateTitleEn,
+            })
+
             return false
         }
 
@@ -623,7 +746,9 @@ export default function ClientGalleryEditAdmin() {
                 (item) => item.localId === coverLocalId && item.isExisting
             )
 
-            const nextCoverUrl = uploadedCover?.previewUrl || existingCover?.previewUrl || ""
+            const nextCoverUrl = uploadedCover
+                ? getStoredCoverImageUrl(uploadedCover)
+                : existingCover?.originalUrl || existingCover?.previewUrl || ""
 
             if (nextCoverUrl) {
                 await setGalleryCoverImage(currentGalleryId, { coverImageUrl: nextCoverUrl } as any)
@@ -631,7 +756,7 @@ export default function ClientGalleryEditAdmin() {
         }
     }
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
         setError("")
         setSuccess("")
@@ -657,7 +782,15 @@ export default function ClientGalleryEditAdmin() {
             if (isEditMode && galleryId) {
                 await updateAdminClientGallery(galleryId, payload)
                 await persistExistingPhotos(galleryId)
+
                 setSuccess(t.updateSuccess)
+
+                showToast({
+                    type: "success",
+                    title: t.done,
+                    message: t.updateSuccess,
+                })
+
                 await loadGallery()
                 await loadExistingGalleries()
                 await loadAvailableUsers()
@@ -680,18 +813,67 @@ export default function ClientGalleryEditAdmin() {
 
                 const coverIndex = ordered.findIndex((item) => item.isCover)
                 const coverPhoto = coverIndex >= 0 ? uploadedItems[coverIndex] : uploadedItems[0]
+                const nextCoverUrl = getStoredCoverImageUrl(coverPhoto)
 
-                if (coverPhoto?.previewUrl) {
+                if (nextCoverUrl) {
                     await setGalleryCoverImage(createdId, {
-                        coverImageUrl: coverPhoto.previewUrl,
+                        coverImageUrl: nextCoverUrl,
                     } as any)
                 }
+
+                showToast({
+                    type: "success",
+                    title: t.done,
+                    message: t.createSuccess,
+                })
 
                 navigate(`/admin/client-galleries/edit?id=${createdId}`)
                 return
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешен запис.")
+            const message = err instanceof Error ? err.message : t.saveFailed
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message,
+            })
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const handleDeleteGallery = async () => {
+        if (!isEditMode || !galleryId) {
+            setDeleteOpen(false)
+            return
+        }
+
+        setSaving(true)
+        setError("")
+        setSuccess("")
+
+        try {
+            await deleteAdminClientGallery(galleryId)
+
+            showToast({
+                type: "success",
+                title: t.done,
+                message: t.deleteSuccess,
+            })
+
+            setDeleteOpen(false)
+            navigate("/admin")
+        } catch (err) {
+            const message = err instanceof Error ? err.message : t.deleteFailed
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: t.error,
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -717,7 +899,8 @@ export default function ClientGalleryEditAdmin() {
                     <button
                         type="button"
                         onClick={() => setDeleteOpen(true)}
-                        className="inline-flex h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-500/40 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                        disabled={saving}
+                        className="inline-flex h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/40 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10"
                     >
                         {t.deleteConfirm}
                     </button>
@@ -1077,10 +1260,12 @@ export default function ClientGalleryEditAdmin() {
                 cancelText={t.cancel}
                 confirmVariant="danger"
                 busy={saving}
-                onConfirm={() => {
-                    setDeleteOpen(false)
+                onConfirm={() => void handleDeleteGallery()}
+                onCancel={() => {
+                    if (!saving) {
+                        setDeleteOpen(false)
+                    }
                 }}
-                onCancel={() => setDeleteOpen(false)}
             />
         </div>
     )

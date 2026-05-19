@@ -6,18 +6,20 @@ import {
     grantGalleryAccess,
     removeGalleryAccess,
     updateGalleryAccess,
-} from "../../services/clientGalleries"
-import { apiFetch } from "../../services/api"
-import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
-import type { PagedResultDto } from "../../types/pagination"
+} from "../../../services/clientGalleries"
+import { apiFetch } from "../../../services/api"
+import { resolveAssetUrl } from "../../../utils/resolveAssetUrl"
+import type { PagedResultDto } from "../../../types/pagination"
+import { useAdminToast } from "../../../hooks/useAdminToast"
 
 type GalleryAccessDto = {
     userId: string
-    userEmail: string
+    email: string
+    userEmail?: string
     previewEnabled: boolean
     downloadEnabled: boolean
     downloadExpiresAtUtc?: string | null
-    isExpired: boolean
+    isExpired?: boolean
 }
 
 type UserOption = {
@@ -81,7 +83,17 @@ function toBoolean(value: unknown, fallback = false) {
     return fallback
 }
 
+function normalizeAccess(access: GalleryAccessDto): GalleryAccessDto {
+    return {
+        ...access,
+        email: access.email || access.userEmail || "",
+        isExpired: Boolean(access.isExpired),
+    }
+}
+
 export default function ClientGalleryAccessAdmin() {
+    const { showToast } = useAdminToast()
+
     const [searchParams] = useSearchParams()
     const galleryIdParam = searchParams.get("id")
     const galleryId = galleryIdParam ? Number(galleryIdParam) : 0
@@ -161,7 +173,9 @@ export default function ClientGalleryAccessAdmin() {
         if (!galleryId) return
 
         const data = await getGalleryAccesses(galleryId)
-        const normalizedAccesses = Array.isArray(data) ? data : []
+        const normalizedAccesses = Array.isArray(data)
+            ? (data as GalleryAccessDto[]).map(normalizeAccess)
+            : []
 
         setAccesses(normalizedAccesses)
 
@@ -188,7 +202,14 @@ export default function ClientGalleryAccessAdmin() {
 
             await Promise.all([loadGallery(), loadAccesses(), loadUsers()])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно зареждане на достъпите.")
+            const message = err instanceof Error ? err.message : "Неуспешно зареждане на достъпите."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setLoading(false)
         }
@@ -196,10 +217,12 @@ export default function ClientGalleryAccessAdmin() {
 
     useEffect(() => {
         void loadAll()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [galleryId])
 
     const availableUsers = useMemo(() => {
-        const usedEmails = new Set(accesses.map((x) => x.userEmail.toLowerCase()))
+        const usedEmails = new Set(accesses.map((x) => x.email.toLowerCase()))
+
         return users
             .filter((user) => !usedEmails.has(user.email.toLowerCase()))
             .sort((a, b) => a.email.localeCompare(b.email))
@@ -237,8 +260,21 @@ export default function ClientGalleryAccessAdmin() {
             setSelectedUserEmail("")
 
             await loadAll()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Достъпът беше добавен успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно създаване на достъп.")
+            const message = err instanceof Error ? err.message : "Неуспешно създаване на достъп."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -261,8 +297,21 @@ export default function ClientGalleryAccessAdmin() {
             })
 
             await loadAccesses()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Достъпът беше обновен успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно обновяване на достъпа.")
+            const message = err instanceof Error ? err.message : "Неуспешно обновяване на достъпа."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -275,8 +324,21 @@ export default function ClientGalleryAccessAdmin() {
 
             await removeGalleryAccess(galleryId, userId)
             await loadAll()
+
+            showToast({
+                type: "success",
+                title: "Готово",
+                message: "Достъпът беше премахнат успешно.",
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Неуспешно премахване на достъпа.")
+            const message = err instanceof Error ? err.message : "Неуспешно премахване на достъпа."
+            setError(message)
+
+            showToast({
+                type: "error",
+                title: "Грешка",
+                message,
+            })
         } finally {
             setSaving(false)
         }
@@ -505,7 +567,7 @@ export default function ClientGalleryAccessAdmin() {
                                 >
                                     <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                         <div className="text-base font-semibold text-slate-900 dark:text-white">
-                                            {access.userEmail}
+                                            {access.email}
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">
@@ -538,8 +600,10 @@ export default function ClientGalleryAccessAdmin() {
                                                     setEditingByUserId((prev) => ({
                                                         ...prev,
                                                         [access.userId]: {
-                                                            ...prev[access.userId],
                                                             previewEnabled: e.target.checked,
+                                                            downloadEnabled: prev[access.userId]?.downloadEnabled ?? false,
+                                                            downloadExpiresAt:
+                                                                prev[access.userId]?.downloadExpiresAt || getDefaultExpiryDate(),
                                                         },
                                                     }))
                                                 }
@@ -555,7 +619,7 @@ export default function ClientGalleryAccessAdmin() {
                                                     setEditingByUserId((prev) => ({
                                                         ...prev,
                                                         [access.userId]: {
-                                                            ...prev[access.userId],
+                                                            previewEnabled: prev[access.userId]?.previewEnabled ?? false,
                                                             downloadEnabled: e.target.checked,
                                                             downloadExpiresAt: e.target.checked
                                                                 ? prev[access.userId]?.downloadExpiresAt || getDefaultExpiryDate()
@@ -579,7 +643,8 @@ export default function ClientGalleryAccessAdmin() {
                                                 setEditingByUserId((prev) => ({
                                                     ...prev,
                                                     [access.userId]: {
-                                                        ...prev[access.userId],
+                                                        previewEnabled: prev[access.userId]?.previewEnabled ?? false,
+                                                        downloadEnabled: prev[access.userId]?.downloadEnabled ?? false,
                                                         downloadExpiresAt: e.target.value,
                                                     },
                                                 }))
