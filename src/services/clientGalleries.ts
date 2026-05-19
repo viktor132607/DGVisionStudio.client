@@ -200,8 +200,8 @@ async function parseJsonSafe<T>(response: Response): Promise<T | null> {
     return (await response.json().catch(() => null)) as T | null
 }
 
-function getErrorMessage(data: { message?: string } | null, fallback: string) {
-    return data?.message || fallback
+function getErrorMessage(data: { message?: string; details?: string } | null, fallback: string) {
+    return data?.details || data?.message || fallback
 }
 
 export async function getAdminPortfolioAlbums(
@@ -241,7 +241,7 @@ export async function deleteAdminPortfolioAlbum(albumId: number): Promise<void> 
         method: "DELETE",
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to delete portfolio album."))
@@ -271,7 +271,7 @@ export async function createMyClientGallery(
         body: JSON.stringify(payload),
     })
 
-    const data = await parseJsonSafe<{ id: number; message?: string }>(response)
+    const data = await parseJsonSafe<{ id: number; message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to create gallery."))
@@ -295,7 +295,7 @@ export async function uploadMyClientGalleryPhoto(
         skipJsonContentType: true,
     })
 
-    const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
+    const data = await parseJsonSafe<ClientPhotoDto & { message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to upload photo."))
@@ -304,13 +304,27 @@ export async function uploadMyClientGalleryPhoto(
     return normalizePhoto(data)
 }
 
+export async function deleteMyClientGallery(galleryId: number): Promise<{ message?: string }> {
+    const response = await apiFetch(`/client-galleries/${galleryId}`, {
+        method: "DELETE",
+    })
+
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
+
+    if (!response.ok) {
+        throw new Error(getErrorMessage(data, "Failed to delete gallery."))
+    }
+
+    return { message: data?.message }
+}
+
 export async function getClientGalleryDetails(galleryId: number): Promise<ClientGalleryDetailsDto> {
     const response = await apiFetch(`/client-galleries/${galleryId}`, {
         method: "GET",
         skipJsonContentType: true,
     })
 
-    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string }>(response)
+    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to load client gallery."))
@@ -352,7 +366,7 @@ export async function getAdminClientGalleryById(galleryId: number): Promise<Clie
         skipJsonContentType: true,
     })
 
-    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string }>(response)
+    const data = await parseJsonSafe<ClientGalleryDetailsDto & { message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to load client gallery."))
@@ -369,7 +383,7 @@ export async function createAdminClientGallery(
         body: JSON.stringify(normalizeAdminGalleryPayload(payload)),
     })
 
-    const data = await parseJsonSafe<{ id: number; message?: string }>(response)
+    const data = await parseJsonSafe<{ id: number; message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to create client gallery."))
@@ -390,7 +404,7 @@ export async function updateAdminClientGallery(
         body: JSON.stringify(normalizeAdminGalleryPayload(payload)),
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to update client gallery."))
@@ -406,7 +420,7 @@ export async function deleteAdminClientGallery(
         method: "DELETE",
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to delete client gallery."))
@@ -421,10 +435,10 @@ export async function getGalleryAccesses(galleryId: number): Promise<GalleryAcce
         skipJsonContentType: true,
     })
 
-    const data = await parseJsonSafe<GalleryAccessDto[] | { message?: string }>(response)
+    const data = await parseJsonSafe<GalleryAccessDto[] | { message?: string; details?: string }>(response)
 
     if (!response.ok) {
-        throw new Error(getErrorMessage(data as { message?: string } | null, "Failed to load gallery access."))
+        throw new Error(getErrorMessage(data as { message?: string; details?: string } | null, "Failed to load gallery access."))
     }
 
     return Array.isArray(data) ? data : []
@@ -439,7 +453,7 @@ export async function grantGalleryAccess(
         body: JSON.stringify(payload),
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to grant gallery access."))
@@ -458,7 +472,7 @@ export async function updateGalleryAccess(
         body: JSON.stringify(payload),
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to update gallery access."))
@@ -475,7 +489,7 @@ export async function removeGalleryAccess(
         method: "DELETE",
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to remove gallery access."))
@@ -499,7 +513,7 @@ export async function uploadGalleryPhoto(
         skipJsonContentType: true,
     })
 
-    const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
+    const data = await parseJsonSafe<ClientPhotoDto & { message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to upload photo."))
@@ -518,7 +532,7 @@ export async function updateGalleryPhoto(
         body: JSON.stringify(payload),
     })
 
-    const data = await parseJsonSafe<ClientPhotoDto & { message?: string }>(response)
+    const data = await parseJsonSafe<ClientPhotoDto & { message?: string; details?: string }>(response)
 
     if (!response.ok || !data) {
         throw new Error(getErrorMessage(data, "Failed to update photo."))
@@ -535,7 +549,7 @@ export async function deleteGalleryPhoto(
         method: "DELETE",
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to delete photo."))
@@ -556,7 +570,7 @@ export async function setGalleryCoverImage(
         }),
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to update gallery cover."))
@@ -574,7 +588,7 @@ export async function reorderGalleryPhotos(
         body: JSON.stringify(payload),
     })
 
-    const data = await parseJsonSafe<{ message?: string }>(response)
+    const data = await parseJsonSafe<{ message?: string; details?: string }>(response)
 
     if (!response.ok) {
         throw new Error(getErrorMessage(data, "Failed to reorder photos."))
