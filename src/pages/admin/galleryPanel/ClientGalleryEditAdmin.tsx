@@ -101,7 +101,8 @@ export default function ClientGalleryEditAdmin() {
     const [isPublished, setIsPublished] = useState(true)
     const [isActive, setIsActive] = useState(true)
     const [galleryType, setGalleryType] = useState<GalleryType>("Photoshoot")
-    const [userGalleryStatus, setUserGalleryStatus] = useState<UserClientGalleryStatus>("PhotoshootUploaded")
+    const [userGalleryStatus, setUserGalleryStatus] =
+        useState<UserClientGalleryStatus>("PhotoshootUploaded")
 
     const [photos, setPhotos] = useState<DraftPhotoItem[]>([])
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
@@ -186,6 +187,8 @@ export default function ClientGalleryEditAdmin() {
               saveFailed: "Неуспешен запис.",
               deleteFailed: "Неуспешно изтриване.",
               photoDeleteFailed: "Неуспешно премахване на снимката.",
+              photoUploadFailed:
+                  "Албумът беше създаден, но качването на снимките се провали. Празният албум беше изтрит автоматично.",
           }
         : {
               back: "Back",
@@ -253,6 +256,8 @@ export default function ClientGalleryEditAdmin() {
               saveFailed: "Failed to save.",
               deleteFailed: "Failed to delete.",
               photoDeleteFailed: "Failed to remove photo.",
+              photoUploadFailed:
+                  "The album was created, but photo upload failed. The empty album was deleted automatically.",
           }
 
     const inputClassName =
@@ -353,7 +358,9 @@ export default function ClientGalleryEditAdmin() {
         setPortfolioCategoryId(nextPortfolioCategoryId)
         setIsPublished(nextIsPublished)
         setGalleryType(((data as any).galleryType ?? "Photoshoot") as GalleryType)
-        setUserGalleryStatus(((data as any).userGalleryStatus ?? "PhotoshootUploaded") as UserClientGalleryStatus)
+        setUserGalleryStatus(
+            ((data as any).userGalleryStatus ?? "PhotoshootUploaded") as UserClientGalleryStatus
+        )
 
         if (Array.isArray(data.availableUsers) && data.availableUsers.length > 0) {
             setAvailableUsers(data.availableUsers)
@@ -756,6 +763,14 @@ export default function ClientGalleryEditAdmin() {
         }
     }
 
+    const rollbackCreatedGallery = async (createdId: number) => {
+        try {
+            await deleteAdminClientGallery(createdId)
+        } catch {
+            // Best-effort cleanup only. The original upload error must remain the visible error.
+        }
+    }
+
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
         setError("")
@@ -796,29 +811,45 @@ export default function ClientGalleryEditAdmin() {
                 await loadAvailableUsers()
             } else {
                 const created = await createAdminClientGallery(payload as any)
-                const createdId = (created as any)?.id
+                const createdId = Number((created as any)?.id)
 
-                if (!createdId) {
+                if (!createdId || !Number.isFinite(createdId)) {
                     throw new Error("Неуспешно създаване на албума.")
                 }
 
-                const ordered = reorderItems([...photos].sort((a, b) => a.displayOrder - b.displayOrder))
-                const uploadedItems: ClientPhotoDto[] = []
+                try {
+                    const ordered = reorderItems(
+                        [...photos].sort((a, b) => a.displayOrder - b.displayOrder)
+                    )
 
-                for (const photo of ordered) {
-                    if (!photo.file) continue
-                    const uploaded = await uploadGalleryPhoto(createdId, photo.file)
-                    uploadedItems.push(uploaded)
-                }
+                    const uploadedMap = new Map<string, ClientPhotoDto>()
 
-                const coverIndex = ordered.findIndex((item) => item.isCover)
-                const coverPhoto = coverIndex >= 0 ? uploadedItems[coverIndex] : uploadedItems[0]
-                const nextCoverUrl = getStoredCoverImageUrl(coverPhoto)
+                    for (const photo of ordered) {
+                        if (!photo.file) continue
 
-                if (nextCoverUrl) {
-                    await setGalleryCoverImage(createdId, {
-                        coverImageUrl: nextCoverUrl,
-                    } as any)
+                        const uploaded = await uploadGalleryPhoto(createdId, photo.file)
+                        uploadedMap.set(photo.localId, uploaded)
+                    }
+
+                    const coverLocalId = ordered.find((item) => item.isCover)?.localId
+                    const uploadedCover = coverLocalId ? uploadedMap.get(coverLocalId) : null
+                    const firstUploaded = Array.from(uploadedMap.values())[0]
+                    const nextCoverUrl = getStoredCoverImageUrl(uploadedCover || firstUploaded)
+
+                    if (nextCoverUrl) {
+                        await setGalleryCoverImage(createdId, {
+                            coverImageUrl: nextCoverUrl,
+                        } as any)
+                    }
+                } catch (uploadError) {
+                    await rollbackCreatedGallery(createdId)
+
+                    const uploadMessage =
+                        uploadError instanceof Error && uploadError.message
+                            ? uploadError.message
+                            : t.photoUploadFailed
+
+                    throw new Error(`${t.photoUploadFailed} ${uploadMessage}`)
                 }
 
                 showToast({
@@ -1022,7 +1053,9 @@ export default function ClientGalleryEditAdmin() {
                             </label>
                             <select
                                 value={String(userGalleryStatus)}
-                                onChange={(e) => setUserGalleryStatus(e.target.value as UserClientGalleryStatus)}
+                                onChange={(e) =>
+                                    setUserGalleryStatus(e.target.value as UserClientGalleryStatus)
+                                }
                                 className={inputClassName}
                             >
                                 {galleryType === "ClientPrintUpload" || galleryType === 2 ? (
@@ -1033,10 +1066,18 @@ export default function ClientGalleryEditAdmin() {
                                     </>
                                 ) : (
                                     <>
-                                        <option value="PhotoshootUploaded">{t.photoshootUploaded}</option>
-                                        <option value="PhotoshootInProgress">{t.photoshootInProgress}</option>
-                                        <option value="PhotoshootReadyForPickup">{t.photoshootReadyForPickup}</option>
-                                        <option value="PhotoshootCancelled">{t.photoshootCancelled}</option>
+                                        <option value="PhotoshootUploaded">
+                                            {t.photoshootUploaded}
+                                        </option>
+                                        <option value="PhotoshootInProgress">
+                                            {t.photoshootInProgress}
+                                        </option>
+                                        <option value="PhotoshootReadyForPickup">
+                                            {t.photoshootReadyForPickup}
+                                        </option>
+                                        <option value="PhotoshootCancelled">
+                                            {t.photoshootCancelled}
+                                        </option>
                                     </>
                                 )}
                             </select>
