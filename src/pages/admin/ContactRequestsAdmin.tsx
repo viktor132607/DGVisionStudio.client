@@ -17,6 +17,7 @@ type ContactRequest = {
     createdAtUtc?: string | null
     updatedAtUtc?: string | null
     status?: string | number | null
+    adminComment?: string | null
     isArchived?: boolean
     isSeenByAdmin?: boolean
 }
@@ -173,13 +174,20 @@ export default function ContactRequestsAdmin() {
     }
 
     const changeStatus = async (id: string, status: ContactStatus) => {
+        const requestToUpdate = requests.find((request) => request.id === id)
+        const isArchived = status === "Completed" || status === "Rejected"
+
         setBusyId(id)
         setError("")
 
         try {
-            const response = await apiFetch(`/admin/contact-requests/${id}/status`, {
+            const response = await apiFetch(`/admin/contact-requests/${id}`, {
                 method: "PUT",
-                body: JSON.stringify({ status: statusValues[status] }),
+                body: JSON.stringify({
+                    status: statusValues[status],
+                    adminComment: requestToUpdate?.adminComment ?? null,
+                    isArchived,
+                }),
             })
 
             if (!response.ok) {
@@ -192,7 +200,7 @@ export default function ContactRequestsAdmin() {
                         ? {
                             ...request,
                             status,
-                            isArchived: status === "Completed" || status === "Rejected",
+                            isArchived,
                             updatedAtUtc: new Date().toISOString(),
                         }
                         : request
