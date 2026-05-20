@@ -5,6 +5,7 @@ import AdminPanel from "./AdminPanel"
 import UsersAdmin from "./usersPanel/UsersAdmin"
 import UserAlbumsAdmin from "./usersPanel/UserAlbumsAdmin"
 import ContactRequestsAdmin from "./ContactRequestsAdmin"
+import ContactRequestEditAdmin from "./ContactRequestEditAdmin"
 import ClientGalleryEditAdmin from "./galleryPanel/ClientGalleryEditAdmin"
 import ClientGalleryAccessAdmin from "./galleryPanel/ClientGalleryAccessAdmin"
 import PortfolioCategoryCreateAdmin from "./categoryPanel/PortfolioCategoryCreateAdmin"
@@ -20,6 +21,8 @@ export default function AdminRoutes() {
                 <Route path="users" element={<UsersAdmin />} />
                 <Route path="users/:id/albums" element={<UserAlbumsAdmin />} />
                 <Route path="contact-requests" element={<ContactRequestsAdmin />} />
+                <Route path="contact-requests/:id" element={<ContactRequestEditAdmin />} />
+                <Route path="contact-requests/:id/edit" element={<ContactRequestEditAdmin />} />
                 <Route path="print-requests" element={<PrintRequestsAdmin />} />
 
                 <Route path="client-galleries/new" element={<ClientGalleryEditAdmin />} />
