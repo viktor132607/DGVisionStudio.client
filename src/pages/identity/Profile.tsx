@@ -125,6 +125,7 @@ export default function Profile() {
                             loading={loading}
                             error={error}
                             isBg={isBg}
+                            userEmail={user?.email || ""}
                             onReload={reload}
                         />
                     ) : null}
