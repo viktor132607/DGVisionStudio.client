@@ -12,6 +12,7 @@ export type UserClientGalleryStatus =
     | "PhotoshootInProgress"
     | "PhotoshootReadyForPickup"
     | "PhotoshootCancelled"
+    | "PrintInProgress"
     | 1
     | 2
     | 3
@@ -19,6 +20,7 @@ export type UserClientGalleryStatus =
     | 5
     | 6
     | 7
+    | 8
 
 export type AdminGalleryUserOptionDto = {
     id: string
