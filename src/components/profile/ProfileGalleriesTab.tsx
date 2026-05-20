@@ -16,6 +16,7 @@ type ProfileGalleriesTabProps = {
     loading: boolean
     error: string
     isBg: boolean
+    userEmail?: string
     onReload?: () => Promise<void> | void
 }
 
@@ -46,11 +47,17 @@ const getStatusLabel = (
     return isBg ? "Качена" : "Uploaded"
 }
 
+const makeAutoTitle = (email: string, count: number) => {
+    const prefix = (email || "client").split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "") || "client"
+    return `${prefix}-print-${String(count + 1).padStart(3, "0")}`
+}
+
 export default function ProfileGalleriesTab({
     galleries,
     loading,
     error,
     isBg,
+    userEmail = "",
     onReload,
 }: ProfileGalleriesTabProps) {
     const [openedGallery, setOpenedGallery] = useState<ClientGalleryDetailsDto | null>(null)
@@ -58,18 +65,26 @@ export default function ProfileGalleriesTab({
     const [galleryError, setGalleryError] = useState("")
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
-    const [newTitle, setNewTitle] = useState("")
     const [newDescription, setNewDescription] = useState("")
+    const [pendingFiles, setPendingFiles] = useState<File[]>([])
+    const [dragOverCreate, setDragOverCreate] = useState(false)
     const [creating, setCreating] = useState(false)
     const [uploadingId, setUploadingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const photosSectionRef = useRef<HTMLDivElement | null>(null)
 
-    const userUploadedCount = galleries.filter(
-        (x) => isClientPrintUpload(x.galleryType) && x.isUserUploaded && !isExpiredStatus(x.userGalleryStatus)
-    ).length
+    const userPrintGalleries = useMemo(
+        () => galleries.filter((x) => isClientPrintUpload(x.galleryType) && x.isUserUploaded),
+        [galleries]
+    )
 
+    const sharedGalleries = useMemo(
+        () => galleries.filter((x) => !isClientPrintUpload(x.galleryType) || !x.isUserUploaded),
+        [galleries]
+    )
+
+    const userUploadedCount = userPrintGalleries.filter((x) => !isExpiredStatus(x.userGalleryStatus)).length
     const openedGalleryIsClientPrintUpload = isClientPrintUpload(openedGallery?.galleryType)
 
     const lightboxImages = useMemo(
@@ -106,24 +121,34 @@ export default function ProfileGalleriesTab({
         }
     }
 
+    const addPendingFiles = (files: File[]) => {
+        const imageFiles = files.filter((file) => file.type.startsWith("image/"))
+        if (imageFiles.length !== files.length) {
+            setGalleryError(isBg ? "Можеш да качваш само снимки." : "Only image files are allowed.")
+            return
+        }
+
+        setGalleryError("")
+        setPendingFiles((current) => [...current, ...imageFiles])
+    }
+
     const createGallery = async (e: React.FormEvent) => {
         e.preventDefault()
         setGalleryError("")
 
-        if (!newTitle.trim()) {
-            setGalleryError(isBg ? "Заглавието е задължително." : "Title is required.")
-            return
-        }
-
         try {
             setCreating(true)
             const result = await createMyClientGallery({
-                title: newTitle.trim(),
+                title: makeAutoTitle(userEmail, userPrintGalleries.length),
                 description: newDescription.trim() || null,
             })
 
-            setNewTitle("")
+            for (const file of pendingFiles) {
+                await uploadMyClientGalleryPhoto(result.id, file)
+            }
+
             setNewDescription("")
+            setPendingFiles([])
 
             await onReload?.()
 
@@ -245,6 +270,81 @@ export default function ProfileGalleriesTab({
         document.body.style.overflow = ""
     }
 
+    const renderGalleryCard = (gallery: MyClientGalleryDto) => {
+        const galleryIsClientPrintUpload = isClientPrintUpload(gallery.galleryType)
+
+        return (
+            <div key={gallery.id} className="space-y-3">
+                <div className="rounded-[24px] border border-neutral-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-[13px] font-semibold text-neutral-700 dark:text-zinc-300">
+                            {isBg ? "Статус" : "Status"}
+                        </span>
+
+                        <span className="rounded-full bg-neutral-950 px-3 py-1 text-[12px] font-semibold text-white dark:bg-white dark:text-black">
+                            {getStatusLabel(gallery.galleryType, gallery.userGalleryStatus, isBg)}
+                        </span>
+                    </div>
+                </div>
+
+                <ClientGalleryCard
+                    gallery={gallery}
+                    isBg={isBg}
+                    loading={galleryLoadingId === gallery.id}
+                    onOpen={
+                        gallery.previewEnabled && !gallery.isExpired && !isExpiredStatus(gallery.userGalleryStatus)
+                            ? () => void openGallery(gallery)
+                            : undefined
+                    }
+                    onDownloadAll={
+                        galleryIsClientPrintUpload
+                            ? undefined
+                            : () => {
+                                window.location.href = getGalleryZipDownloadUrl(gallery.id)
+                            }
+                    }
+                />
+
+                {galleryIsClientPrintUpload && gallery.isUserUploaded ? (
+                    <div className="space-y-2">
+                        <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
+                            {uploadingId === gallery.id
+                                ? isBg
+                                    ? "Качване..."
+                                    : "Uploading..."
+                                : isBg
+                                  ? "Качи още снимки"
+                                  : "Upload more photos"}
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                multiple
+                                className="hidden"
+                                disabled={uploadingId === gallery.id || deletingId === gallery.id}
+                                onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
+                            />
+                        </label>
+
+                        <button
+                            type="button"
+                            disabled={deletingId === gallery.id || uploadingId === gallery.id}
+                            onClick={() => void deleteGallery(gallery)}
+                            className="flex h-11 w-full items-center justify-center rounded-full border border-red-300 bg-red-50 px-4 text-[13px] font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
+                        >
+                            {deletingId === gallery.id
+                                ? isBg
+                                    ? "Изтриване..."
+                                    : "Deleting..."
+                                : isBg
+                                  ? "Изтрий галерията"
+                                  : "Delete gallery"}
+                        </button>
+                    </div>
+                ) : null}
+            </div>
+        )
+    }
+
     if (loading) {
         return (
             <div className="rounded-[24px] border border-neutral-200 bg-white px-5 py-10 text-[14px] text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
@@ -267,12 +367,12 @@ export default function ProfileGalleriesTab({
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="text-[20px] font-semibold text-neutral-950 dark:text-white">
-                            {isBg ? "Моите галерии" : "My galleries"}
+                            {isBg ? "Моите галерии за печат" : "My print galleries"}
                         </h2>
                         <p className="mt-1 text-[14px] text-neutral-600 dark:text-zinc-300">
                             {isBg
-                                ? "Можеш да създадеш до 10 галерии за печат. Всяка такава галерия живее 7 дни."
-                                : "You can create up to 10 print galleries. Each print gallery stays active for 7 days."}
+                                ? "Създай галерия без да пишеш заглавие — името се генерира автоматично от профила ти."
+                                : "Create a gallery without typing a title — the name is generated automatically from your profile."}
                         </p>
                     </div>
 
@@ -286,19 +386,7 @@ export default function ProfileGalleriesTab({
                 onSubmit={createGallery}
                 className="rounded-[24px] border border-neutral-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950"
             >
-                <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
-                    <div>
-                        <label className="mb-2 block text-[13px] font-semibold text-neutral-700 dark:text-zinc-300">
-                            {isBg ? "Заглавие" : "Title"}
-                        </label>
-                        <input
-                            value={newTitle}
-                            onChange={(e) => setNewTitle(e.target.value)}
-                            className="h-11 w-full rounded-2xl border border-neutral-300 bg-white px-4 text-[14px] text-neutral-950 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-                            placeholder={isBg ? "Нова галерия" : "New gallery"}
-                        />
-                    </div>
-
+                <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
                     <div>
                         <label className="mb-2 block text-[13px] font-semibold text-neutral-700 dark:text-zinc-300">
                             {isBg ? "Описание" : "Description"}
@@ -319,6 +407,44 @@ export default function ProfileGalleriesTab({
                         {creating ? (isBg ? "Създаване..." : "Creating...") : isBg ? "Създай" : "Create"}
                     </button>
                 </div>
+
+                <label
+                    onDragOver={(event) => {
+                        event.preventDefault()
+                        setDragOverCreate(true)
+                    }}
+                    onDragLeave={() => setDragOverCreate(false)}
+                    onDrop={(event) => {
+                        event.preventDefault()
+                        setDragOverCreate(false)
+                        addPendingFiles(Array.from(event.dataTransfer.files || []))
+                    }}
+                    className={`mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-[22px] border border-dashed px-5 py-8 text-center transition ${
+                        dragOverCreate
+                            ? "border-neutral-950 bg-neutral-100 dark:border-white dark:bg-zinc-800"
+                            : "border-neutral-300 bg-neutral-50 hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                    }`}
+                >
+                    <span className="text-[15px] font-semibold text-neutral-950 dark:text-white">
+                        {isBg ? "Пусни снимките тук или избери файлове" : "Drop photos here or choose files"}
+                    </span>
+                    <span className="mt-1 text-[13px] text-neutral-500 dark:text-zinc-400">
+                        {pendingFiles.length
+                            ? isBg
+                                ? `Избрани снимки: ${pendingFiles.length}`
+                                : `Selected photos: ${pendingFiles.length}`
+                            : isBg
+                              ? "Снимките ще се качат веднага след създаването на албума."
+                              : "Photos will upload immediately after the gallery is created."}
+                    </span>
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        className="hidden"
+                        onChange={(event) => addPendingFiles(Array.from(event.target.files || []))}
+                    />
+                </label>
             </form>
 
             {galleryError ? (
@@ -327,88 +453,47 @@ export default function ProfileGalleriesTab({
                 </div>
             ) : null}
 
-            {!galleries.length ? (
-                <div className="rounded-[24px] border border-neutral-200 bg-white px-5 py-10 text-[14px] text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-                    {isBg ? "Нямаш налични галерии." : "You do not have any galleries yet."}
+            <section className="space-y-4">
+                <div>
+                    <h3 className="text-[18px] font-semibold text-neutral-950 dark:text-white">
+                        {isBg ? "Твои албуми за качване" : "Your upload albums"}
+                    </h3>
+                    <p className="mt-1 text-[13px] text-neutral-500 dark:text-zinc-400">
+                        {isBg ? "Албуми, които ти създаваш и качваш за печат." : "Albums you create and upload for print."}
+                    </p>
                 </div>
-            ) : (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                    {galleries.map((gallery) => {
-                        const galleryIsClientPrintUpload = isClientPrintUpload(gallery.galleryType)
 
-                        return (
-                            <div key={gallery.id} className="space-y-3">
-                                <div className="rounded-[24px] border border-neutral-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <span className="text-[13px] font-semibold text-neutral-700 dark:text-zinc-300">
-                                            {isBg ? "Статус" : "Status"}
-                                        </span>
+                {!userPrintGalleries.length ? (
+                    <div className="rounded-[24px] border border-neutral-200 bg-white px-5 py-10 text-[14px] text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                        {isBg ? "Още нямаш твои албуми за качване." : "You do not have upload albums yet."}
+                    </div>
+                ) : (
+                    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {userPrintGalleries.map(renderGalleryCard)}
+                    </div>
+                )}
+            </section>
 
-                                        <span className="rounded-full bg-neutral-950 px-3 py-1 text-[12px] font-semibold text-white dark:bg-white dark:text-black">
-                                            {getStatusLabel(gallery.galleryType, gallery.userGalleryStatus, isBg)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <ClientGalleryCard
-                                    gallery={gallery}
-                                    isBg={isBg}
-                                    loading={galleryLoadingId === gallery.id}
-                                    onOpen={
-                                        gallery.previewEnabled && !gallery.isExpired && !isExpiredStatus(gallery.userGalleryStatus)
-                                            ? () => void openGallery(gallery)
-                                            : undefined
-                                    }
-                                    onDownloadAll={
-                                        galleryIsClientPrintUpload
-                                            ? undefined
-                                            : () => {
-                                                window.location.href = getGalleryZipDownloadUrl(gallery.id)
-                                            }
-                                    }
-                                />
-
-                                {galleryIsClientPrintUpload && gallery.isUserUploaded ? (
-                                    <div className="space-y-2">
-                                        <label className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white px-4 text-[13px] font-semibold text-neutral-900 transition hover:bg-neutral-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800">
-                                            {uploadingId === gallery.id
-                                                ? isBg
-                                                    ? "Качване..."
-                                                    : "Uploading..."
-                                                : isBg
-                                                  ? "Качи снимки"
-                                                  : "Upload photos"}
-                                            <input
-                                                type="file"
-                                                accept="image/jpeg,image/png,image/webp"
-                                                multiple
-                                                className="hidden"
-                                                disabled={uploadingId === gallery.id || deletingId === gallery.id}
-                                                onChange={(e) => void uploadPhotos(gallery.id, e.target.files)}
-                                            />
-                                        </label>
-
-                                        <button
-                                            type="button"
-                                            disabled={deletingId === gallery.id || uploadingId === gallery.id}
-                                            onClick={() => void deleteGallery(gallery)}
-                                            className="flex h-11 w-full items-center justify-center rounded-full border border-red-300 bg-red-50 px-4 text-[13px] font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
-                                        >
-                                            {deletingId === gallery.id
-                                                ? isBg
-                                                    ? "Изтриване..."
-                                                    : "Deleting..."
-                                                : isBg
-                                                  ? "Изтрий галерията"
-                                                  : "Delete gallery"}
-                                        </button>
-                                    </div>
-                                ) : null}
-                            </div>
-                        )
-                    })}
+            <section className="space-y-4 pt-4">
+                <div>
+                    <h3 className="text-[18px] font-semibold text-neutral-950 dark:text-white">
+                        {isBg ? "Споделени галерии за преглед и теглене" : "Shared galleries for preview and download"}
+                    </h3>
+                    <p className="mt-1 text-[13px] text-neutral-500 dark:text-zinc-400">
+                        {isBg ? "Галерии, до които админът ти е дал достъп." : "Galleries shared with you by an admin."}
+                    </p>
                 </div>
-            )}
+
+                {!sharedGalleries.length ? (
+                    <div className="rounded-[24px] border border-neutral-200 bg-white px-5 py-10 text-[14px] text-neutral-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                        {isBg ? "Нямаш споделени галерии." : "You do not have shared galleries."}
+                    </div>
+                ) : (
+                    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {sharedGalleries.map(renderGalleryCard)}
+                    </div>
+                )}
+            </section>
 
             {openedGallery ? (
                 <div className="rounded-[28px] border border-neutral-200 bg-white shadow-[0_18px_60px_rgba(0,0,0,0.06)] dark:border-zinc-700 dark:bg-zinc-900">
