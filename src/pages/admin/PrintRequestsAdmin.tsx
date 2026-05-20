@@ -7,6 +7,7 @@ import {
     updatePrintRequestStatus,
 } from "../../services/printRequests"
 import { markAdminPrintRequestsSeen } from "../../services/adminNotifications"
+import { downloadUrlAsFile, downloadUrlsAsZip } from "../../utils/downloadZip"
 import type { PrintRequestDto, PrintRequestItemDto } from "../../types/printRequest"
 
 export default function PrintRequestsAdmin() {
@@ -21,6 +22,7 @@ export default function PrintRequestsAdmin() {
     const [busyId, setBusyId] = useState<number | null>(null)
     const [previewRequest, setPreviewRequest] = useState<PrintRequestDto | null>(null)
     const [selectedItemIds, setSelectedItemIds] = useState<number[]>([])
+    const [downloading, setDownloading] = useState(false)
 
     const load = async () => {
         setLoading(true)
@@ -84,34 +86,64 @@ export default function PrintRequestsAdmin() {
 
     const getImageUrl = (item: PrintRequestItemDto) => item.imageUrl || item.thumbnailUrl || ""
 
-    const downloadItem = (item: PrintRequestItemDto) => {
+    const getItemFileName = (request: PrintRequestDto | null, item: PrintRequestItemDto, index = 0) => {
+        const requestId = request?.id ?? "request"
+        const size = item.size ? `-${item.size}` : ""
+        return `print-${requestId}-${String(index + 1).padStart(3, "0")}${size}`
+    }
+
+    const getZipName = (request: PrintRequestDto) => {
+        const album = (request.albumTitle || "print-request").replace(/[^a-zA-Z0-9а-яА-Я._-]+/g, "-")
+        return `${album}-${request.id}.zip`
+    }
+
+    const downloadItem = async (item: PrintRequestItemDto, request: PrintRequestDto | null = previewRequest, index = 0) => {
         const url = getImageUrl(item)
         if (!url) return
 
-        const link = document.createElement("a")
-        link.href = url
-        link.download = `print-photo-${item.id}`
-        link.target = "_blank"
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
+        try {
+            setError("")
+            await downloadUrlAsFile(url, getItemFileName(request, item, index))
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Изтеглянето беше неуспешно.")
+        }
     }
 
-    const downloadItems = (items: PrintRequestItemDto[]) => {
-        items.forEach((item, index) => {
-            window.setTimeout(() => downloadItem(item), index * 250)
-        })
+    const downloadItemsAsArchive = async (request: PrintRequestDto, items: PrintRequestItemDto[]) => {
+        const validItems = items.filter(item => getImageUrl(item))
+
+        if (!validItems.length) {
+            setError("Няма снимки за изтегляне.")
+            return
+        }
+
+        setDownloading(true)
+        setError("")
+
+        try {
+            await downloadUrlsAsZip(
+                validItems.map((item, index) => ({
+                    url: getImageUrl(item),
+                    name: getItemFileName(request, item, index),
+                })),
+                getZipName(request)
+            )
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Изтеглянето на архива беше неуспешно.")
+        } finally {
+            setDownloading(false)
+        }
     }
 
-    const downloadAll = (request: PrintRequestDto) => {
-        downloadItems(request.items || [])
+    const downloadAll = async (request: PrintRequestDto) => {
+        await downloadItemsAsArchive(request, request.items || [])
     }
 
-    const downloadSelected = () => {
+    const downloadSelected = async () => {
         if (!previewRequest) return
 
         const selectedItems = (previewRequest.items || []).filter(item => selectedItemIds.includes(item.id))
-        downloadItems(selectedItems)
+        await downloadItemsAsArchive(previewRequest, selectedItems)
     }
 
     const openPreview = (request: PrintRequestDto) => {
@@ -564,8 +596,9 @@ export default function PrintRequestsAdmin() {
 
                                                         <button
                                                             type="button"
-                                                            onClick={() => downloadAll(request)}
-                                                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+                                                            disabled={downloading}
+                                                            onClick={() => void downloadAll(request)}
+                                                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                                                         >
                                                             Изтегли всички
                                                         </button>
@@ -671,8 +704,8 @@ export default function PrintRequestsAdmin() {
 
                                 <button
                                     type="button"
-                                    onClick={downloadSelected}
-                                    disabled={!selectedItemIds.length}
+                                    onClick={() => void downloadSelected()}
+                                    disabled={!selectedItemIds.length || downloading}
                                     className="rounded-lg bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Изтегли избрани
@@ -680,8 +713,9 @@ export default function PrintRequestsAdmin() {
 
                                 <button
                                     type="button"
-                                    onClick={() => downloadAll(previewRequest)}
-                                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+                                    onClick={() => void downloadAll(previewRequest)}
+                                    disabled={downloading}
+                                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Изтегли всички
                                 </button>
@@ -745,7 +779,7 @@ export default function PrintRequestsAdmin() {
 
                                                 <button
                                                     type="button"
-                                                    onClick={() => downloadItem(item)}
+                                                    onClick={() => void downloadItem(item, previewRequest, index)}
                                                     className="w-full rounded-lg bg-slate-700 px-3 py-2 text-white hover:bg-slate-800"
                                                 >
                                                     Изтегли
