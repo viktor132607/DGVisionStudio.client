@@ -2,6 +2,20 @@ import { useMemo } from "react"
 import { usePortfolioData } from "./usePortfolioData"
 import type { HomeDynamicCard, QuickLink } from "../types/home"
 
+const API_STATIC_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "")
+
+function resolveStaticAssetUrl(value?: string | null) {
+    const path = (value || "").trim()
+
+    if (!path) return "/og-cover.jpg"
+    if (/^(https?:|data:|blob:)/i.test(path)) return path
+    if (path.startsWith("/images/") || path.startsWith("/uploads/")) {
+        return API_STATIC_BASE_URL ? `${API_STATIC_BASE_URL}${path}` : path
+    }
+
+    return path
+}
+
 const CATEGORY_TRANSLATIONS: Record<
     string,
     {
@@ -47,20 +61,6 @@ const CATEGORY_TRANSLATIONS: Record<
         descEn: "Elegant and memorable images for graduates with a distinct style and mood.",
         fallbackImage: "/images/portfolio/балове/Бал Азра/639766578_122099975367277251_3978753087381724830_n.jpg",
     },
-    // birthday: {
-    //     titleBg: "Фотография за рожден ден",
-    //     titleEn: "Birthday Photography",
-    //     descBg: "Емоционални и живи кадри за лични празници и специални поводи.",
-    //     descEn: "Emotional and lively visuals for birthdays and personal celebrations.",
-    //     fallbackImage: "/images/portfolio/балове/Бал Азра/639766578_122099975367277251_3978753087381724830_n.jpg",
-    // },
-    // christmas: {
-    //     titleBg: "Коледна фотография",
-    //     titleEn: "Christmas Photography",
-    //     descBg: "Топли и празнични сесии с уютна атмосфера и сезонно настроение.",
-    //     descEn: "Warm holiday sessions with a cozy atmosphere and seasonal mood.",
-    //     fallbackImage: "/images/portfolio/ПОРТРЕТ/зимна фотосесия ПОРТРЕТ/2U2A2362.jpg",
-    // },
     baptism: {
         titleBg: "Заснемане на кръщене",
         titleEn: "Baptism Photography",
@@ -111,12 +111,8 @@ const HOME_SERVICE_ORDER = [
     "commercial",
     "corporate",
     "graduate",
-    // "birthday",
-    // "christmas",
     "baptism",
     "wedding",
-    // "family",
-    // "maternity",
     "landscape",
     "event",
 ]
@@ -210,12 +206,13 @@ export function useHomeContent() {
 
             const coverAlbum = categoryAlbums[0]
 
-            const coverImage =
+            const coverImage = resolveStaticAssetUrl(
                 coverAlbum?.coverImageUrl ||
                 categoryImages[0]?.thumbnailUrl ||
                 categoryImages[0]?.imageUrl ||
                 translation.fallbackImage ||
                 "/og-cover.jpg"
+            )
 
             return {
                 id: category?.id ?? index + 1,
