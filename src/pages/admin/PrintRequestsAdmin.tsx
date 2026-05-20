@@ -75,11 +75,11 @@ export default function PrintRequestsAdmin() {
 
     const escapeHtml = (value?: string | number | null) => {
         return String(value ?? "-")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#039;")
     }
 
     const getImageUrl = (item: PrintRequestItemDto) => item.imageUrl || item.thumbnailUrl || ""
@@ -110,12 +110,15 @@ export default function PrintRequestsAdmin() {
     const downloadSelected = () => {
         if (!previewRequest) return
 
-        const selectedItems = previewRequest.items.filter(item => selectedItemIds.includes(item.id))
+        const selectedItems = (previewRequest.items || []).filter(item => selectedItemIds.includes(item.id))
         downloadItems(selectedItems)
     }
 
     const openPreview = (request: PrintRequestDto) => {
-        setPreviewRequest(request)
+        setPreviewRequest({
+            ...request,
+            items: Array.isArray(request.items) ? request.items : [],
+        })
         setSelectedItemIds([])
     }
 
@@ -133,7 +136,7 @@ export default function PrintRequestsAdmin() {
     const toggleAllSelected = () => {
         if (!previewRequest) return
 
-        const allIds = previewRequest.items.map(item => item.id)
+        const allIds = (previewRequest.items || []).map(item => item.id)
         setSelectedItemIds(current => current.length === allIds.length ? [] : allIds)
     }
 
