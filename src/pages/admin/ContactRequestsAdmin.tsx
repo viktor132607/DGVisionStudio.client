@@ -23,6 +23,13 @@ type ContactRequest = {
 
 const statusOptions: ContactStatus[] = ["New", "InProgress", "Completed", "Rejected"]
 
+const statusValues: Record<ContactStatus, number> = {
+    New: 0,
+    InProgress: 1,
+    Completed: 2,
+    Rejected: 3,
+}
+
 export default function ContactRequestsAdmin() {
     const { showToast } = useAdminToast()
 
@@ -50,8 +57,8 @@ export default function ContactRequestsAdmin() {
         const normalized = status.toLowerCase().replace(/[\s_-]/g, "")
 
         if (normalized === "inprogress") return "InProgress"
-        if (normalized === "completed") return "Completed"
-        if (normalized === "rejected" || normalized === "cancelled" || normalized === "canceled" || normalized === "archived") return "Rejected"
+        if (normalized === "completed" || normalized === "answered") return "Completed"
+        if (normalized === "rejected" || normalized === "cancelled" || normalized === "canceled" || normalized === "closed" || normalized === "archived") return "Rejected"
 
         return "New"
     }
@@ -172,7 +179,7 @@ export default function ContactRequestsAdmin() {
         try {
             const response = await apiFetch(`/admin/contact-requests/${id}/status`, {
                 method: "PUT",
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({ status: statusValues[status] }),
             })
 
             if (!response.ok) {
