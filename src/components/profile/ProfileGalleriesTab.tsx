@@ -34,8 +34,9 @@ const getStatusLabel = (
     isBg: boolean
 ) => {
     if (isClientPrintUpload(galleryType)) {
+        if (status === "PrintInProgress" || status === 8 || status === "PhotoshootInProgress" || status === 5) return isBg ? "В процес" : "In progress"
         if (status === "Processed" || status === 2) return isBg ? "Обработена" : "Processed"
-        if (status === "Expired" || status === 3) return isBg ? "Изтекла" : "Expired"
+        if (status === "Expired" || status === 3) return isBg ? "Отказана" : "Cancelled"
 
         return isBg ? "Качена за печат" : "Uploaded for print"
     }
