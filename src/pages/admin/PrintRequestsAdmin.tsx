@@ -7,7 +7,7 @@ import {
     updatePrintRequestStatus,
 } from "../../services/printRequests"
 import { markAdminPrintRequestsSeen } from "../../services/adminNotifications"
-import type { PrintRequestDto } from "../../types/printRequest"
+import type { PrintRequestDto, PrintRequestItemDto } from "../../types/printRequest"
 
 export default function PrintRequestsAdmin() {
     const [requests, setRequests] = useState<PrintRequestDto[]>([])
@@ -19,6 +19,8 @@ export default function PrintRequestsAdmin() {
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
     const [busyId, setBusyId] = useState<number | null>(null)
+    const [previewRequest, setPreviewRequest] = useState<PrintRequestDto | null>(null)
+    const [selectedItemIds, setSelectedItemIds] = useState<number[]>([])
 
     const load = async () => {
         setLoading(true)
@@ -69,6 +71,170 @@ export default function PrintRequestsAdmin() {
         }
 
         return status
+    }
+
+    const escapeHtml = (value?: string | number | null) => {
+        return String(value ?? "-")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;")
+    }
+
+    const getImageUrl = (item: PrintRequestItemDto) => item.imageUrl || item.thumbnailUrl || ""
+
+    const downloadItem = (item: PrintRequestItemDto) => {
+        const url = getImageUrl(item)
+        if (!url) return
+
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `print-photo-${item.id}`
+        link.target = "_blank"
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+    }
+
+    const downloadItems = (items: PrintRequestItemDto[]) => {
+        items.forEach((item, index) => {
+            window.setTimeout(() => downloadItem(item), index * 250)
+        })
+    }
+
+    const downloadAll = (request: PrintRequestDto) => {
+        downloadItems(request.items || [])
+    }
+
+    const downloadSelected = () => {
+        if (!previewRequest) return
+
+        const selectedItems = previewRequest.items.filter(item => selectedItemIds.includes(item.id))
+        downloadItems(selectedItems)
+    }
+
+    const openPreview = (request: PrintRequestDto) => {
+        setPreviewRequest(request)
+        setSelectedItemIds([])
+    }
+
+    const closePreview = () => {
+        setPreviewRequest(null)
+        setSelectedItemIds([])
+    }
+
+    const toggleSelectedItem = (id: number) => {
+        setSelectedItemIds(current =>
+            current.includes(id) ? current.filter(itemId => itemId !== id) : [...current, id]
+        )
+    }
+
+    const toggleAllSelected = () => {
+        if (!previewRequest) return
+
+        const allIds = previewRequest.items.map(item => item.id)
+        setSelectedItemIds(current => current.length === allIds.length ? [] : allIds)
+    }
+
+    const printRequest = (request: PrintRequestDto) => {
+        const status = normalizeStatus(request.status)
+        const createdAt = request.createdAtUtc
+            ? new Date(request.createdAtUtc).toLocaleString("bg-BG")
+            : "-"
+
+        const itemsHtml = (request.items || [])
+            .map((item, index) => {
+                const imageUrl = getImageUrl(item)
+
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="Photo ${index + 1}" />` : "-"}</td>
+                        <td>${escapeHtml(item.quantity)}</td>
+                        <td>${escapeHtml(item.size)}</td>
+                        <td>${escapeHtml(item.paperType)}</td>
+                        <td>${escapeHtml(item.notes)}</td>
+                    </tr>
+                `
+            })
+            .join("")
+
+        const printWindow = window.open("", "_blank", "width=1100,height=800")
+
+        if (!printWindow) {
+            setError("Браузърът блокира прозореца за принтиране.")
+            return
+        }
+
+        printWindow.document.open()
+        printWindow.document.write(`
+            <!doctype html>
+            <html>
+                <head>
+                    <meta charset="utf-8" />
+                    <title>Print request ${escapeHtml(request.id)}</title>
+                    <style>
+                        * { box-sizing: border-box; }
+                        body { margin: 0; padding: 28px; font-family: Arial, sans-serif; color: #111827; }
+                        h1 { margin: 0 0 18px; font-size: 26px; }
+                        h2 { margin: 26px 0 12px; font-size: 18px; }
+                        .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin-bottom: 18px; }
+                        .box { border: 1px solid #d1d5db; border-radius: 10px; padding: 12px; }
+                        .label { display: block; margin-bottom: 4px; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+                        .value { font-size: 15px; font-weight: 700; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; vertical-align: top; font-size: 13px; }
+                        th { background: #f3f4f6; }
+                        img { max-width: 110px; max-height: 110px; object-fit: contain; }
+                        .notes { min-height: 70px; white-space: pre-wrap; }
+                        @media print { body { padding: 18px; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>Заявка за принтиране</h1>
+
+                    <div class="meta">
+                        <div class="box"><span class="label">ID</span><span class="value">${escapeHtml(request.id)}</span></div>
+                        <div class="box"><span class="label">Статус</span><span class="value">${escapeHtml(status)}</span></div>
+                        <div class="box"><span class="label">Албум</span><span class="value">${escapeHtml(request.albumTitle)}</span></div>
+                        <div class="box"><span class="label">Дата</span><span class="value">${escapeHtml(createdAt)}</span></div>
+                        <div class="box"><span class="label">Клиент</span><span class="value">${escapeHtml(request.fullName || request.userEmail)}</span></div>
+                        <div class="box"><span class="label">Email</span><span class="value">${escapeHtml(request.email || request.userEmail)}</span></div>
+                        <div class="box"><span class="label">Телефон</span><span class="value">${escapeHtml(request.phone)}</span></div>
+                        <div class="box"><span class="label">Брой снимки</span><span class="value">${escapeHtml(request.items?.length ?? 0)}</span></div>
+                    </div>
+
+                    <h2>Бележки</h2>
+                    <div class="box notes">${escapeHtml(request.notes)}</div>
+
+                    <h2>Снимки за печат</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Снимка</th>
+                                <th>Брой</th>
+                                <th>Размер</th>
+                                <th>Хартия</th>
+                                <th>Бележки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml || `<tr><td colspan="6">Няма снимки.</td></tr>`}
+                        </tbody>
+                    </table>
+
+                    <script>
+                        window.onload = function () {
+                            window.focus();
+                            window.print();
+                        };
+                    </script>
+                </body>
+            </html>
+        `)
+        printWindow.document.close()
     }
 
     const remove = async (id: number) => {
@@ -385,12 +551,29 @@ export default function PrintRequestsAdmin() {
 
                                                 <td className="p-3">
                                                     <div className="flex flex-nowrap items-center gap-2 whitespace-nowrap">
-                                                        <Link
-                                                            to={`/admin/client-galleries/edit?id=${request.portfolioAlbumId}`}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openPreview(request)}
                                                             className="rounded-lg bg-slate-700 px-3 py-1.5 text-white hover:bg-slate-800"
                                                         >
-                                                            Отвори
-                                                        </Link>
+                                                            Преглед
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => downloadAll(request)}
+                                                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+                                                        >
+                                                            Изтегли всички
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => printRequest(request)}
+                                                            className="rounded-lg bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+                                                        >
+                                                            Print
+                                                        </button>
 
                                                         {!request.isSeenByAdmin ? (
                                                             <button
@@ -459,6 +642,119 @@ export default function PrintRequestsAdmin() {
                         </button>
                     </div>
                 </>
+            ) : null}
+
+            {previewRequest ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                    <div className="max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-zinc-900">
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 p-4 dark:border-zinc-800">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                    Преглед на снимки
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                                    {previewRequest.albumTitle} · {previewRequest.items.length} снимки
+                                </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={toggleAllSelected}
+                                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+                                >
+                                    {selectedItemIds.length === previewRequest.items.length ? "Махни избора" : "Избери всички"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={downloadSelected}
+                                    disabled={!selectedItemIds.length}
+                                    className="rounded-lg bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    Изтегли избрани
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => downloadAll(previewRequest)}
+                                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+                                >
+                                    Изтегли всички
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={closePreview}
+                                    className="rounded-lg bg-gray-700 px-3 py-2 text-sm text-white hover:bg-gray-800"
+                                >
+                                    Затвори
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="max-h-[72vh] overflow-y-auto p-4">
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {previewRequest.items.map((item, index) => {
+                                    const imageUrl = getImageUrl(item)
+                                    const selected = selectedItemIds.includes(item.id)
+
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className={`overflow-hidden rounded-xl border bg-white dark:bg-zinc-950 ${
+                                                selected
+                                                    ? "border-emerald-500 ring-2 ring-emerald-500/40"
+                                                    : "border-gray-200 dark:border-zinc-800"
+                                            }`}
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSelectedItem(item.id)}
+                                                className="block w-full bg-gray-100 dark:bg-zinc-800"
+                                            >
+                                                {imageUrl ? (
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={`Print ${index + 1}`}
+                                                        className="h-52 w-full object-contain"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-52 items-center justify-center text-sm text-gray-500">
+                                                        Няма снимка
+                                                    </div>
+                                                )}
+                                            </button>
+
+                                            <div className="space-y-2 p-3 text-sm text-gray-700 dark:text-zinc-300">
+                                                <label className="flex items-center gap-2 font-semibold">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selected}
+                                                        onChange={() => toggleSelectedItem(item.id)}
+                                                    />
+                                                    #{index + 1}
+                                                </label>
+                                                <div>Брой: {item.quantity}</div>
+                                                <div>Размер: {item.size || "-"}</div>
+                                                <div>Хартия: {item.paperType || "-"}</div>
+                                                <div className="truncate" title={item.notes || ""}>Бележки: {item.notes || "-"}</div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => downloadItem(item)}
+                                                    className="w-full rounded-lg bg-slate-700 px-3 py-2 text-white hover:bg-slate-800"
+                                                >
+                                                    Изтегли
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             ) : null}
         </div>
     )
