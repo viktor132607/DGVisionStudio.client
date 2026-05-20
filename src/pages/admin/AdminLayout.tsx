@@ -1,7 +1,50 @@
+import { useEffect } from "react"
 import { Link, Outlet } from "react-router-dom"
 import AdminToastProvider from "../../components/admin/AdminToastProvider"
 
 export default function AdminLayout() {
+    useEffect(() => {
+        const cleanupButtons = () => {
+            const pathname = window.location.pathname
+            const buttons = Array.from(document.querySelectorAll("button"))
+
+            for (const button of buttons) {
+                const text = button.textContent?.trim() || ""
+                const parent = button.parentElement
+
+                if (pathname === "/admin" && text === "Обнови албумите" && parent) {
+                    const exists = parent.querySelector("[data-create-category-link='true']")
+                    if (!exists) {
+                        const link = document.createElement("a")
+                        link.href = "/admin/portfolio-categories/new"
+                        link.textContent = "Създай категория"
+                        link.dataset.createCategoryLink = "true"
+                        link.className = "inline-flex h-11 items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white transition hover:bg-black dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        button.replaceWith(link)
+                    } else {
+                        button.remove()
+                    }
+                    continue
+                }
+
+                if (pathname === "/admin" && (text === "Обнови всичко" || text === "Обнови категориите")) {
+                    button.remove()
+                    continue
+                }
+
+                if (pathname.startsWith("/admin/portfolio-categories") && text === "Обнови") {
+                    button.remove()
+                }
+            }
+        }
+
+        cleanupButtons()
+        const observer = new MutationObserver(cleanupButtons)
+        observer.observe(document.body, { childList: true, subtree: true })
+
+        return () => observer.disconnect()
+    }, [])
+
     return (
         <AdminToastProvider>
             <div className="min-h-screen bg-gray-100 dark:bg-zinc-950">
