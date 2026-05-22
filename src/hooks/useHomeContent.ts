@@ -87,9 +87,6 @@ const CATEGORY_TRANSLATIONS: Record<
 
 const HOME_SERVICE_ORDER = [
     "portrait",
-    "product",
-    "commercial",
-    "corporate",
     "graduate",
     "baptism",
     "wedding",
