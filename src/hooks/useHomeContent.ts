@@ -33,27 +33,7 @@ const CATEGORY_TRANSLATIONS: Record<
         descEn: "Individual, artistic, and professional portraits with a clean visual style and strong presence.",
         fallbackImage: "/images/portfolio/ПОРТРЕТ/зимна фотосесия ПОРТРЕТ/641416539_122101709805277251_8677250284073032946_n.jpg",
     },
-    product: {
-        titleBg: "Продуктова фотография",
-        titleEn: "Product Photography",
-        descBg: "Кадри за продукти, брандове и онлайн магазини с фокус върху детайла и представянето.",
-        descEn: "Visuals for products, brands, and online stores with focus on detail and presentation.",
-        fallbackImage: "/images/portfolio/ПОРТРЕТ/ПРОЛЕТ ПОРТРЕТ/2U2A6355.jpg",
-    },
-    commercial: {
-        titleBg: "Рекламна фотография",
-        titleEn: "Commercial Photography",
-        descBg: "Съдържание за кампании, социални мрежи и онлайн присъствие с ясно визуално послание.",
-        descEn: "Content for campaigns, social media, and online presence with a clear visual message.",
-        fallbackImage: "/images/portfolio/events/bulgare/1.jpg",
-    },
-    corporate: {
-        titleBg: "Корпоративна фотография",
-        titleEn: "Corporate Photography",
-        descBg: "Професионални кадри за екипи, бизнес среда, услуги и фирмено присъствие.",
-        descEn: "Professional visuals for teams, business environments, services, and company presence.",
-        fallbackImage: "/images/portfolio/ПЕЙЗАЖИ/650235666_122104710225277251_7176854112806431771_n.jpg",
-    },
+
     graduate: {
         titleBg: "Абитуриентска фотография",
         titleEn: "Graduation Photography",
