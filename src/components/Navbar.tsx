@@ -14,6 +14,8 @@ export default function Navbar() {
     const [isDark, setIsDark] = useState(false)
     const [servicesOpen, setServicesOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [mobileServicesOpen, setMobileServicesOpen] = useState(false)
+    const [mobileAuthOpen, setMobileAuthOpen] = useState(false)
     const [showNavbar, setShowNavbar] = useState(true)
     const lastScrollY = useRef(0)
 
@@ -38,16 +40,15 @@ export default function Navbar() {
                 setShowNavbar(false)
                 setServicesOpen(false)
                 setMobileOpen(false)
+                setMobileServicesOpen(false)
+                setMobileAuthOpen(false)
             }
 
             lastScrollY.current = currentScrollY
         }
 
         window.addEventListener("scroll", handleScroll, { passive: true })
-
-        return () => {
-            window.removeEventListener("scroll", handleScroll)
-        }
+        return () => window.removeEventListener("scroll", handleScroll)
     }, [])
 
     const toggleTheme = () => {
@@ -57,9 +58,15 @@ export default function Navbar() {
         localStorage.setItem(THEME_KEY, next ? "dark" : "light")
     }
 
+    const closeMobileMenu = () => {
+        setMobileOpen(false)
+        setMobileServicesOpen(false)
+        setMobileAuthOpen(false)
+    }
+
     const handleLogout = async () => {
         await logout()
-        setMobileOpen(false)
+        closeMobileMenu()
     }
 
     const serviceItems = isBg
@@ -122,19 +129,35 @@ export default function Navbar() {
     const desktopSolidButtonClass =
         "hidden sm:inline-flex items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-4 xl:px-5 py-2 text-[13px] xl:text-[14px] font-semibold text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
 
+    const mobileHeaderButtonClass =
+        "inline-flex h-9 items-center justify-center rounded-full bg-white px-3 text-[12px] font-bold text-neutral-800 transition hover:bg-neutral-100 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+
+    const mobileIconButtonClass =
+        "flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-900 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+
+    const mobileLinkClass = (active: boolean) =>
+        `block border-b border-neutral-200 py-4 text-base font-semibold tracking-[0.01em] transition dark:border-white/10 ${
+            active
+                ? "text-neutral-950 dark:text-white"
+                : "text-neutral-700 hover:text-neutral-950 dark:text-zinc-200 dark:hover:text-white"
+        }`
+
+    const mobileSubLinkClass =
+        "block border-b border-neutral-100 py-3 text-sm font-medium text-neutral-500 transition last:border-b-0 hover:text-neutral-950 dark:border-white/10 dark:text-zinc-400 dark:hover:text-white"
+
     return (
         <header
             className={`fixed left-0 right-0 top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur-md transition-transform duration-300 dark:border-white/10 dark:bg-black/90 ${
                 showNavbar ? "translate-y-0" : "-translate-y-full"
             }`}
         >
-            <div className="mx-auto max-w-[1720px] px-5 sm:px-7 lg:px-10 2xl:px-12">
+            <div className="mx-auto max-w-[1720px] px-4 sm:px-7 lg:px-10 2xl:px-12">
                 <div className="flex h-[82px] items-center justify-between xl:h-[88px]">
-                    <Link to="/" className="flex items-center py-1 pr-3 lg:pr-4">
+                    <Link to="/" className="flex min-w-0 items-center py-1 pr-2 lg:pr-4">
                         <img
                             src={isDark ? "/images/relogo/white.webp" : "/images/relogo/black.webp"}
                             alt="DG Vision Studio"
-                            className="block h-[42px] w-auto object-contain sm:h-[46px] lg:h-[50px] xl:h-[54px]"
+                            className="block h-[38px] w-auto object-contain sm:h-[46px] lg:h-[50px] xl:h-[54px]"
                         />
                     </Link>
 
@@ -194,7 +217,7 @@ export default function Navbar() {
                         )}
                     </nav>
 
-                    <div className="flex items-center gap-2.5 xl:gap-3">
+                    <div className="flex items-center gap-2 lg:gap-2.5 xl:gap-3">
                         {user ? (
                             <>
                                 {isAdmin && (
@@ -207,31 +230,65 @@ export default function Navbar() {
                                     {isBg ? "Профил" : "Profile"}
                                 </Link>
 
-                                <button
-                                    type="button"
-                                    onClick={handleLogout}
-                                    className={desktopSolidButtonClass}
-                                >
+                                <button type="button" onClick={handleLogout} className={desktopSolidButtonClass}>
                                     {isBg ? "Изход" : "Logout"}
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link
-                                    to="/identity/login"
-                                    className={desktopOutlineButtonClass}
-                                >
+                                <Link to="/identity/login" className={desktopOutlineButtonClass}>
                                     {isBg ? "Вход" : "Login"}
                                 </Link>
 
-                                <Link
-                                    to="/identity/register"
-                                    className={desktopSolidButtonClass}
-                                >
+                                <Link to="/identity/register" className={desktopSolidButtonClass}>
                                     {isBg ? "Регистрация" : "Register"}
                                 </Link>
                             </>
                         )}
+
+                        {!user ? (
+                            <div className="relative lg:hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => setMobileAuthOpen((prev) => !prev)}
+                                    className={mobileHeaderButtonClass}
+                                >
+                                    {isBg ? "Вход" : "Login"}
+                                </button>
+
+                                {mobileAuthOpen && (
+                                    <div className="absolute right-0 top-full z-50 mt-3 w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/10 dark:bg-zinc-950">
+                                        <Link
+                                            to="/identity/login"
+                                            className="block border-b border-neutral-100 px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                                            onClick={closeMobileMenu}
+                                        >
+                                            {isBg ? "Вход" : "Login"}
+                                        </Link>
+
+                                        <Link
+                                            to="/identity/register"
+                                            className="block px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                                            onClick={closeMobileMenu}
+                                        >
+                                            {isBg ? "Регистрация" : "Register"}
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link to="/identity/profile" className={`${mobileHeaderButtonClass} lg:hidden`}>
+                                {isBg ? "Профил" : "Profile"}
+                            </Link>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={() => i18n.changeLanguage(isBg ? "en" : "bg")}
+                            className={mobileHeaderButtonClass}
+                        >
+                            {isBg ? "EN" : "BG"}
+                        </button>
 
                         <button
                             type="button"
@@ -248,20 +305,10 @@ export default function Navbar() {
                             />
                         </button>
 
-                        <div className="hidden sm:flex">
-                            <button
-                                type="button"
-                                onClick={() => i18n.changeLanguage(isBg ? "en" : "bg")}
-                                className="px-1 text-[13px] xl:text-[14px] font-semibold text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-200 dark:hover:text-white"
-                            >
-                                {isBg ? "EN" : "BG"}
-                            </button>
-                        </div>
-
                         <button
                             type="button"
                             onClick={() => setMobileOpen(!mobileOpen)}
-                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-900 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900 lg:hidden"
+                            className={`${mobileIconButtonClass} lg:hidden`}
                             aria-label={isBg ? "Меню" : "Menu"}
                         >
                             ☰
@@ -272,96 +319,87 @@ export default function Navbar() {
 
             {mobileOpen && (
                 <div className="border-t border-neutral-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black lg:hidden">
-                    <div className="space-y-4">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                i18n.changeLanguage(isBg ? "en" : "bg")
-                                setMobileOpen(false)
-                            }}
-                            className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
-                        >
-                            {isBg ? "EN" : "BG"}
-                        </button>
+                    <div>
+                        {items.map((item) =>
+                            item.hasDropdown ? (
+                                <div key={item.label} className="border-b border-neutral-200 dark:border-white/10">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMobileServicesOpen((prev) => !prev)}
+                                        className={`flex w-full items-center justify-between py-4 text-left text-base font-semibold tracking-[0.01em] transition ${
+                                            isActive(item.to, true)
+                                                ? "text-neutral-950 dark:text-white"
+                                                : "text-neutral-700 hover:text-neutral-950 dark:text-zinc-200 dark:hover:text-white"
+                                        }`}
+                                    >
+                                        <span>{item.label}</span>
+
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-700 dark:border-white/20 dark:text-zinc-200">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className={`h-4 w-4 transition-transform ${
+                                                    mobileServicesOpen ? "rotate-180" : ""
+                                                }`}
+                                            >
+                                                <path d="m6 9 6 6 6-6" />
+                                            </svg>
+                                        </span>
+                                    </button>
+
+                                    {mobileServicesOpen && (
+                                        <div className="mb-3 bg-white dark:bg-black">
+                                            {serviceItems.map((s) => (
+                                                <Link
+                                                    key={s.to}
+                                                    to={s.to}
+                                                    className={mobileSubLinkClass}
+                                                    onClick={closeMobileMenu}
+                                                >
+                                                    {s.label}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <Link
+                                    key={item.to}
+                                    to={item.to}
+                                    className={mobileLinkClass(isActive(item.to))}
+                                    onClick={closeMobileMenu}
+                                >
+                                    {item.label}
+                                </Link>
+                            )
+                        )}
 
                         {user ? (
                             <>
                                 {isAdmin && (
                                     <Link
                                         to="/admin"
-                                        className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
-                                        onClick={() => setMobileOpen(false)}
+                                        className={mobileLinkClass(location.pathname === "/admin")}
+                                        onClick={closeMobileMenu}
                                     >
                                         {isBg ? "Админ" : "Admin"}
                                     </Link>
                                 )}
 
-                                <Link
-                                    to="/identity/profile"
-                                    className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    {isBg ? "Профил" : "Profile"}
-                                </Link>
-
                                 <button
                                     type="button"
                                     onClick={handleLogout}
-                                    className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
+                                    className="block w-full border-b border-neutral-200 py-4 text-left text-base font-semibold text-neutral-700 dark:border-white/10 dark:text-zinc-200"
                                 >
                                     {isBg ? "Изход" : "Logout"}
                                 </button>
                             </>
-                        ) : (
-                            <>
-                                <Link
-                                    to="/identity/login"
-                                    className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    {isBg ? "Вход" : "Login"}
-                                </Link>
-
-                                <Link
-                                    to="/identity/register"
-                                    className="block text-base font-medium text-neutral-700 dark:text-zinc-200"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    {isBg ? "Регистрация" : "Register"}
-                                </Link>
-                            </>
-                        )}
-
-                        {items.map((item) => (
-                            <div key={item.label}>
-                                <Link
-                                    to={item.to}
-                                    className={`block text-base font-semibold ${
-                                        isActive(item.to, item.hasDropdown)
-                                            ? "text-neutral-950 dark:text-white"
-                                            : "text-neutral-700 dark:text-zinc-200"
-                                    }`}
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    {item.label}
-                                </Link>
-
-                                {item.hasDropdown && (
-                                    <div className="ml-3 mt-2 space-y-1.5">
-                                        {serviceItems.map((s) => (
-                                            <Link
-                                                key={s.to}
-                                                to={s.to}
-                                                className="block text-sm text-neutral-500 dark:text-zinc-400"
-                                                onClick={() => setMobileOpen(false)}
-                                            >
-                                                {s.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                        ) : null}
                     </div>
                 </div>
             )}
