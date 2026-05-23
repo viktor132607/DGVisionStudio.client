@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import Seo from "../components/Seo"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
@@ -10,6 +10,7 @@ const INTRO_VIDEO_SRC = "/videos/copy_0670ABED-A333-4487-B48C-716BA1415269.mov"
 
 export default function Home() {
     const { i18n } = useTranslation()
+    const location = useLocation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { quickLinks, serviceCards } = useHomeContent()
@@ -21,24 +22,35 @@ export default function Home() {
     const [isVideoMuted, setIsVideoMuted] = useState(false)
 
     useEffect(() => {
-        if (introVideoDone) return
+        if (location.pathname !== "/") return
 
-        const video = introVideoRef.current
-        if (!video) return
+        setIntroVideoDone(false)
 
-        video.muted = false
-        setIsVideoMuted(false)
+        const timer = window.setTimeout(() => {
+            const video = introVideoRef.current
+            if (!video) return
 
-        const playPromise = video.play()
+            video.pause()
+            video.currentTime = 0
+            video.load()
 
-        if (playPromise !== undefined) {
-            playPromise.catch(() => {
-                video.muted = true
-                setIsVideoMuted(true)
-                void video.play()
-            })
-        }
-    }, [introVideoDone])
+            video.muted = false
+            setIsVideoMuted(false)
+
+            const playPromise = video.play()
+
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    video.muted = true
+                    setIsVideoMuted(true)
+                    video.currentTime = 0
+                    void video.play()
+                })
+            }
+        }, 0)
+
+        return () => window.clearTimeout(timer)
+    }, [location.key, location.pathname])
 
     const toggleVideoMute = () => {
         const video = introVideoRef.current
@@ -143,6 +155,7 @@ export default function Home() {
                                 {!introVideoDone ? (
                                     <>
                                         <video
+                                            key={location.key}
                                             ref={introVideoRef}
                                             className="absolute inset-0 h-full w-full object-cover object-top"
                                             src={INTRO_VIDEO_SRC}
@@ -157,9 +170,40 @@ export default function Home() {
                                         <button
                                             type="button"
                                             onClick={toggleVideoMute}
-                                            className="absolute right-4 top-4 z-20 border border-white/40 bg-black/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:text-xs"
+                                            aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                                            className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border border-white/40 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:h-11 sm:w-11"
                                         >
-                                            {isVideoMuted ? "Unmute" : "Mute"}
+                                            {isVideoMuted ? (
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="h-5 w-5"
+                                                >
+                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                                    <line x1="23" y1="9" x2="17" y2="15" />
+                                                    <line x1="17" y1="9" x2="23" y2="15" />
+                                                </svg>
+                                            ) : (
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="h-5 w-5"
+                                                >
+                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                                    <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+                                                    <path d="M19 5a10 10 0 0 1 0 14" />
+                                                </svg>
+                                            )}
                                         </button>
                                     </>
                                 ) : (
@@ -200,7 +244,10 @@ export default function Home() {
                             </div>
 
                             <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
-                                <div key={introVideoDone ? currentImage?.id ?? "fallback-text" : "intro-video-text"} className="animate-[fadeUp_500ms_ease-out]">
+                                <div
+                                    key={introVideoDone ? currentImage?.id ?? "fallback-text" : "intro-video-text"}
+                                    className="animate-[fadeUp_500ms_ease-out]"
+                                >
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
                                         {slideshowEyebrow}
                                     </p>
