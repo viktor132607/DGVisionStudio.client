@@ -150,7 +150,7 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="order-1 relative min-h-[420px] overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:min-h-[520px] md:min-h-[620px] lg:order-2 lg:min-h-full lg:border-b-0 lg:border-l">
+                        <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
                             <div className="relative h-full w-full overflow-hidden bg-black">
                                 {!introVideoDone ? (
                                     <>
