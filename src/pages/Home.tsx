@@ -1,9 +1,12 @@
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import Seo from "../components/Seo"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { useThemeLogo } from "../hooks/useThemeLogo"
+
+const INTRO_VIDEO_SRC = "/videos/copy_0670ABED-A333-4487-B48C-716BA1415269.mov"
 
 export default function Home() {
     const { i18n } = useTranslation()
@@ -12,6 +15,39 @@ export default function Home() {
     const { quickLinks, serviceCards } = useHomeContent()
     const { currentImage, previousImage, isTransitioning, direction, isMobile } =
         useHomePortfolioSlideshow(4500, 700)
+
+    const introVideoRef = useRef<HTMLVideoElement | null>(null)
+    const [introVideoDone, setIntroVideoDone] = useState(false)
+    const [isVideoMuted, setIsVideoMuted] = useState(false)
+
+    useEffect(() => {
+        if (introVideoDone) return
+
+        const video = introVideoRef.current
+        if (!video) return
+
+        video.muted = false
+        setIsVideoMuted(false)
+
+        const playPromise = video.play()
+
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                video.muted = true
+                setIsVideoMuted(true)
+                void video.play()
+            })
+        }
+    }, [introVideoDone])
+
+    const toggleVideoMute = () => {
+        const video = introVideoRef.current
+        if (!video) return
+
+        video.muted = !video.muted
+        setIsVideoMuted(video.muted)
+        void video.play()
+    }
 
     const homeJsonLd = {
         "@context": "https://schema.org",
@@ -32,15 +68,21 @@ export default function Home() {
     }
 
     const slideshowEyebrow =
-        (isBg ? currentImage?.categoryName?.trim() : currentImage?.categoryNameEn?.trim()) ||
-        currentImage?.albumTitle?.trim() ||
-        (isBg ? "DG Vision Studio" : "DG Vision Studio")
+        !introVideoDone
+            ? "DG Vision Studio"
+            : (isBg ? currentImage?.categoryName?.trim() : currentImage?.categoryNameEn?.trim()) ||
+              currentImage?.albumTitle?.trim() ||
+              "DG Vision Studio"
 
-    const slideshowDescription = currentImage?.caption?.trim()
-        ? currentImage.caption
-        : isBg
-          ? "Съвременен визуален стил с внимание към детайла"
-          : "Contemporary visual style with attention to detail"
+    const slideshowDescription = !introVideoDone
+        ? isBg
+            ? "Фотография и визуално съдържание със стил"
+            : "Photography and visual content with style"
+        : currentImage?.caption?.trim()
+          ? currentImage.caption
+          : isBg
+            ? "Съвременен визуален стил с внимание към детайла"
+            : "Contemporary visual style with attention to detail"
 
     return (
         <>
@@ -98,41 +140,67 @@ export default function Home() {
 
                         <div className="order-1 relative min-h-[420px] overflow-hidden border-b border-neutral-300 bg-white dark:border-zinc-700 dark:bg-zinc-900 sm:min-h-[520px] md:min-h-[620px] lg:order-2 lg:min-h-full lg:border-b-0 lg:border-l">
                             <div className="relative h-full w-full overflow-hidden">
-                                {previousImage && isTransitioning ? (
-                                    <img
-                                        src={previousImage.thumbnailUrl?.trim() || previousImage.imageUrl}
-                                        alt={previousImage.albumTitle || previousImage.altText || previousImage.caption || "DG Vision Studio"}
-                                        className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                            !isMobile && direction === 1
-                                                ? "animate-[homeSlideOutLeft_700ms_ease-in-out_forwards]"
-                                                : !isMobile
-                                                  ? "animate-[homeSlideOutRight_700ms_ease-in-out_forwards]"
-                                                  : "opacity-100"
-                                        }`}
-                                    />
-                                ) : null}
+                                {!introVideoDone ? (
+                                    <>
+                                        <video
+                                            ref={introVideoRef}
+                                            className="absolute inset-0 h-full w-full object-cover object-top"
+                                            src={INTRO_VIDEO_SRC}
+                                            autoPlay
+                                            playsInline
+                                            preload="auto"
+                                            muted={isVideoMuted}
+                                            onEnded={() => setIntroVideoDone(true)}
+                                            onError={() => setIntroVideoDone(true)}
+                                        />
 
-                                {currentImage ? (
-                                    <img
-                                        src={currentImage.thumbnailUrl?.trim() || currentImage.imageUrl}
-                                        alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
-                                        className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                            !isMobile && isTransitioning
-                                                ? direction === 1
-                                                    ? "animate-[homeSlideInRight_700ms_ease-in-out_forwards]"
-                                                    : "animate-[homeSlideInLeft_700ms_ease-in-out_forwards]"
-                                                : "opacity-100"
-                                        }`}
-                                    />
+                                        <button
+                                            type="button"
+                                            onClick={toggleVideoMute}
+                                            className="absolute right-4 top-4 z-20 border border-white/40 bg-black/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:text-xs"
+                                        >
+                                            {isVideoMuted ? "Unmute" : "Mute"}
+                                        </button>
+                                    </>
                                 ) : (
-                                    <div className="absolute inset-0 h-full w-full bg-neutral-200 dark:bg-zinc-800" />
+                                    <>
+                                        {previousImage && isTransitioning ? (
+                                            <img
+                                                src={previousImage.thumbnailUrl?.trim() || previousImage.imageUrl}
+                                                alt={previousImage.albumTitle || previousImage.altText || previousImage.caption || "DG Vision Studio"}
+                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
+                                                    !isMobile && direction === 1
+                                                        ? "animate-[homeSlideOutLeft_700ms_ease-in-out_forwards]"
+                                                        : !isMobile
+                                                          ? "animate-[homeSlideOutRight_700ms_ease-in-out_forwards]"
+                                                          : "opacity-100"
+                                                }`}
+                                            />
+                                        ) : null}
+
+                                        {currentImage ? (
+                                            <img
+                                                src={currentImage.thumbnailUrl?.trim() || currentImage.imageUrl}
+                                                alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
+                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
+                                                    !isMobile && isTransitioning
+                                                        ? direction === 1
+                                                            ? "animate-[homeSlideInRight_700ms_ease-in-out_forwards]"
+                                                            : "animate-[homeSlideInLeft_700ms_ease-in-out_forwards]"
+                                                        : "opacity-100"
+                                                }`}
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 h-full w-full bg-neutral-200 dark:bg-zinc-800" />
+                                        )}
+                                    </>
                                 )}
 
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
                             </div>
 
                             <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
-                                <div key={currentImage?.id ?? "fallback-text"} className="animate-[fadeUp_500ms_ease-out]">
+                                <div key={introVideoDone ? currentImage?.id ?? "fallback-text" : "intro-video-text"} className="animate-[fadeUp_500ms_ease-out]">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
                                         {slideshowEyebrow}
                                     </p>
@@ -226,7 +294,6 @@ export default function Home() {
                             <h2 className="text-[28px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
                                 {isBg ? "Услуги" : "Services"}
                             </h2>
-
                         </div>
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -261,61 +328,6 @@ export default function Home() {
                         </div>
                     </div>
                 </section>
-
-                {/* <section className="border-t border-neutral-300 bg-white py-12 dark:border-zinc-700 dark:bg-zinc-950 sm:py-16 lg:py-20">
-                    <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
-                        <div className="mb-8 max-w-3xl">
-                            <h2 className="text-[28px] font-extrabold uppercase tracking-[0.04em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
-                                {isBg
-                                    ? "Силна визия, чиста композиция и разпознаваем стил"
-                                    : "Strong visuals, clean composition, and recognizable style"}
-                            </h2>
-                            <p className="mt-5 max-w-2xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px] sm:leading-8 md:text-[16px]">
-                                {isBg
-                                    ? "Работим с внимание към светлина, атмосфера, детайл и усещане. Целта не е просто да има снимки, а кадри с присъствие, които носят характер и комуникират ясно."
-                                    : "We work with attention to light, atmosphere, detail, and feeling. The goal is not just to produce photos, but to create images with presence, character, and clear communication."}
-                            </p>
-                        </div>
-
-                        <div className="grid gap-[1px] bg-neutral-300 dark:bg-zinc-700 min-[520px]:grid-cols-2 lg:grid-cols-4">
-                            <div className="bg-neutral-100 p-5 dark:bg-zinc-800 sm:p-6 lg:p-7">
-                                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white sm:text-sm sm:tracking-[0.16em]">
-                                    {isBg ? "Стил" : "Style"}
-                                </h3>
-                                <p className="mt-3 text-[13px] leading-6 text-neutral-600 dark:text-zinc-300 sm:text-sm sm:leading-7">
-                                    {isBg ? "Изчистена и модерна визуална посока." : "A clean and modern visual direction."}
-                                </p>
-                            </div>
-
-                            <div className="bg-neutral-100 p-5 dark:bg-zinc-800 sm:p-6 lg:p-7">
-                                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white sm:text-sm sm:tracking-[0.16em]">
-                                    {isBg ? "Детайл" : "Detail"}
-                                </h3>
-                                <p className="mt-3 text-[13px] leading-6 text-neutral-600 dark:text-zinc-300 sm:text-sm sm:leading-7">
-                                    {isBg ? "Прецизност в кадъра, светлината и обработката." : "Precision in framing, light, and post-processing."}
-                                </p>
-                            </div>
-
-                            <div className="bg-neutral-100 p-5 dark:bg-zinc-800 sm:p-6 lg:p-7">
-                                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white sm:text-sm sm:tracking-[0.16em]">
-                                    {isBg ? "Идентичност" : "Identity"}
-                                </h3>
-                                <p className="mt-3 text-[13px] leading-6 text-neutral-600 dark:text-zinc-300 sm:text-sm sm:leading-7">
-                                    {isBg ? "Съдържание, което изгражда разпознаваем образ." : "Content that builds a recognizable image."}
-                                </p>
-                            </div>
-
-                            <div className="bg-neutral-100 p-5 dark:bg-zinc-800 sm:p-6 lg:p-7">
-                                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white sm:text-sm sm:tracking-[0.16em]">
-                                    {isBg ? "Присъствие" : "Presence"}
-                                </h3>
-                                <p className="mt-3 text-[13px] leading-6 text-neutral-600 dark:text-zinc-300 sm:text-sm sm:leading-7">
-                                    {isBg ? "Кадри с ясен характер и силно въздействие." : "Images with clear character and strong impact."}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section> */}
             </div>
         </>
     )
