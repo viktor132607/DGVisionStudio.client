@@ -150,14 +150,24 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="order-1 relative min-h-[420px] overflow-hidden border-b border-neutral-300 bg-white dark:border-zinc-700 dark:bg-zinc-900 sm:min-h-[520px] md:min-h-[620px] lg:order-2 lg:min-h-full lg:border-b-0 lg:border-l">
-                            <div className="relative h-full w-full overflow-hidden">
+                        <div className="order-1 relative min-h-[420px] overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:min-h-[520px] md:min-h-[620px] lg:order-2 lg:min-h-full lg:border-b-0 lg:border-l">
+                            <div className="relative h-full w-full overflow-hidden bg-black">
                                 {!introVideoDone ? (
                                     <>
                                         <video
+                                            className="absolute inset-0 h-full w-full scale-125 object-cover object-center opacity-45 blur-xl lg:hidden"
+                                            src={INTRO_VIDEO_SRC}
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                            loop
+                                            preload="auto"
+                                        />
+
+                                        <video
                                             key={location.key}
                                             ref={introVideoRef}
-                                            className="absolute inset-0 h-full w-full object-cover object-top"
+                                            className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top"
                                             src={INTRO_VIDEO_SRC}
                                             autoPlay
                                             playsInline
