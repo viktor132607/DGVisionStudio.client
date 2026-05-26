@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    #categories .rounded-2xl,
+    #categories .rounded-xl,
+    #categories .rounded-full {
+        border-radius: 0 !important;
+    }
+
+    #categories table {
+        border-collapse: collapse;
+    }
+
+    #categories th:nth-child(4),
+    #categories td:nth-child(4) {
+        display: none;
+    }
+
+    #categories tbody tr:has(span.text-green-700) {
+        background: rgb(240 253 244) !important;
+    }
+
+    .dark #categories tbody tr:has(span.text-green-700) {
+        background: rgb(20 83 45 / 0.22) !important;
+    }
+
+    #categories tbody tr:has(span.text-green-700):hover {
+        background: rgb(220 252 231) !important;
+    }
+
+    .dark #categories tbody tr:has(span.text-green-700):hover {
+        background: rgb(20 83 45 / 0.35) !important;
+    }
+}
