@@ -59,7 +59,8 @@ export default function Footer() {
               terms: "Общи условия",
               cookies: "Бисквитки",
               rights: "Всички права запазени.",
-              createdBy: "Site created by viktor132607",
+              createdBy: "Site created by",
+              createdByName: "Viktor Iliev",
           }
         : {
               description:
@@ -73,7 +74,8 @@ export default function Footer() {
               terms: "Terms",
               cookies: "Cookies",
               rights: "All rights reserved.",
-              createdBy: "Site created by viktor132607",
+              createdBy: "Site created by",
+              createdByName: "Viktor Iliev",
           }
 
     const logoSrc = isDark
@@ -193,7 +195,15 @@ export default function Footer() {
                         </p>
 
                         <p className="break-words dark:text-white lg:text-right">
-                            {t.createdBy}
+                            {t.createdBy}{" "}
+                            <a
+                                href="https://viktor-iliev.site/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-slate-700 underline-offset-4 transition hover:text-slate-950 hover:underline dark:text-white dark:hover:text-white"
+                            >
+                                {t.createdByName}
+                            </a>
                         </p>
                     </div>
                 </div>
