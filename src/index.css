@@ -4,17 +4,37 @@
 
 @layer components {
     #categories table {
-        table-layout: fixed;
+        table-layout: auto !important;
+        width: 100% !important;
+    }
+
+    #categories th:nth-child(1),
+    #categories td:nth-child(1) {
+        width: 90px !important;
+        min-width: 90px !important;
+        max-width: 90px !important;
+    }
+
+    #categories th:nth-child(2),
+    #categories td:nth-child(2) {
+        width: auto !important;
+        text-align: left !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 
     #categories th:nth-child(3),
     #categories td:nth-child(3) {
-        width: 170px;
+        width: 170px !important;
+        min-width: 170px !important;
+        max-width: 170px !important;
     }
 
     #categories th:nth-child(4),
     #categories td:nth-child(4) {
-        width: 445px;
+        width: 445px !important;
+        min-width: 445px !important;
+        max-width: 445px !important;
     }
 
     #categories td:nth-child(4) > div {
