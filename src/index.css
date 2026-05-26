@@ -146,8 +146,7 @@
         background: rgb(39 39 42) !important;
     }
 
-    #categories td:nth-child(3) > button.bg-green-700,
-    #categories td:nth-child(3) > button.dark\:bg-green-500 {
+    #categories td:nth-child(3) > button.bg-green-700 {
         background: rgb(22 163 74) !important;
         color: white !important;
     }
