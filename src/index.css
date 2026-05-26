@@ -40,4 +40,13 @@
     #categories td:nth-child(4) > div {
         justify-content: flex-end !important;
     }
+
+    .space-y-3.p-3 > button:first-child {
+        font-size: 0 !important;
+    }
+
+    .space-y-3.p-3 > button:first-child::before {
+        content: "Задай като основна";
+        font-size: 12px !important;
+    }
 }
