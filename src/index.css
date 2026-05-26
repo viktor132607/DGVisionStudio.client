@@ -11,12 +11,19 @@
 
     #categories table {
         border-collapse: collapse;
+        table-layout: fixed;
     }
 
     #categories th,
     #categories td {
+        height: 64px;
         text-align: center !important;
         vertical-align: middle !important;
+    }
+
+    #categories th:nth-child(1),
+    #categories td:nth-child(1) {
+        width: 100px;
     }
 
     #categories th:nth-child(2),
@@ -31,6 +38,16 @@
         display: none;
     }
 
+    #categories th:nth-child(5),
+    #categories td:nth-child(5) {
+        width: 150px;
+    }
+
+    #categories th:nth-child(6),
+    #categories td:nth-child(6) {
+        width: 560px;
+    }
+
     #categories td > div,
     #categories td > span,
     #categories td > a,
@@ -39,8 +56,43 @@
         margin-right: auto;
     }
 
+    #categories td:nth-child(1) > div {
+        justify-content: center;
+    }
+
     #categories td:nth-child(6) > div {
         justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #categories td:nth-child(6) a,
+    #categories td:nth-child(6) button {
+        border: 0 !important;
+        color: white !important;
+        min-width: 118px;
+        box-shadow: none !important;
+    }
+
+    #categories td:nth-child(6) a[href*="edit"] {
+        background: rgb(245 158 11) !important;
+    }
+
+    #categories td:nth-child(6) button:not(.text-red-600) {
+        background: rgb(71 85 105) !important;
+    }
+
+    #categories td:nth-child(6) a[href*="albums"] {
+        background: rgb(37 99 235) !important;
+    }
+
+    #categories td:nth-child(6) button.text-red-600 {
+        background: rgb(220 38 38) !important;
+    }
+
+    #categories td:nth-child(6) a:hover,
+    #categories td:nth-child(6) button:hover {
+        filter: brightness(0.92);
     }
 
     #categories tbody tr:has(span.text-green-700) {
@@ -60,8 +112,8 @@
     }
 
     #categories tbody tr:has(span.text-green-700) span.text-green-700 {
-        background: rgb(22 163 74) !important;
-        border-color: rgb(21 128 61) !important;
+        background: rgb(34 197 94) !important;
+        border-color: rgb(22 163 74) !important;
         color: white !important;
         font-weight: 800 !important;
     }
