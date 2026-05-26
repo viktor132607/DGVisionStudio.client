@@ -13,24 +13,62 @@
         border-collapse: collapse;
     }
 
+    #categories th,
+    #categories td {
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    #categories th:nth-child(2),
+    #categories td:nth-child(2),
+    #categories th:nth-child(3),
+    #categories td:nth-child(3) {
+        text-align: left !important;
+    }
+
     #categories th:nth-child(4),
     #categories td:nth-child(4) {
         display: none;
     }
 
+    #categories td > div,
+    #categories td > span,
+    #categories td > a,
+    #categories td > button {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #categories td:nth-child(6) > div {
+        justify-content: center;
+    }
+
     #categories tbody tr:has(span.text-green-700) {
-        background: rgb(236 253 245) !important;
+        background: rgb(134 239 172) !important;
     }
 
     .dark #categories tbody tr:has(span.text-green-700) {
-        background: rgb(20 83 45 / 0.18) !important;
+        background: rgb(22 101 52 / 0.62) !important;
     }
 
     #categories tbody tr:has(span.text-green-700):hover {
-        background: rgb(220 252 231) !important;
+        background: rgb(74 222 128) !important;
     }
 
     .dark #categories tbody tr:has(span.text-green-700):hover {
-        background: rgb(20 83 45 / 0.28) !important;
+        background: rgb(22 101 52 / 0.78) !important;
+    }
+
+    #categories tbody tr:has(span.text-green-700) span.text-green-700 {
+        background: rgb(22 163 74) !important;
+        border-color: rgb(21 128 61) !important;
+        color: white !important;
+        font-weight: 800 !important;
+    }
+
+    .dark #categories tbody tr:has(span.text-green-700) span.text-green-700 {
+        background: rgb(34 197 94) !important;
+        border-color: rgb(74 222 128) !important;
+        color: rgb(5 46 22) !important;
     }
 }
