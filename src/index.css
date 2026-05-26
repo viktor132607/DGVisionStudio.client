@@ -31,7 +31,7 @@
 
     #categories th:nth-child(2),
     #categories td:nth-child(2) {
-        width: 48%;
+        width: auto;
         text-align: left !important;
         padding-left: 12px !important;
         padding-right: 12px !important;
@@ -39,14 +39,14 @@
 
     #categories th:nth-child(3),
     #categories td:nth-child(3) {
-        width: 170px;
+        width: 150px;
         padding: 0 !important;
     }
 
     #categories th:nth-child(4),
     #categories td:nth-child(4) {
         display: table-cell !important;
-        width: 445px;
+        width: 370px;
         padding: 0 !important;
     }
 
@@ -96,21 +96,30 @@
     }
 
     #categories td:nth-child(4) a:nth-child(1) {
-        width: 125px !important;
+        width: 120px !important;
         background: rgb(229 231 235) !important;
         color: rgb(31 41 55) !important;
     }
 
     #categories td:nth-child(4) a:nth-child(2) {
-        width: 165px !important;
+        width: 175px !important;
         background: rgb(229 231 235) !important;
         color: rgb(31 41 55) !important;
     }
 
     #categories td:nth-child(4) button {
-        width: 155px !important;
+        width: 75px !important;
         background: rgb(220 38 38) !important;
+        color: transparent !important;
+        font-size: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #categories td:nth-child(4) button::before {
+        content: "🗑";
         color: white !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
     }
 
     #categories td:nth-child(4) a:hover {
@@ -121,13 +130,25 @@
         background: rgb(185 28 28) !important;
     }
 
-    #categories tbody tr:has(td:nth-child(3) button.bg-green-700),
-    #categories tbody tr:has(td:nth-child(3) button.dark\:bg-green-500) {
-        background: rgb(187 247 208) !important;
+    #categories tbody tr {
+        background: white !important;
     }
 
-    .dark #categories tbody tr:has(td:nth-child(3) button.bg-green-700),
-    .dark #categories tbody tr:has(td:nth-child(3) button.dark\:bg-green-500) {
-        background: rgb(21 128 61 / 0.5) !important;
+    .dark #categories tbody tr {
+        background: rgb(24 24 27) !important;
+    }
+
+    #categories tbody tr:hover {
+        background: rgb(249 250 251) !important;
+    }
+
+    .dark #categories tbody tr:hover {
+        background: rgb(39 39 42) !important;
+    }
+
+    #categories td:nth-child(3) > button.bg-green-700,
+    #categories td:nth-child(3) > button.dark\:bg-green-500 {
+        background: rgb(22 163 74) !important;
+        color: white !important;
     }
 }
