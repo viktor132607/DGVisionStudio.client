@@ -3,7 +3,21 @@
 @tailwind utilities;
 
 @layer components {
+    #categories table {
+        table-layout: fixed;
+    }
+
+    #categories th:nth-child(3),
+    #categories td:nth-child(3) {
+        width: 170px;
+    }
+
+    #categories th:nth-child(4),
+    #categories td:nth-child(4) {
+        width: 445px;
+    }
+
     #categories td:nth-child(4) > div {
-        justify-content: flex-start !important;
+        justify-content: flex-end !important;
     }
 }
