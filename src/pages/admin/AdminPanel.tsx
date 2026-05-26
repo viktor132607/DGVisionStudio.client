@@ -77,7 +77,6 @@ const readNotificationSeenState = (): NotificationSeenState => {
 
 const saveNotificationSeenState = (state: NotificationSeenState) => {
     if (typeof window === "undefined") return
-
     window.localStorage.setItem(NOTIFICATION_SEEN_STORAGE_KEY, JSON.stringify(state))
 }
 
@@ -830,7 +829,7 @@ export default function AdminPanel() {
                 ) : (
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[1180px]">
+                            <table className="w-full min-w-[980px]">
                                 <thead className="bg-gray-50 dark:bg-zinc-950">
                                     <tr className="border-b border-gray-200 dark:border-zinc-800">
                                         <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
@@ -839,16 +838,10 @@ export default function AdminPanel() {
                                         <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
                                             Категория
                                         </th>
-                                        <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
-                                            Име EN
-                                        </th>
-                                        <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
-                                            Ключ
-                                        </th>
-                                        <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
+                                        <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
                                             Статус
                                         </th>
-                                        <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
+                                        <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-zinc-400">
                                             Действия
                                         </th>
                                     </tr>
@@ -874,79 +867,72 @@ export default function AdminPanel() {
                                                 setDraggedCategoryId(null)
                                                 setDragOverCategoryId(null)
                                             }}
-                                            className={`border-b border-gray-100 align-top last:border-b-0 dark:border-zinc-800 ${
-                                                dragOverCategoryId === category.id
-                                                    ? "bg-sky-50 dark:bg-sky-500/10"
-                                                    : ""
+                                            className={`border-b border-gray-100 align-middle last:border-b-0 dark:border-zinc-800 ${
+                                                category.isActive
+                                                    ? "bg-green-200 hover:bg-green-300 dark:bg-green-700/60 dark:hover:bg-green-700/75"
+                                                    : dragOverCategoryId === category.id
+                                                      ? "bg-sky-50 dark:bg-sky-500/10"
+                                                      : "bg-white dark:bg-zinc-900"
                                             }`}
                                         >
-                                            <td className="px-4 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="cursor-grab select-none text-lg text-gray-400 dark:text-zinc-500">
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <span className="cursor-grab select-none text-base text-gray-400 dark:text-zinc-500">
                                                         ⋮⋮
                                                     </span>
-                                                    <span className="text-sm text-gray-700 dark:text-zinc-300">
+                                                    <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">
                                                         {category.displayOrder}
                                                     </span>
                                                 </div>
                                             </td>
 
-                                            <td className="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-white">
+                                            <td className="px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white">
                                                 {category.name}
+                                                {category.nameEn ? (
+                                                    <span className="font-medium text-gray-500 dark:text-zinc-300">
+                                                        {" / "}{category.nameEn}
+                                                    </span>
+                                                ) : null}
                                             </td>
 
-                                            <td className="px-4 py-4 text-sm text-gray-600 dark:text-zinc-300">
-                                                {category.nameEn || "—"}
-                                            </td>
-
-                                            <td className="px-4 py-4 text-sm text-gray-600 dark:text-zinc-300">
-                                                {category.key}
-                                            </td>
-
-                                            <td className="px-4 py-4">
-                                                <span
-                                                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                                            <td className="p-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleToggleCategory(category)}
+                                                    disabled={busyCategoryId === category.id}
+                                                    className={`flex h-full min-h-[40px] w-full items-center justify-center px-3 text-xs font-extrabold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                                                         category.isActive
-                                                            ? "border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-300"
-                                                            : "border-gray-200 bg-gray-50 text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                                                            ? "bg-green-700 text-white hover:bg-green-800 dark:bg-green-500 dark:text-green-950 dark:hover:bg-green-400"
+                                                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                                                     }`}
                                                 >
                                                     {category.isActive ? "Активна" : "Неактивна"}
-                                                </span>
+                                                </button>
                                             </td>
 
-                                            <td className="px-4 py-4">
-                                                <div className="flex flex-wrap gap-2">
+                                            <td className="p-0">
+                                                <div className="flex min-h-[40px] w-full flex-nowrap items-stretch justify-end gap-0">
                                                     <Link
                                                         to={`/admin/portfolio-categories/edit?id=${category.id}`}
-                                                        className="inline-flex h-10 items-center justify-center rounded-xl border border-amber-300 bg-white px-4 text-sm font-semibold text-amber-600 transition hover:bg-amber-50 dark:border-amber-500/40 dark:bg-zinc-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+                                                        className="flex min-h-[40px] w-[140px] items-center justify-center bg-slate-100 px-3 text-xs font-bold text-slate-800 transition hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
                                                     >
-                                                        Редактиране
+                                                        Редактирай
                                                     </Link>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => void handleToggleCategory(category)}
-                                                        disabled={busyCategoryId === category.id}
-                                                        className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
-                                                    >
-                                                        {category.isActive ? "Направи неактивна" : "Направи активна"}
-                                                    </button>
 
                                                     <Link
                                                         to={`/admin/portfolio-categories/albums?id=${category.id}`}
-                                                        className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-300 bg-white px-4 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 dark:border-blue-500/40 dark:bg-zinc-900 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                                                        className="flex min-h-[40px] w-[160px] items-center justify-center bg-slate-100 px-3 text-xs font-bold text-slate-800 transition hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
                                                     >
-                                                        Manage albums
+                                                        Управление албуми
                                                     </Link>
 
                                                     <button
                                                         type="button"
                                                         onClick={() => setDeleteCategoryId(category.id)}
                                                         disabled={busyCategoryId === category.id}
-                                                        className="inline-flex h-10 items-center justify-center rounded-xl border border-red-300 bg-white px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60 dark:border-red-500/40 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                        className="flex min-h-[40px] w-[145px] items-center justify-center bg-red-600 px-3 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-600 dark:hover:bg-red-500"
                                                     >
-                                                        Delete category
+                                                        Изтрий категория
                                                     </button>
                                                 </div>
                                             </td>
