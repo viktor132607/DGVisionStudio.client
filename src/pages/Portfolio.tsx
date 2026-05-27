@@ -242,7 +242,7 @@ export default function Portfolio() {
                                 <button
                                     type="button"
                                     onClick={() => setSelectedAlbumId(null)}
-                                    className="inline-flex items-center border border-neutral-400 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-200 dark:border-zinc-600 dark:text-white dark:hover:border-white dark:hover:bg-zinc-800 sm:text-xs"
+                                    className="inline-flex items-center rounded-full border border-neutral-400 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-200 dark:border-zinc-600 dark:text-white dark:hover:border-white dark:hover:bg-zinc-800 sm:text-xs"
                                 >
                                     {isBg ? "Назад към албумите" : "Back to albums"}
                                 </button>
