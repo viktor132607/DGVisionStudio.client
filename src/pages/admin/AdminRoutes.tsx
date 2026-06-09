@@ -12,6 +12,7 @@ import PortfolioCategoryCreateAdmin from "./categoryPanel/PortfolioCategoryCreat
 import PortfolioCategoryEditAdmin from "./categoryPanel/PortfolioCategoryEditAdmin"
 import PortfolioCategoryAlbumsAdmin from "./categoryPanel/PortfolioCategoryAlbumsAdmin"
 import PrintRequestsAdmin from "./PrintRequestsAdmin"
+import CalendarAdmin from "./CalendarAdmin"
 
 export default function AdminRoutes() {
     return (
@@ -24,6 +25,7 @@ export default function AdminRoutes() {
                 <Route path="contact-requests/:id" element={<ContactRequestEditAdmin />} />
                 <Route path="contact-requests/:id/edit" element={<ContactRequestEditAdmin />} />
                 <Route path="print-requests" element={<PrintRequestsAdmin />} />
+                <Route path="calendar" element={<CalendarAdmin />} />
 
                 <Route path="client-galleries/new" element={<ClientGalleryEditAdmin />} />
                 <Route path="client-galleries/edit" element={<ClientGalleryEditAdmin />} />
