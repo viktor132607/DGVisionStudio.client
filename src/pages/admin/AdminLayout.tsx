@@ -46,6 +46,10 @@ function AdminLayoutContent() {
                             Заявки за принтиране
                         </Link>
 
+                        <Link to="/admin/calendar" className="transition hover:text-white">
+                            Календар
+                        </Link>
+
                         <button
                             type="button"
                             onClick={downloadAllAlbums}
