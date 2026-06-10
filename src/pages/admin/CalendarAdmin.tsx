@@ -79,7 +79,7 @@ function getHoverDetails(event: CalendarEvent) {
         `Край: ${formatDateTime(event.endAtUtc)}`,
         event.clientName ? `Клиент: ${event.clientName}` : "",
         event.clientPhone ? `Телефон: ${event.clientPhone}` : "",
-        event.assignedTo ? `Отговорник: ${event.assignedTo}` : "",
+        event.assignedTo ? `Ангажимент към: ${event.assignedTo}` : "",
         event.location ? `Локация: ${event.location}` : "",
         event.description ? `Бележки: ${event.description}` : "",
     ].filter(Boolean).join("\n")
@@ -270,7 +270,7 @@ export default function CalendarAdmin() {
                             <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Заглавие</span><input value={form.title} onChange={(e) => setField("title", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Тип</span><select value={form.eventType} onChange={(e) => setField("eventType", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="Photoshoot">Фотосесия</option><option value="Print">Принт на снимки</option></select></label>
-                                <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Отговорник</span><input value={form.assignedTo} onChange={(e) => setField("assignedTo", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" placeholder="Кой се занимава" /></label>
+                                <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Ангажимент към</span><select value={form.assignedTo} onChange={(e) => setField("assignedTo", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">—</option><option value="Десислав">Десислав</option><option value="Теодор">Теодор</option></select></label>
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Клиент</span><input value={form.clientName} onChange={(e) => setField("clientName", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
@@ -293,7 +293,7 @@ export default function CalendarAdmin() {
                             {selectedDateEvents.map((event) => (
                                 <div key={event.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4" title={getHoverDetails(event)}>
                                     <div className="mb-2 flex items-start justify-between gap-3"><div><h3 className="font-bold text-gray-900">{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: event.color || "#2563eb" }} /></div>
-                                    {event.assignedTo ? <p className="text-sm text-gray-700">Отговорник: {event.assignedTo}</p> : null}
+                                    {event.assignedTo ? <p className="text-sm text-gray-700">Ангажимент към: {event.assignedTo}</p> : null}
                                     {event.clientName || event.clientPhone ? <p className="text-sm text-gray-700">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}
                                     {event.location ? <p className="mt-1 text-sm text-gray-700">{event.location}</p> : null}
                                     {event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}
