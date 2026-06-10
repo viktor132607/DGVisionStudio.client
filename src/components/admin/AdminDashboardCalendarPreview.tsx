@@ -56,6 +56,20 @@ function isSameDay(first: Date, second: Date) {
     )
 }
 
+function isPastDate(date: Date) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const checkedDate = new Date(date)
+    checkedDate.setHours(0, 0, 0, 0)
+
+    return checkedDate < today
+}
+
+function isPastEvent(event: CalendarEvent) {
+    return new Date(event.endAtUtc).getTime() < Date.now()
+}
+
 function toTimeInputValue(date: Date) {
     const hours = String(date.getHours()).padStart(2, "0")
     const minutes = String(date.getMinutes()).padStart(2, "0")
@@ -70,6 +84,7 @@ function getEventTypeLabel(type?: string | null) {
 function getHoverDetails(event: CalendarEvent) {
     const details = [
         event.title,
+        isPastEvent(event) ? "Статус: Минало" : "Статус: Предстоящо",
         `Тип: ${getEventTypeLabel(event.eventType)}`,
         `Начало: ${new Date(event.startAtUtc).toLocaleString("bg-BG")}`,
         `Край: ${new Date(event.endAtUtc).toLocaleString("bg-BG")}`,
@@ -194,29 +209,36 @@ export default function AdminDashboardCalendarPreview() {
                 {monthGrid.map((date) => {
                     const dayEvents = events.filter((event) => isSameDay(new Date(event.startAtUtc), date))
                     const isCurrentMonth = date.getMonth() === viewDate.getMonth()
+                    const isPast = isPastDate(date)
 
                     return (
                         <div
                             key={date.toISOString()}
-                            className={`min-h-[88px] rounded-2xl border border-gray-200 bg-white p-2 text-left dark:border-zinc-800 dark:bg-zinc-950 ${
-                                !isCurrentMonth ? "opacity-45" : ""
-                            }`}
+                            className={`min-h-[88px] rounded-2xl border p-2 text-left dark:border-zinc-800 ${
+                                isPast
+                                    ? "border-gray-200 bg-gray-100 text-gray-400 dark:bg-zinc-950/70"
+                                    : "border-gray-200 bg-white dark:bg-zinc-950"
+                            } ${!isCurrentMonth ? "opacity-45" : ""}`}
                         >
-                            <div className="mb-2 text-sm font-bold text-gray-900 dark:text-white">
+                            <div className={`mb-2 text-sm font-bold ${isPast ? "text-gray-400" : "text-gray-900 dark:text-white"}`}>
                                 {date.getDate()}
                             </div>
 
                             <div className="space-y-1">
-                                {dayEvents.slice(0, 2).map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="truncate rounded-lg px-2 py-1 text-[11px] font-semibold text-white"
-                                        style={{ backgroundColor: event.color || "#2563eb" }}
-                                        title={getHoverDetails(event)}
-                                    >
-                                        {toTimeInputValue(new Date(event.startAtUtc))} {event.title}
-                                    </div>
-                                ))}
+                                {dayEvents.slice(0, 2).map((event) => {
+                                    const eventIsPast = isPastEvent(event)
+
+                                    return (
+                                        <div
+                                            key={event.id}
+                                            className={`truncate rounded-lg px-2 py-1 text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`}
+                                            style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }}
+                                            title={getHoverDetails(event)}
+                                        >
+                                            {toTimeInputValue(new Date(event.startAtUtc))} {event.title}
+                                        </div>
+                                    )
+                                })}
 
                                 {dayEvents.length > 2 ? (
                                     <div className="text-[11px] font-semibold text-gray-500 dark:text-zinc-400">
