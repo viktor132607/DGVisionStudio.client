@@ -14,11 +14,13 @@ import PortfolioCategoryAlbumsAdmin from "./categoryPanel/PortfolioCategoryAlbum
 import PrintRequestsAdmin from "./PrintRequestsAdmin"
 import CalendarAdmin from "./CalendarAdmin"
 import AdminDashboardCalendarPreview from "../../components/admin/AdminDashboardCalendarPreview"
+import AdminVideoUploadPortal from "../../components/admin/AdminVideoUploadPortal"
 
 export default function AdminRoutes() {
     return (
         <>
             <AdminDashboardCalendarPreview />
+            <AdminVideoUploadPortal />
 
             <Routes>
                 <Route element={<AdminLayout />}>
