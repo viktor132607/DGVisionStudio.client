@@ -75,7 +75,7 @@ function getHoverDetails(event: CalendarEvent) {
         `Край: ${new Date(event.endAtUtc).toLocaleString("bg-BG")}`,
         event.clientName ? `Клиент: ${event.clientName}` : "",
         event.clientPhone ? `Телефон: ${event.clientPhone}` : "",
-        event.assignedTo ? `Отговорник: ${event.assignedTo}` : "",
+        event.assignedTo ? `Ангажимент към: ${event.assignedTo}` : "",
         event.location ? `Локация: ${event.location}` : "",
         event.description ? `Бележки: ${event.description}` : "",
     ]
