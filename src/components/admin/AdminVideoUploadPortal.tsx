@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import type { ChangeEvent } from "react"
 import { createPortal } from "react-dom"
 import { useLocation } from "react-router-dom"
 import { apiFetch } from "../../services/api"
