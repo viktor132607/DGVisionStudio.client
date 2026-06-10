@@ -6,6 +6,12 @@ import { apiFetch } from "../../services/api"
 type CalendarEvent = {
     id: number
     title: string
+    description?: string | null
+    location?: string | null
+    clientName?: string | null
+    clientPhone?: string | null
+    assignedTo?: string | null
+    eventType?: string | null
     color?: string | null
     startAtUtc: string
     endAtUtc: string
@@ -55,6 +61,26 @@ function toTimeInputValue(date: Date) {
     const minutes = String(date.getMinutes()).padStart(2, "0")
 
     return `${hours}:${minutes}`
+}
+
+function getEventTypeLabel(type?: string | null) {
+    return type === "Print" ? "Принт на снимки" : "Фотосесия"
+}
+
+function getHoverDetails(event: CalendarEvent) {
+    const details = [
+        event.title,
+        `Тип: ${getEventTypeLabel(event.eventType)}`,
+        `Начало: ${new Date(event.startAtUtc).toLocaleString("bg-BG")}`,
+        `Край: ${new Date(event.endAtUtc).toLocaleString("bg-BG")}`,
+        event.clientName ? `Клиент: ${event.clientName}` : "",
+        event.clientPhone ? `Телефон: ${event.clientPhone}` : "",
+        event.assignedTo ? `Отговорник: ${event.assignedTo}` : "",
+        event.location ? `Локация: ${event.location}` : "",
+        event.description ? `Бележки: ${event.description}` : "",
+    ]
+
+    return details.filter(Boolean).join("\n")
 }
 
 export default function AdminDashboardCalendarPreview() {
@@ -186,7 +212,7 @@ export default function AdminDashboardCalendarPreview() {
                                         key={event.id}
                                         className="truncate rounded-lg px-2 py-1 text-[11px] font-semibold text-white"
                                         style={{ backgroundColor: event.color || "#2563eb" }}
-                                        title={event.title}
+                                        title={getHoverDetails(event)}
                                     >
                                         {toTimeInputValue(new Date(event.startAtUtc))} {event.title}
                                     </div>
