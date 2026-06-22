@@ -36,6 +36,7 @@ import AdminRoutes from "./pages/admin/AdminRoutes"
 function AppContent() {
   const location = useLocation()
   const isPortfolioPage = location.pathname === "/portfolio"
+  const isAdminPage = location.pathname.startsWith("/admin")
   const [isPageLoading, setIsPageLoading] = useState(true)
 
   useEffect(() => {
@@ -57,12 +58,12 @@ function AppContent() {
       {isPageLoading ? <GlobalPageLoader /> : null}
 
       <ScrollToTop />
-      <Navbar />
+      {!isAdminPage ? <Navbar /> : null}
 
-      <div className="h-16 shrink-0 lg:h-20" />
+      {!isAdminPage ? <div className="h-16 shrink-0 lg:h-20" /> : null}
 
       <main className="w-full flex-1">
-        <div className={isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
+        <div className={isAdminPage || isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />
@@ -130,8 +131,8 @@ function AppContent() {
         </div>
       </main>
 
-      <Footer />
-      <CookieBanner />
+      {!isAdminPage ? <Footer /> : null}
+      {!isAdminPage ? <CookieBanner /> : null}
     </div>
   )
 }
