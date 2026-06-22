@@ -33,7 +33,7 @@ function AdminLayoutContent() {
         setIsDownloadingAlbums(true)
 
         try {
-            const response = await apiFetch("/admin/client-galleries/download-all-stream", {
+            const response = await apiFetch("/admin/client-galleries/download-all-file", {
                 method: "GET",
                 skipJsonContentType: true,
             })
