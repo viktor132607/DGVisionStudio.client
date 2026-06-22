@@ -37,6 +37,16 @@ type CalendarEvent = {
 
 type CalendarForm = typeof defaultForm
 
+function getInitialDate() {
+    if (typeof window === "undefined") return new Date()
+
+    const dateParam = new URLSearchParams(window.location.search).get("date")
+    if (!dateParam || !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) return new Date()
+
+    const parsedDate = new Date(`${dateParam}T12:00:00`)
+    return Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate
+}
+
 function toDateInputValue(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
 }
@@ -118,12 +128,30 @@ function toLocalInputValues(event: CalendarEvent): CalendarForm {
     }
 }
 
+function EventTooltip({ event }: { event: CalendarEvent }) {
+    return (
+        <div className="pointer-events-none absolute left-0 top-full z-40 mt-2 hidden w-72 rounded-2xl border border-gray-200 bg-white p-3 text-left text-xs font-medium text-gray-700 shadow-xl group-hover/event:block dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+            <div className="mb-2 text-sm font-bold text-gray-900 dark:text-white">{event.title}</div>
+            <div className="space-y-1">
+                <div>{getEventTypeLabel(event.eventType)}</div>
+                <div>{formatDateTime(event.startAtUtc)} — {formatDateTime(event.endAtUtc)}</div>
+                {event.assignedTo ? <div>Ангажимент към: {event.assignedTo}</div> : null}
+                {event.clientName ? <div>Клиент: {event.clientName}</div> : null}
+                {event.clientPhone ? <div>Телефон: {event.clientPhone}</div> : null}
+                {event.location ? <div>Локация: {event.location}</div> : null}
+                {event.description ? <div className="border-t border-gray-100 pt-2 dark:border-zinc-800">{event.description}</div> : null}
+            </div>
+        </div>
+    )
+}
+
 export default function CalendarAdmin() {
+    const initialDate = useMemo(() => getInitialDate(), [])
     const { showToast } = useAdminToast()
     const [events, setEvents] = useState<CalendarEvent[]>([])
-    const [viewDate, setViewDate] = useState(() => new Date())
-    const [selectedDate, setSelectedDate] = useState(() => new Date())
-    const [form, setForm] = useState<CalendarForm>(() => ({ ...defaultForm, startDate: toDateInputValue(new Date()), endDate: toDateInputValue(new Date()) }))
+    const [viewDate, setViewDate] = useState(() => initialDate)
+    const [selectedDate, setSelectedDate] = useState(() => initialDate)
+    const [form, setForm] = useState<CalendarForm>(() => ({ ...defaultForm, startDate: toDateInputValue(initialDate), endDate: toDateInputValue(initialDate) }))
     const [editingId, setEditingId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -132,6 +160,7 @@ export default function CalendarAdmin() {
 
     const monthGrid = useMemo(() => getMonthGrid(viewDate), [viewDate])
     const selectedDateEvents = useMemo(() => events.filter((e) => isSameDay(new Date(e.startAtUtc), selectedDate)).sort((a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime()), [events, selectedDate])
+    const selectedDateLabel = selectedDate.toLocaleDateString("bg-BG", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })
 
     const loadEvents = async () => {
         setLoading(true)
@@ -155,9 +184,18 @@ export default function CalendarAdmin() {
 
     const setField = (field: keyof CalendarForm, value: string) => setForm((current) => ({ ...current, [field]: value }))
 
+    const startNewEvent = (date = selectedDate) => {
+        setEditingId(null)
+        setSelectedDate(date)
+        setViewDate(new Date(date.getFullYear(), date.getMonth(), 1))
+        setForm({ ...defaultForm, startDate: toDateInputValue(date), endDate: toDateInputValue(date) })
+    }
+
     const selectDay = (date: Date) => {
         setSelectedDate(date)
-        setForm((current) => ({ ...current, startDate: toDateInputValue(date), endDate: toDateInputValue(date) }))
+        if (!editingId) {
+            setForm((current) => ({ ...current, startDate: toDateInputValue(date), endDate: toDateInputValue(date) }))
+        }
     }
 
     const resetForm = () => {
@@ -169,7 +207,7 @@ export default function CalendarAdmin() {
         const start = new Date(event.startAtUtc)
         setEditingId(event.id)
         setSelectedDate(start)
-        setViewDate(start)
+        setViewDate(new Date(start.getFullYear(), start.getMonth(), 1))
         setForm(toLocalInputValues(event))
     }
 
@@ -239,12 +277,17 @@ export default function CalendarAdmin() {
 
             {error ? <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div> : null}
 
-            <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+            <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
                 <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
-                    <div className="mb-5 flex items-center justify-between gap-3">
-                        <button type="button" onClick={() => changeMonth(-1)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">Назад</button>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h2>
-                        <button type="button" onClick={() => changeMonth(1)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">Напред</button>
+                    <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex items-center gap-3">
+                            <button type="button" onClick={() => changeMonth(-1)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">Назад</button>
+                            <h2 className="min-w-[170px] text-center text-xl font-bold text-gray-900 dark:text-white">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h2>
+                            <button type="button" onClick={() => changeMonth(1)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">Напред</button>
+                        </div>
+                        <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+                            <span className="font-bold">Избран ден:</span> {selectedDateLabel}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
@@ -259,22 +302,41 @@ export default function CalendarAdmin() {
                             const isPast = isPastDate(date)
 
                             return (
-                                <button key={date.toISOString()} type="button" onClick={() => selectDay(date)} className={`min-h-[105px] rounded-2xl border p-2 text-left transition hover:border-sky-400 hover:bg-sky-50 ${isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100" : isPast ? "border-gray-200 bg-gray-100 text-gray-400" : "border-gray-200 bg-white"} ${!isCurrentMonth ? "opacity-45" : ""}`}>
-                                    <div className={`mb-2 text-sm font-bold ${isPast ? "text-gray-400" : "text-gray-900"}`}>{date.getDate()}</div>
+                                <div key={date.toISOString()} role="button" tabIndex={0} onClick={() => selectDay(date)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") selectDay(date) }} className={`group/day min-h-[118px] cursor-pointer rounded-2xl border p-2 text-left transition hover:border-sky-400 hover:bg-sky-50 ${isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100" : isPast ? "border-gray-200 bg-gray-100 text-gray-400" : "border-gray-200 bg-white"} ${!isCurrentMonth ? "opacity-45" : ""}`} title={dayEvents.length ? `${dayEvents.length} събития` : "Няма събития"}>
+                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                        <div className={`text-sm font-bold ${isPast ? "text-gray-400" : "text-gray-900"}`}>{date.getDate()}</div>
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); startNewEvent(date) }} className={`${isSelected ? "inline-flex" : "hidden group-hover/day:inline-flex"} rounded-lg bg-gray-900 px-2 py-1 text-[10px] font-bold text-white`}>+ Добави</button>
+                                    </div>
                                     <div className="space-y-1">
                                         {dayEvents.slice(0, 3).map((event) => {
                                             const eventIsPast = isPastEvent(event)
-                                            return <div key={event.id} className={`truncate rounded-lg px-2 py-1 text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`} style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }} title={getHoverDetails(event)}>{toTimeInputValue(new Date(event.startAtUtc))} {event.title}</div>
+                                            return (
+                                                <button key={event.id} type="button" onClick={(e) => { e.stopPropagation(); editEvent(event) }} className={`group/event relative block w-full truncate rounded-lg px-2 py-1 text-left text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`} style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }} title={getHoverDetails(event)}>
+                                                    {toTimeInputValue(new Date(event.startAtUtc))} {event.title}{event.assignedTo ? ` • ${event.assignedTo}` : ""}
+                                                    <EventTooltip event={event} />
+                                                </button>
+                                            )
                                         })}
                                         {dayEvents.length > 3 ? <div className="text-[11px] font-semibold text-gray-500">+{dayEvents.length - 3} още</div> : null}
                                     </div>
-                                </button>
+                                </div>
                             )
                         })}
                     </div>
                 </section>
 
                 <aside className="space-y-6">
+                    <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+                        <div className="mb-4 flex items-start justify-between gap-3">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Избран ден</p>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{selectedDateLabel}</h2>
+                                <p className="mt-1 text-sm text-gray-500">{selectedDateEvents.length ? `${selectedDateEvents.length} събития` : "Няма събития"}</p>
+                            </div>
+                            <button type="button" onClick={() => startNewEvent(selectedDate)} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white">+ Добави събитие</button>
+                        </div>
+                    </section>
+
                     <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
                         <div className="mb-5 flex items-center justify-between gap-3">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">{editingId ? "Редакция" : "Ново събитие"}</h2>
