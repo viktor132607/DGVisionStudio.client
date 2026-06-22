@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer components {
+    .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
+    #albums > .mb-6 > div:last-child > button[type="button"],
+    #categories > .mb-6 > div:last-child > button[type="button"] {
+        display: none !important;
+    }
+
     #categories table {
         table-layout: auto !important;
         width: 100% !important;
