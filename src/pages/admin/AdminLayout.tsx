@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { Link, Outlet, useLocation } from "react-router-dom"
 import AdminToastProvider from "../../components/admin/AdminToastProvider"
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || ""
+import { useAdminToast } from "../../hooks/useAdminToast"
+import { apiFetch } from "../../services/api"
 
 const navItems = [
     { to: "/admin", label: "Начало" },
@@ -12,24 +12,68 @@ const navItems = [
     { to: "/admin/calendar", label: "Календар" },
 ]
 
+function getDownloadFileName(contentDisposition: string | null) {
+    if (!contentDisposition) return "dgvisionstudio-all-albums.zip"
+
+    const utfMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+    if (utfMatch?.[1]) {
+        return decodeURIComponent(utfMatch[1].replace(/"/g, ""))
+    }
+
+    const match = contentDisposition.match(/filename="?([^";]+)"?/i)
+    return match?.[1] || "dgvisionstudio-all-albums.zip"
+}
+
 function AdminLayoutContent() {
     const location = useLocation()
+    const { showToast } = useAdminToast()
     const [isDownloadingAlbums, setIsDownloadingAlbums] = useState(false)
 
-    const downloadAllAlbums = () => {
+    const downloadAllAlbums = async () => {
         setIsDownloadingAlbums(true)
 
-        const normalizedBaseUrl = API_BASE_URL.replace(/\/$/, "")
-        const downloadUrl = `${normalizedBaseUrl}/api/admin/client-galleries/download-all`
-        const link = document.createElement("a")
+        try {
+            const response = await apiFetch("/admin/client-galleries/download-all", {
+                method: "GET",
+                skipJsonContentType: true,
+            })
 
-        link.href = downloadUrl
-        link.download = "dgvisionstudio-albums.zip"
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
+            if (!response.ok) {
+                const contentType = response.headers.get("content-type") || ""
+                let message = "Архивът не можа да бъде изтеглен."
 
-        window.setTimeout(() => setIsDownloadingAlbums(false), 1500)
+                if (contentType.includes("application/json")) {
+                    const data = await response.json().catch(() => null)
+                    message = data?.message || data?.title || message
+                } else {
+                    const text = await response.text().catch(() => "")
+                    message = text || `${response.status} ${response.statusText}`.trim() || message
+                }
+
+                throw new Error(message)
+            }
+
+            const blob = await response.blob()
+            if (!blob.size) {
+                throw new Error("Архивът е празен.")
+            }
+
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement("a")
+
+            link.href = url
+            link.download = getDownloadFileName(response.headers.get("content-disposition"))
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+
+            window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Архивът не можа да бъде изтеглен."
+            showToast({ type: "error", title: "Грешка", message })
+        } finally {
+            setIsDownloadingAlbums(false)
+        }
     }
 
     const isActive = (path: string) => {
@@ -63,7 +107,7 @@ function AdminLayoutContent() {
 
                 <button
                     type="button"
-                    onClick={downloadAllAlbums}
+                    onClick={() => void downloadAllAlbums()}
                     disabled={isDownloadingAlbums}
                     className="mt-6 inline-flex min-h-11 items-center justify-center rounded-2xl bg-white px-4 text-sm font-black text-gray-950 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
