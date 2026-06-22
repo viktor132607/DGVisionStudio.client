@@ -17,6 +17,8 @@ type CalendarEvent = {
     endAtUtc: string
 }
 
+const API_PATH = "/admin/calendar"
+
 const monthNames = [
     "Януари",
     "Февруари",
@@ -141,7 +143,7 @@ export default function AdminDashboardCalendarPreview() {
 
         const loadEvents = async () => {
             try {
-                const response = await apiFetch("/admin/shooting-calendar", {
+                const response = await apiFetch(API_PATH, {
                     method: "GET",
                     skipJsonContentType: true,
                 })
