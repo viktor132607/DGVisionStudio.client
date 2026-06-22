@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../../services/api"
 import { useAdminToast } from "../../hooks/useAdminToast"
 
+const API_PATH = "/admin/calendar"
 const monthNames = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"]
 const weekdayNames = ["Пон", "Вто", "Сря", "Чет", "Пет", "Съб", "Нед"]
 
@@ -136,7 +137,7 @@ export default function CalendarAdmin() {
         setLoading(true)
         setError("")
         try {
-            const response = await apiFetch("/admin/shooting-calendar", { method: "GET", skipJsonContentType: true })
+            const response = await apiFetch(API_PATH, { method: "GET", skipJsonContentType: true })
             if (!response.ok) throw new Error("Грешка при зареждане на календара.")
             const data = await response.json().catch(() => [])
             setEvents(Array.isArray(data) ? data : [])
@@ -189,7 +190,7 @@ export default function CalendarAdmin() {
                 startAtUtc: combineLocalDateTime(form.startDate, form.startTime),
                 endAtUtc: combineLocalDateTime(form.endDate, form.endTime),
             }
-            const response = await apiFetch(editingId ? `/admin/shooting-calendar/${editingId}` : "/admin/shooting-calendar", { method: editingId ? "PUT" : "POST", body: JSON.stringify(payload) })
+            const response = await apiFetch(editingId ? `${API_PATH}/${editingId}` : API_PATH, { method: editingId ? "PUT" : "POST", body: JSON.stringify(payload) })
             if (!response.ok) {
                 const data = await response.json().catch(() => null)
                 throw new Error(data?.message || "Записът беше неуспешен.")
@@ -210,7 +211,7 @@ export default function CalendarAdmin() {
         setDeletingId(id)
         setError("")
         try {
-            const response = await apiFetch(`/admin/shooting-calendar/${id}`, { method: "DELETE" })
+            const response = await apiFetch(`${API_PATH}/${id}`, { method: "DELETE" })
             if (!response.ok && response.status !== 204) throw new Error("Изтриването беше неуспешно.")
             setEvents((current) => current.filter((event) => event.id !== id))
             if (editingId === id) resetForm()
@@ -258,27 +259,12 @@ export default function CalendarAdmin() {
                             const isPast = isPastDate(date)
 
                             return (
-                                <button
-                                    key={date.toISOString()}
-                                    type="button"
-                                    onClick={() => selectDay(date)}
-                                    className={`min-h-[105px] rounded-2xl border p-2 text-left transition hover:border-sky-400 hover:bg-sky-50 ${isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100" : isPast ? "border-gray-200 bg-gray-100 text-gray-400" : "border-gray-200 bg-white"} ${!isCurrentMonth ? "opacity-45" : ""}`}
-                                >
+                                <button key={date.toISOString()} type="button" onClick={() => selectDay(date)} className={`min-h-[105px] rounded-2xl border p-2 text-left transition hover:border-sky-400 hover:bg-sky-50 ${isSelected ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100" : isPast ? "border-gray-200 bg-gray-100 text-gray-400" : "border-gray-200 bg-white"} ${!isCurrentMonth ? "opacity-45" : ""}`}>
                                     <div className={`mb-2 text-sm font-bold ${isPast ? "text-gray-400" : "text-gray-900"}`}>{date.getDate()}</div>
                                     <div className="space-y-1">
                                         {dayEvents.slice(0, 3).map((event) => {
                                             const eventIsPast = isPastEvent(event)
-
-                                            return (
-                                                <div
-                                                    key={event.id}
-                                                    className={`truncate rounded-lg px-2 py-1 text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`}
-                                                    style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }}
-                                                    title={getHoverDetails(event)}
-                                                >
-                                                    {toTimeInputValue(new Date(event.startAtUtc))} {event.title}
-                                                </div>
-                                            )
+                                            return <div key={event.id} className={`truncate rounded-lg px-2 py-1 text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`} style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }} title={getHoverDetails(event)}>{toTimeInputValue(new Date(event.startAtUtc))} {event.title}</div>
                                         })}
                                         {dayEvents.length > 3 ? <div className="text-[11px] font-semibold text-gray-500">+{dayEvents.length - 3} още</div> : null}
                                     </div>
@@ -301,10 +287,7 @@ export default function CalendarAdmin() {
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Тип</span><select value={form.eventType} onChange={(e) => setField("eventType", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="Photoshoot">Фотосесия</option><option value="Print">Принт на снимки</option></select></label>
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Ангажимент към</span><select value={form.assignedTo} onChange={(e) => setField("assignedTo", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">—</option><option value="Десислав">Десислав</option><option value="Теодор">Теодор</option></select></label>
                             </div>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Клиент</span><input value={form.clientName} onChange={(e) => setField("clientName", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
-                                <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Телефон</span><input value={form.clientPhone} onChange={(e) => setField("clientPhone", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
-                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Клиент</span><input value={form.clientName} onChange={(e) => setField("clientName", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Телефон</span><input value={form.clientPhone} onChange={(e) => setField("clientPhone", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Локация</span><input value={form.location} onChange={(e) => setField("location", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Начало дата</span><input type="date" value={form.startDate} onChange={(e) => setField("startDate", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Начало час</span><input type="time" value={form.startTime} onChange={(e) => setField("startTime", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Край дата</span><input type="date" value={form.endDate} onChange={(e) => setField("endDate", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Край час</span><input type="time" value={form.endTime} onChange={(e) => setField("endTime", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
@@ -321,18 +304,7 @@ export default function CalendarAdmin() {
                         <div className="space-y-3">
                             {selectedDateEvents.map((event) => {
                                 const eventIsPast = isPastEvent(event)
-
-                                return (
-                                    <div key={event.id} className={`rounded-2xl border p-4 ${eventIsPast ? "border-gray-200 bg-gray-100 opacity-70" : "border-gray-200 bg-gray-50"}`} title={getHoverDetails(event)}>
-                                        <div className="mb-2 flex items-start justify-between gap-3"><div><h3 className={eventIsPast ? "font-bold text-gray-500" : "font-bold text-gray-900"}>{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: eventIsPast ? "#9ca3af" : event.color || "#2563eb" }} /></div>
-                                        {eventIsPast ? <p className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Минало</p> : null}
-                                        {event.assignedTo ? <p className="text-sm text-gray-700">Ангажимент към: {event.assignedTo}</p> : null}
-                                        {event.clientName || event.clientPhone ? <p className="text-sm text-gray-700">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}
-                                        {event.location ? <p className="mt-1 text-sm text-gray-700">{event.location}</p> : null}
-                                        {event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}
-                                        <div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div>
-                                    </div>
-                                )
+                                return <div key={event.id} className={`rounded-2xl border p-4 ${eventIsPast ? "border-gray-200 bg-gray-100 opacity-70" : "border-gray-200 bg-gray-50"}`} title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className={eventIsPast ? "font-bold text-gray-500" : "font-bold text-gray-900"}>{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: eventIsPast ? "#9ca3af" : event.color || "#2563eb" }} /></div>{eventIsPast ? <p className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Минало</p> : null}{event.assignedTo ? <p className="text-sm text-gray-700">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm text-gray-700">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.location ? <p className="mt-1 text-sm text-gray-700">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>
                             })}
                         </div>
                     </section>
