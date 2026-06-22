@@ -41,6 +41,23 @@
         justify-content: flex-end !important;
     }
 
+    #categories tbody tr:has(td:nth-child(3) button.bg-slate-100) {
+        background: #f8dede !important;
+    }
+
+    #categories tbody tr:has(td:nth-child(3) button.bg-slate-100):hover {
+        background: #f3d2d2 !important;
+    }
+
+    #categories td:nth-child(3) button.bg-slate-100 {
+        background: #c98282 !important;
+        color: #ffffff !important;
+    }
+
+    #categories td:nth-child(3) button.bg-slate-100:hover {
+        background: #b86f6f !important;
+    }
+
     .space-y-3.p-3 > button:first-child {
         display: inline-flex !important;
         align-items: center !important;
