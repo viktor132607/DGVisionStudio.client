@@ -39,7 +39,7 @@ function AdminLayoutContent() {
 
     return (
         <div className="min-h-screen bg-gray-100 text-slate-900 dark:bg-zinc-950 dark:text-white lg:pl-72">
-            <aside className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-gray-950 px-5 py-6 text-white shadow-2xl dark:bg-black">
+            <aside className="fixed bottom-0 left-0 top-16 z-30 flex w-72 flex-col bg-gray-950 px-5 py-6 text-white shadow-2xl dark:bg-black lg:top-20">
                 <div className="mb-8">
                     <p className="text-xs font-bold uppercase tracking-[0.28em] text-white/45">DG Vision Studio</p>
                     <h1 className="mt-2 text-2xl font-black tracking-tight">Админ панел</h1>
