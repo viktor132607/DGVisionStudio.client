@@ -58,9 +58,9 @@ function AppContent() {
       {isPageLoading ? <GlobalPageLoader /> : null}
 
       <ScrollToTop />
-      {!isAdminPage ? <Navbar /> : null}
+      <Navbar />
 
-      {!isAdminPage ? <div className="h-16 shrink-0 lg:h-20" /> : null}
+      <div className="h-16 shrink-0 lg:h-20" />
 
       <main className="w-full flex-1">
         <div className={isAdminPage || isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
