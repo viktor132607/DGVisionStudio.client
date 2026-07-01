@@ -41,7 +41,7 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
 
         const load = async () => {
             try {
-                const response = await apiFetch("/portfolio/images", {
+                const response = await apiFetch("/portfolio/slideshow", {
                     method: "GET",
                     skipJsonContentType: true,
                 })
@@ -55,7 +55,7 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
                           .filter((item) => item?.isPublished && (item?.thumbnailUrl || item?.imageUrl))
                           .sort(
                               (a, b) =>
-                                  (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+                                  (a.slideshowOrder ?? a.displayOrder ?? 0) - (b.slideshowOrder ?? b.displayOrder ?? 0) ||
                                   (a.id ?? 0) - (b.id ?? 0)
                           )
                     : []
