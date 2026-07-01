@@ -13,6 +13,7 @@ export default function Navbar() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const [isDark, setIsDark] = useState(false)
     const [servicesOpen, setServicesOpen] = useState(false)
+    const [tabletServicesOpen, setTabletServicesOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
     const [mobileServicesOpen, setMobileServicesOpen] = useState(false)
     const [mobileAuthOpen, setMobileAuthOpen] = useState(false)
@@ -39,6 +40,7 @@ export default function Navbar() {
             } else if (currentScrollY > lastScrollY.current) {
                 setShowNavbar(false)
                 setServicesOpen(false)
+                setTabletServicesOpen(false)
                 setMobileOpen(false)
                 setMobileServicesOpen(false)
                 setMobileAuthOpen(false)
@@ -117,20 +119,30 @@ export default function Navbar() {
     }
 
     const desktopNavLinkClass = (to: string, hasDropdown?: boolean) =>
-        `relative inline-flex items-center py-1 text-[14px] 2xl:text-[16px] font-semibold tracking-[0.01em] transition ${
+        `relative inline-flex items-center py-1 text-[13px] font-semibold tracking-[0.01em] transition min-[1400px]:text-[14px] 2xl:text-[16px] ${
             isActive(to, hasDropdown)
                 ? "text-neutral-950 after:absolute after:-bottom-[27px] after:left-0 after:h-[2px] after:w-full after:bg-neutral-950 dark:text-white dark:after:bg-white"
                 : "text-neutral-600 hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white"
         }`
 
+    const tabletNavLinkClass = (active: boolean) =>
+        `inline-flex min-h-[42px] items-center rounded-full border px-4 text-[13px] font-bold tracking-[0.02em] transition lg:px-5 lg:text-[14px] ${
+            active
+                ? "border-neutral-950 bg-neutral-950 text-white dark:border-white dark:bg-white dark:text-black"
+                : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-950 hover:text-neutral-950 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:border-white dark:hover:text-white"
+        }`
+
     const desktopOutlineButtonClass =
-        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-300 bg-transparent px-4 2xl:px-5 py-2 text-[13px] 2xl:text-[14px] font-semibold text-neutral-800 transition hover:border-neutral-950 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-black"
+        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-300 bg-transparent px-3 py-2 text-[12px] font-semibold text-neutral-800 transition hover:border-neutral-950 hover:bg-neutral-100 hover:text-neutral-950 min-[1400px]:px-4 min-[1400px]:text-[13px] 2xl:px-5 2xl:text-[14px] dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-black"
 
     const desktopSolidButtonClass =
-        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-4 2xl:px-5 py-2 text-[13px] 2xl:text-[14px] font-semibold text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-neutral-800 min-[1400px]:px-4 min-[1400px]:text-[13px] 2xl:px-5 2xl:text-[14px] dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+
+    const tabletButtonClass =
+        "hidden md:inline-flex xl:hidden h-10 items-center justify-center rounded-full border border-neutral-200 bg-white px-4 text-[12px] font-bold text-neutral-800 transition hover:border-neutral-950 hover:text-neutral-950 dark:border-white/10 dark:bg-zinc-950 dark:text-white dark:hover:border-white"
 
     const mobileHeaderButtonClass =
-        "inline-flex h-9 items-center justify-center rounded-full bg-white px-3 text-[12px] font-bold text-neutral-800 transition hover:bg-neutral-100 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
+        "inline-flex h-9 items-center justify-center rounded-full bg-white px-3 text-[12px] font-bold text-neutral-800 transition hover:bg-neutral-100 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900 md:hidden"
 
     const mobileIconButtonClass =
         "flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-900 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
@@ -151,17 +163,17 @@ export default function Navbar() {
                 showNavbar ? "translate-y-0" : "-translate-y-full"
             }`}
         >
-            <div className="mx-auto max-w-[1720px] px-4 sm:px-6 md:px-8 xl:px-10 2xl:px-12">
-                <div className="flex h-[72px] items-center justify-between sm:h-[78px] xl:h-[88px]">
-                    <Link to="/" className="flex min-w-0 items-center py-1 pr-2 xl:pr-4">
+            <div className="mx-auto max-w-[1720px] px-4 sm:px-6 md:px-8 xl:px-8 min-[1400px]:px-10 2xl:px-12">
+                <div className="flex h-[72px] items-center justify-between md:h-[76px] xl:h-[84px] 2xl:h-[88px]">
+                    <Link to="/" className="flex min-w-0 items-center py-1 pr-2 xl:pr-3 min-[1400px]:pr-4">
                         <img
                             src={isDark ? "/images/relogo/white.webp" : "/images/relogo/black.webp"}
                             alt="DG Vision Studio"
-                            className="block h-[34px] w-auto object-contain sm:h-[42px] xl:h-[50px] 2xl:h-[54px]"
+                            className="block h-[34px] w-auto object-contain sm:h-[40px] md:h-[44px] xl:h-[46px] min-[1400px]:h-[50px] 2xl:h-[54px]"
                         />
                     </Link>
 
-                    <nav className="hidden items-center gap-6 2xl:gap-11 xl:flex">
+                    <nav className="hidden items-center gap-4 xl:flex min-[1400px]:gap-6 2xl:gap-11">
                         {items.map((item) =>
                             item.hasDropdown ? (
                                 <div
@@ -172,14 +184,7 @@ export default function Navbar() {
                                 >
                                     <Link to="/" className={desktopNavLinkClass("/", true)}>
                                         {item.label}
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            className="ml-1.5 h-4 w-4"
-                                        >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-1.5 h-4 w-4">
                                             <path d="m6 9 6 6 6-6" />
                                         </svg>
                                     </Link>
@@ -188,9 +193,7 @@ export default function Navbar() {
 
                                     <div
                                         className={`absolute left-1/2 top-full z-50 mt-6 w-[340px] -translate-x-1/2 rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.14)] transition-all duration-200 dark:border-white/10 dark:bg-zinc-950 dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] ${
-                                            servicesOpen
-                                                ? "visible translate-y-0 opacity-100"
-                                                : "invisible -translate-y-1 opacity-0"
+                                            servicesOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0"
                                         }`}
                                     >
                                         {serviceItems.map((s) => (
@@ -213,7 +216,7 @@ export default function Navbar() {
                         )}
                     </nav>
 
-                    <div className="flex items-center gap-2 xl:gap-2.5 2xl:gap-3">
+                    <div className="flex items-center gap-2 xl:gap-2 min-[1400px]:gap-2.5 2xl:gap-3">
                         {user ? (
                             <>
                                 {isAdmin && (
@@ -242,8 +245,18 @@ export default function Navbar() {
                             </>
                         )}
 
+                        {user ? (
+                            <Link to="/identity/profile" className={tabletButtonClass}>
+                                {isBg ? "Профил" : "Profile"}
+                            </Link>
+                        ) : (
+                            <Link to="/identity/login" className={tabletButtonClass}>
+                                {isBg ? "Вход" : "Login"}
+                            </Link>
+                        )}
+
                         {!user ? (
-                            <div className="relative xl:hidden">
+                            <div className="relative md:hidden">
                                 <button
                                     type="button"
                                     onClick={() => setMobileAuthOpen((prev) => !prev)}
@@ -254,34 +267,21 @@ export default function Navbar() {
 
                                 {mobileAuthOpen && (
                                     <div className="absolute right-0 top-full z-50 mt-3 w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.14)] dark:border-white/10 dark:bg-zinc-950">
-                                        <Link
-                                            to="/identity/login"
-                                            className="block border-b border-neutral-100 px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-zinc-900"
-                                            onClick={closeMobileMenu}
-                                        >
+                                        <Link to="/identity/login" className="block border-b border-neutral-100 px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-zinc-900" onClick={closeMobileMenu}>
                                             {isBg ? "Вход" : "Login"}
                                         </Link>
-
-                                        <Link
-                                            to="/identity/register"
-                                            className="block px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:text-zinc-200 dark:hover:bg-zinc-900"
-                                            onClick={closeMobileMenu}
-                                        >
+                                        <Link to="/identity/register" className="block px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 dark:text-zinc-200 dark:hover:bg-zinc-900" onClick={closeMobileMenu}>
                                             {isBg ? "Регистрация" : "Register"}
                                         </Link>
                                     </div>
                                 )}
                             </div>
-                        ) : (
-                            <Link to="/identity/profile" className={`${mobileHeaderButtonClass} xl:hidden`}>
-                                {isBg ? "Профил" : "Profile"}
-                            </Link>
-                        )}
+                        ) : null}
 
                         <button
                             type="button"
                             onClick={() => i18n.changeLanguage(isBg ? "en" : "bg")}
-                            className={mobileHeaderButtonClass}
+                            className="inline-flex h-9 items-center justify-center rounded-full bg-white px-3 text-[12px] font-bold text-neutral-800 transition hover:bg-neutral-100 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900 md:h-10 md:border md:border-neutral-200 md:bg-transparent md:px-4 md:dark:border-white/10 md:dark:bg-transparent"
                         >
                             {isBg ? "EN" : "BG"}
                         </button>
@@ -292,17 +292,13 @@ export default function Navbar() {
                             className="flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-transparent transition hover:border-neutral-200 hover:bg-neutral-100 dark:hover:border-white/10 dark:hover:bg-zinc-900"
                             aria-label={isBg ? "Смени тема" : "Toggle theme"}
                         >
-                            <img
-                                src="/light-mode.svg"
-                                alt=""
-                                className={`h-[15px] w-[15px] object-contain transition duration-200 ${isDark ? "invert" : ""}`}
-                            />
+                            <img src="/light-mode.svg" alt="" className={`h-[15px] w-[15px] object-contain transition duration-200 ${isDark ? "invert" : ""}`} />
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setMobileOpen(!mobileOpen)}
-                            className={`${mobileIconButtonClass} xl:hidden`}
+                            className={`${mobileIconButtonClass} md:hidden`}
                             aria-label={isBg ? "Меню" : "Menu"}
                         >
                             ☰
@@ -311,8 +307,48 @@ export default function Navbar() {
                 </div>
             </div>
 
+            <div className="hidden border-t border-neutral-200 bg-neutral-50/95 dark:border-white/10 dark:bg-zinc-950/95 md:block xl:hidden">
+                <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-center gap-2 px-6 py-3 lg:gap-3">
+                    {items.map((item) =>
+                        item.hasDropdown ? (
+                            <div key={item.label} className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setTabletServicesOpen((prev) => !prev)}
+                                    className={tabletNavLinkClass(isActive(item.to, true))}
+                                >
+                                    {item.label}
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`ml-1.5 h-4 w-4 transition-transform ${tabletServicesOpen ? "rotate-180" : ""}`}>
+                                        <path d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
+
+                                {tabletServicesOpen && (
+                                    <div className="absolute left-1/2 top-full z-50 mt-3 w-[320px] -translate-x-1/2 rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.14)] dark:border-white/10 dark:bg-zinc-950">
+                                        {serviceItems.map((s) => (
+                                            <Link
+                                                key={s.to}
+                                                to={s.to}
+                                                className="block rounded-xl px-4 py-3 text-[14px] font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-200 dark:hover:bg-white dark:hover:text-black"
+                                                onClick={() => setTabletServicesOpen(false)}
+                                            >
+                                                {s.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link key={item.to} to={item.to} className={tabletNavLinkClass(isActive(item.to))}>
+                                {item.label}
+                            </Link>
+                        )
+                    )}
+                </div>
+            </div>
+
             {mobileOpen && (
-                <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-neutral-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black sm:max-h-[calc(100vh-78px)] xl:hidden">
+                <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-neutral-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black md:hidden">
                     <div>
                         {items.map((item) =>
                             item.hasDropdown ? (
@@ -327,18 +363,8 @@ export default function Navbar() {
                                         }`}
                                     >
                                         <span>{item.label}</span>
-
                                         <span className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-700 dark:border-white/20 dark:text-zinc-200">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className={`h-4 w-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
-                                            >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}>
                                                 <path d="m6 9 6 6 6-6" />
                                             </svg>
                                         </span>
@@ -347,12 +373,7 @@ export default function Navbar() {
                                     {mobileServicesOpen && (
                                         <div className="mb-3 bg-white dark:bg-black">
                                             {serviceItems.map((s) => (
-                                                <Link
-                                                    key={s.to}
-                                                    to={s.to}
-                                                    className={mobileSubLinkClass}
-                                                    onClick={closeMobileMenu}
-                                                >
+                                                <Link key={s.to} to={s.to} className={mobileSubLinkClass} onClick={closeMobileMenu}>
                                                     {s.label}
                                                 </Link>
                                             ))}
@@ -360,12 +381,7 @@ export default function Navbar() {
                                     )}
                                 </div>
                             ) : (
-                                <Link
-                                    key={item.to}
-                                    to={item.to}
-                                    className={mobileLinkClass(isActive(item.to))}
-                                    onClick={closeMobileMenu}
-                                >
+                                <Link key={item.to} to={item.to} className={mobileLinkClass(isActive(item.to))} onClick={closeMobileMenu}>
                                     {item.label}
                                 </Link>
                             )
@@ -374,20 +390,12 @@ export default function Navbar() {
                         {user ? (
                             <>
                                 {isAdmin && (
-                                    <Link
-                                        to="/admin"
-                                        className={mobileLinkClass(location.pathname === "/admin")}
-                                        onClick={closeMobileMenu}
-                                    >
+                                    <Link to="/admin" className={mobileLinkClass(location.pathname === "/admin")} onClick={closeMobileMenu}>
                                         {isBg ? "Админ" : "Admin"}
                                     </Link>
                                 )}
 
-                                <button
-                                    type="button"
-                                    onClick={handleLogout}
-                                    className="block w-full border-b border-neutral-200 py-4 text-left text-base font-semibold text-neutral-700 dark:border-white/10 dark:text-zinc-200"
-                                >
+                                <button type="button" onClick={handleLogout} className="block w-full border-b border-neutral-200 py-4 text-left text-base font-semibold text-neutral-700 dark:border-white/10 dark:text-zinc-200">
                                     {isBg ? "Изход" : "Logout"}
                                 </button>
                             </>
