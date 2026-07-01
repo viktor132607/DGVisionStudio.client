@@ -42,7 +42,7 @@ function AppContent() {
   const isPortfolioPage = location.pathname === "/portfolio"
   const isAdminPage = location.pathname.startsWith("/admin")
   const isContactPage = location.pathname === "/contact"
-  const showMobileContactBubble = !isAdminPage && !isContactPage
+  const showContactBubble = !isAdminPage && !isContactPage
   const [isPageLoading, setIsPageLoading] = useState(true)
 
   useEffect(() => {
@@ -137,11 +137,11 @@ function AppContent() {
         </div>
       </main>
 
-      {showMobileContactBubble ? (
+      {showContactBubble ? (
         <Link
           to="/contact"
           aria-label={contactBubbleLabel}
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition active:scale-95 dark:bg-white dark:text-black xl:hidden"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200 sm:right-6 xl:bottom-8 xl:right-8 xl:px-5 xl:py-4 xl:text-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
