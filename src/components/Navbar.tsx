@@ -117,17 +117,17 @@ export default function Navbar() {
     }
 
     const desktopNavLinkClass = (to: string, hasDropdown?: boolean) =>
-        `relative inline-flex items-center py-1 text-[15px] xl:text-[16px] font-semibold tracking-[0.01em] transition ${
+        `relative inline-flex items-center py-1 text-[14px] 2xl:text-[16px] font-semibold tracking-[0.01em] transition ${
             isActive(to, hasDropdown)
                 ? "text-neutral-950 after:absolute after:-bottom-[27px] after:left-0 after:h-[2px] after:w-full after:bg-neutral-950 dark:text-white dark:after:bg-white"
                 : "text-neutral-600 hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white"
         }`
 
     const desktopOutlineButtonClass =
-        "hidden sm:inline-flex items-center justify-center rounded-full border border-neutral-300 bg-transparent px-4 xl:px-5 py-2 text-[13px] xl:text-[14px] font-semibold text-neutral-800 transition hover:border-neutral-950 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-black"
+        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-300 bg-transparent px-4 2xl:px-5 py-2 text-[13px] 2xl:text-[14px] font-semibold text-neutral-800 transition hover:border-neutral-950 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:border-white dark:hover:bg-white dark:hover:text-black"
 
     const desktopSolidButtonClass =
-        "hidden sm:inline-flex items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-4 xl:px-5 py-2 text-[13px] xl:text-[14px] font-semibold text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        "hidden xl:inline-flex items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-4 2xl:px-5 py-2 text-[13px] 2xl:text-[14px] font-semibold text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200"
 
     const mobileHeaderButtonClass =
         "inline-flex h-9 items-center justify-center rounded-full bg-white px-3 text-[12px] font-bold text-neutral-800 transition hover:bg-neutral-100 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-900"
@@ -151,17 +151,17 @@ export default function Navbar() {
                 showNavbar ? "translate-y-0" : "-translate-y-full"
             }`}
         >
-            <div className="mx-auto max-w-[1720px] px-4 sm:px-7 lg:px-10 2xl:px-12">
-                <div className="flex h-[82px] items-center justify-between xl:h-[88px]">
-                    <Link to="/" className="flex min-w-0 items-center py-1 pr-2 lg:pr-4">
+            <div className="mx-auto max-w-[1720px] px-4 sm:px-6 md:px-8 xl:px-10 2xl:px-12">
+                <div className="flex h-[72px] items-center justify-between sm:h-[78px] xl:h-[88px]">
+                    <Link to="/" className="flex min-w-0 items-center py-1 pr-2 xl:pr-4">
                         <img
                             src={isDark ? "/images/relogo/white.webp" : "/images/relogo/black.webp"}
                             alt="DG Vision Studio"
-                            className="block h-[38px] w-auto object-contain sm:h-[46px] lg:h-[50px] xl:h-[54px]"
+                            className="block h-[34px] w-auto object-contain sm:h-[42px] xl:h-[50px] 2xl:h-[54px]"
                         />
                     </Link>
 
-                    <nav className="hidden items-center gap-9 xl:gap-11 lg:flex">
+                    <nav className="hidden items-center gap-6 2xl:gap-11 xl:flex">
                         {items.map((item) =>
                             item.hasDropdown ? (
                                 <div
@@ -206,18 +206,14 @@ export default function Navbar() {
                                     </div>
                                 </div>
                             ) : (
-                                <Link
-                                    key={item.to}
-                                    to={item.to}
-                                    className={desktopNavLinkClass(item.to)}
-                                >
+                                <Link key={item.to} to={item.to} className={desktopNavLinkClass(item.to)}>
                                     {item.label}
                                 </Link>
                             )
                         )}
                     </nav>
 
-                    <div className="flex items-center gap-2 lg:gap-2.5 xl:gap-3">
+                    <div className="flex items-center gap-2 xl:gap-2.5 2xl:gap-3">
                         {user ? (
                             <>
                                 {isAdmin && (
@@ -247,7 +243,7 @@ export default function Navbar() {
                         )}
 
                         {!user ? (
-                            <div className="relative lg:hidden">
+                            <div className="relative xl:hidden">
                                 <button
                                     type="button"
                                     onClick={() => setMobileAuthOpen((prev) => !prev)}
@@ -277,7 +273,7 @@ export default function Navbar() {
                                 )}
                             </div>
                         ) : (
-                            <Link to="/identity/profile" className={`${mobileHeaderButtonClass} lg:hidden`}>
+                            <Link to="/identity/profile" className={`${mobileHeaderButtonClass} xl:hidden`}>
                                 {isBg ? "Профил" : "Profile"}
                             </Link>
                         )}
@@ -299,16 +295,14 @@ export default function Navbar() {
                             <img
                                 src="/light-mode.svg"
                                 alt=""
-                                className={`h-[15px] w-[15px] object-contain transition duration-200 ${
-                                    isDark ? "invert" : ""
-                                }`}
+                                className={`h-[15px] w-[15px] object-contain transition duration-200 ${isDark ? "invert" : ""}`}
                             />
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setMobileOpen(!mobileOpen)}
-                            className={`${mobileIconButtonClass} lg:hidden`}
+                            className={`${mobileIconButtonClass} xl:hidden`}
                             aria-label={isBg ? "Меню" : "Menu"}
                         >
                             ☰
@@ -318,7 +312,7 @@ export default function Navbar() {
             </div>
 
             {mobileOpen && (
-                <div className="border-t border-neutral-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black lg:hidden">
+                <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-t border-neutral-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black sm:max-h-[calc(100vh-78px)] xl:hidden">
                     <div>
                         {items.map((item) =>
                             item.hasDropdown ? (
@@ -343,9 +337,7 @@ export default function Navbar() {
                                                 strokeWidth="2"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
-                                                className={`h-4 w-4 transition-transform ${
-                                                    mobileServicesOpen ? "rotate-180" : ""
-                                                }`}
+                                                className={`h-4 w-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
                                             >
                                                 <path d="m6 9 6 6 6-6" />
                                             </svg>
