@@ -27,7 +27,7 @@ function AdminLayoutContent() {
 
     return (
         <div className="min-h-screen bg-gray-100 text-slate-900 dark:bg-zinc-950 dark:text-white lg:pl-72">
-            <div className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-black lg:hidden">
+            <div className="sticky top-0 z-40 flex items-start justify-between border-b border-slate-200 bg-white px-4 pb-4 pt-5 shadow-sm dark:border-white/10 dark:bg-black lg:hidden">
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">DG Vision Studio</p>
                     <p className="text-sm font-black text-slate-950 dark:text-white">Админ панел</p>
@@ -36,7 +36,7 @@ function AdminLayoutContent() {
                 <button
                     type="button"
                     onClick={() => setMobileMenuOpen(true)}
-                    className="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white dark:bg-white dark:text-black"
+                    className="mt-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white dark:bg-white dark:text-black"
                 >
                     Меню
                 </button>
