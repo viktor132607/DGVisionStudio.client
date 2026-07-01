@@ -150,14 +150,14 @@ export default function Home() {
                                     to="/portfolio"
                                     className="inline-flex min-h-[48px] w-full items-center justify-center rounded-none border border-neutral-950 bg-neutral-950 px-5 py-3 text-center text-xs font-extrabold uppercase tracking-[0.14em] text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 sm:min-h-[52px] sm:w-auto sm:px-6 sm:text-sm sm:tracking-[0.16em]"
                                 >
-                                    {isBg ? "Виж портфолио" : "View Portfolio"}
+                                    {isBg ? "Вижте портфолио" : "View portfolio"}
                                 </Link>
 
                                 <Link
                                     to="/contact"
                                     className="inline-flex min-h-[48px] w-full items-center justify-center rounded-none border border-neutral-400 bg-transparent px-5 py-3 text-center text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-100 dark:border-zinc-500 dark:text-white dark:hover:border-white dark:hover:bg-zinc-800 sm:min-h-[52px] sm:w-auto sm:px-6 sm:text-sm sm:tracking-[0.16em]"
                                 >
-                                    {isBg ? "Свържи се" : "Contact"}
+                                    {isBg ? "Свържете се" : "Contact us"}
                                 </Link>
                             </div>
                         </div>
@@ -258,177 +258,133 @@ export default function Home() {
                                                 loading="lazy"
                                                 decoding="async"
                                                 className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                                    !isMobile && direction === 1
-                                                        ? "animate-[homeSlideOutLeft_700ms_ease-in-out_forwards]"
-                                                        : !isMobile
-                                                          ? "animate-[homeSlideOutRight_700ms_ease-in-out_forwards]"
-                                                          : "opacity-100"
+                                                    direction === "forward" ? "animate-slide-out-left" : "animate-slide-out-right"
                                                 }`}
                                             />
                                         ) : null}
 
                                         {currentImage ? (
                                             <img
+                                                key={currentImage.id}
                                                 src={currentImage.thumbnailUrl?.trim() || currentImage.imageUrl}
                                                 alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
                                                 loading="eager"
                                                 decoding="async"
                                                 className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                                    !isMobile && isTransitioning
-                                                        ? direction === 1
-                                                            ? "animate-[homeSlideInRight_700ms_ease-in-out_forwards]"
-                                                            : "animate-[homeSlideInLeft_700ms_ease-in-out_forwards]"
-                                                        : "opacity-100"
+                                                    isTransitioning
+                                                        ? direction === "forward"
+                                                            ? "animate-slide-in-right"
+                                                            : "animate-slide-in-left"
+                                                        : ""
                                                 }`}
                                             />
                                         ) : null}
                                     </>
                                 )}
 
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                            </div>
-
-                            <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
-                                <div
-                                    key={showingHardcodedVideo ? "hardcoded-video-text" : currentImage?.id ?? "fallback-text"}
-                                    className="animate-[fadeUp_500ms_ease-out]"
-                                >
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-20 text-white sm:px-5 sm:pb-5 lg:px-7 lg:pb-7">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-xs">
                                         {slideshowEyebrow}
                                     </p>
-                                    <p className="mt-2 text-xs font-semibold text-white sm:text-sm md:text-[15px]">
+                                    <p className="mt-2 max-w-xl text-[15px] font-semibold leading-6 sm:text-[17px] lg:text-[20px] lg:leading-7">
                                         {slideshowDescription}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <style>
-                        {`
-                            @keyframes homeSlideInRight {
-                                from {
-                                    transform: translateX(100%);
-                                    opacity: 0.9;
-                                }
-                                to {
-                                    transform: translateX(0);
-                                    opacity: 1;
-                                }
-                            }
-
-                            @keyframes homeSlideOutLeft {
-                                from {
-                                    transform: translateX(0);
-                                    opacity: 1;
-                                }
-                                to {
-                                    transform: translateX(-100%);
-                                    opacity: 0.9;
-                                }
-                            }
-
-                            @keyframes homeSlideInLeft {
-                                from {
-                                    transform: translateX(-100%);
-                                    opacity: 0.9;
-                                }
-                                to {
-                                    transform: translateX(0);
-                                    opacity: 1;
-                                }
-                            }
-
-                            @keyframes homeSlideOutRight {
-                                from {
-                                    transform: translateX(0);
-                                    opacity: 1;
-                                }
-                                to {
-                                    transform: translateX(100%);
-                                    opacity: 0.9;
-                                }
-                            }
-
-                            @keyframes fadeUp {
-                                from {
-                                    opacity: 0;
-                                    transform: translateY(10px);
-                                }
-                                to {
-                                    opacity: 1;
-                                    transform: translateY(0);
-                                }
-                            }
-
-                            @keyframes homeLoadingBar {
-                                from {
-                                    transform: translateX(-120%);
-                                }
-                                to {
-                                    transform: translateX(240%);
-                                }
-                            }
-                        `}
-                    </style>
                 </section>
 
-                <section className="border-b border-neutral-300 bg-neutral-200 dark:border-zinc-700 dark:bg-zinc-800">
-                    <div className="mx-auto max-w-[1700px]">
-                        <div className="grid grid-cols-2 gap-[1px] bg-neutral-200 text-center dark:bg-zinc-800 sm:grid-cols-3 xl:grid-cols-6">
-                            {quickLinks.map((item) => (
-                                <Link
-                                    key={item.href + item.bg}
-                                    to={item.href}
-                                    className="flex min-h-[42px] items-center justify-center bg-neutral-200 px-2 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-neutral-700 transition hover:bg-white hover:text-neutral-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white sm:text-xs sm:tracking-[0.18em]"
-                                >
-                                    {isBg ? item.bg : item.en}
-                                </Link>
-                            ))}
-                        </div>
+                <section className="mx-auto w-full max-w-[1700px] px-4 py-8 sm:px-6 sm:py-10 md:px-8 lg:px-10 lg:py-12 xl:px-12 2xl:px-16">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                        {quickLinks.map((item) => (
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                className="group border border-neutral-300 bg-white p-5 transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white sm:p-6"
+                            >
+                                <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
+                                    {item.label}
+                                </p>
+                                <p className="mt-3 text-[18px] font-bold text-neutral-950 dark:text-white sm:text-[20px]">
+                                    {item.title}
+                                </p>
+                            </Link>
+                        ))}
                     </div>
                 </section>
 
-                <section className="bg-neutral-100 py-12 dark:bg-zinc-900 sm:py-16 lg:py-20 xl:py-24">
-                    <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
-                        <div className="mb-8 text-center sm:mb-10 lg:mb-12">
-                            <h2 className="text-[28px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
-                                {isBg ? "Услуги" : "Services"}
+                <section className="mx-auto w-full max-w-[1700px] px-4 pb-12 sm:px-6 sm:pb-14 md:px-8 lg:px-10 lg:pb-16 xl:px-12 2xl:px-16">
+                    <div className="mb-6 flex flex-col gap-3 sm:mb-8 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <p className="text-[12px] font-extrabold uppercase tracking-[0.22em] text-neutral-500 dark:text-zinc-400">
+                                {isBg ? "Нашите услуги" : "Our services"}
+                            </p>
+                            <h2 className="mt-3 max-w-4xl text-[28px] font-extrabold uppercase leading-[1.08] text-neutral-950 dark:text-white sm:text-[36px] md:text-[44px] lg:text-[50px]">
+                                {isBg ? "Визуално съдържание за всяка история" : "Visual content for every story"}
                             </h2>
                         </div>
+                    </div>
 
-                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {serviceCards.map((card) => (
-                                <Link
-                                    key={card.id}
-                                    to={card.href}
-                                    className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-white"
-                                >
-                                    <div className="relative aspect-[4/5] overflow-hidden">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {serviceCards.map((item) => (
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white"
+                            >
+                                <div className="aspect-[4/3] overflow-hidden bg-neutral-200 dark:bg-zinc-900">
+                                    {item.image ? (
                                         <img
-                                            src={card.image}
-                                            alt={isBg ? card.titleBg : card.titleEn}
-                                            className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.04]"
+                                            src={item.image}
+                                            alt={item.title}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                                    </div>
-
-                                    <div className="space-y-3 p-5 sm:p-6">
-                                        <h3 className="text-sm font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white">
-                                            {isBg ? card.titleBg : card.titleEn}
-                                        </h3>
-
-                                        {(isBg ? card.descBg : card.descEn) ? (
-                                            <p className="text-sm leading-7 text-neutral-600 dark:text-zinc-300">
-                                                {isBg ? card.descBg : card.descEn}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                                    ) : null}
+                                </div>
+                                <div className="p-5 sm:p-6">
+                                    <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
+                                        {item.label}
+                                    </p>
+                                    <h3 className="mt-3 text-[20px] font-bold text-neutral-950 dark:text-white sm:text-[22px]">
+                                        {item.title}
+                                    </h3>
+                                    <p className="mt-3 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300">
+                                        {item.description}
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </section>
+
+                <style>{`
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0.6; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideInLeft {
+                        from { transform: translateX(-100%); opacity: 0.6; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOutLeft {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(-100%); opacity: 0.6; }
+                    }
+                    @keyframes slideOutRight {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0.6; }
+                    }
+                    @keyframes homeLoadingBar {
+                        0% { transform: translateX(-120%); }
+                        100% { transform: translateX(220%); }
+                    }
+                    .animate-slide-in-right { animation: slideInRight 700ms ease-in-out forwards; }
+                    .animate-slide-in-left { animation: slideInLeft 700ms ease-in-out forwards; }
+                    .animate-slide-out-left { animation: slideOutLeft 700ms ease-in-out forwards; }
+                    .animate-slide-out-right { animation: slideOutRight 700ms ease-in-out forwards; }
+                `}</style>
             </div>
         </>
     )
