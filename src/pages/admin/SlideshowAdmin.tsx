@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type DragEvent } from "react"
 import { apiFetchJson } from "../../services/api"
 import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 
@@ -28,6 +28,7 @@ export default function SlideshowAdmin() {
     const [saving, setSaving] = useState(false)
     const [message, setMessage] = useState("")
     const [error, setError] = useState("")
+    const [draggedId, setDraggedId] = useState<number | null>(null)
 
     const load = async () => {
         setLoading(true)
@@ -99,6 +100,44 @@ export default function SlideshowAdmin() {
         })
     }
 
+    const moveByDrag = (sourceId: number, targetId: number) => {
+        if (sourceId === targetId) return
+
+        setSelected((current) => {
+            const sourceIndex = current.findIndex((image) => image.id === sourceId)
+            const targetIndex = current.findIndex((image) => image.id === targetId)
+
+            if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return current
+
+            const next = [...current]
+            const [item] = next.splice(sourceIndex, 1)
+            next.splice(targetIndex, 0, item)
+
+            return next
+        })
+    }
+
+    const handleDragStart = (event: DragEvent<HTMLButtonElement>, id: number) => {
+        setDraggedId(id)
+        event.dataTransfer.effectAllowed = "move"
+        event.dataTransfer.setData("text/plain", String(id))
+    }
+
+    const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault()
+        event.dataTransfer.dropEffect = "move"
+    }
+
+    const handleDrop = (event: DragEvent<HTMLDivElement>, targetId: number) => {
+        event.preventDefault()
+
+        const sourceId = Number(event.dataTransfer.getData("text/plain") || draggedId)
+        if (!Number.isFinite(sourceId)) return
+
+        moveByDrag(sourceId, targetId)
+        setDraggedId(null)
+    }
+
     const save = async () => {
         setSaving(true)
         setError("")
@@ -148,7 +187,22 @@ export default function SlideshowAdmin() {
                         </div>
                         <div className="mt-4 flex max-h-[70vh] flex-col gap-3 overflow-auto">
                             {selected.map((image, index) => (
-                                <div key={image.id} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30">
+                                <div
+                                    key={image.id}
+                                    onDragOver={handleDragOver}
+                                    onDrop={(event) => handleDrop(event, image.id)}
+                                    className={`flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition dark:border-white/10 dark:bg-black/30 ${draggedId === image.id ? "opacity-45 ring-2 ring-slate-400" : ""}`}
+                                >
+                                    <button
+                                        type="button"
+                                        draggable
+                                        onDragStart={(event) => handleDragStart(event, image.id)}
+                                        onDragEnd={() => setDraggedId(null)}
+                                        className="flex h-24 w-8 shrink-0 cursor-grab items-center justify-center rounded-xl border border-slate-200 bg-white text-lg font-black text-slate-400 active:cursor-grabbing dark:border-white/10 dark:bg-black dark:text-white/50"
+                                        title="Влачи за промяна на реда"
+                                    >
+                                        ⋮⋮
+                                    </button>
                                     <img src={imageSrc(image)} alt={imageTitle(image)} className="h-24 w-20 rounded-xl object-cover" />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-black text-slate-400">#{index + 1}</p>
