@@ -69,8 +69,12 @@ export default function SlideshowAdmin() {
         )
     }, [available, search])
 
-    const add = (image: SlideshowImage) => {
-        setSelected((current) => current.some((item) => item.id === image.id) ? current : [...current, image])
+    const toggleSelected = (image: SlideshowImage) => {
+        setSelected((current) => {
+            const isSelected = current.some((item) => item.id === image.id)
+            if (isSelected) return current.filter((item) => item.id !== image.id)
+            return [...current, image]
+        })
     }
 
     const remove = (id: number) => {
@@ -244,7 +248,7 @@ export default function SlideshowAdmin() {
                                         <div className="p-3">
                                             <p className="truncate text-sm font-black text-slate-950 dark:text-white">{imageTitle(image)}</p>
                                             <p className="truncate text-xs text-slate-500 dark:text-white/60">ID {image.id} · {image.albumTitle || "Без албум"}</p>
-                                            <button type="button" onClick={() => add(image)} disabled={isSelected} className="mt-3 w-full rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white disabled:bg-emerald-100 disabled:text-emerald-700 dark:bg-white dark:text-black">{isSelected ? "Добавена" : "+ Добави"}</button>
+                                            <button type="button" onClick={() => toggleSelected(image)} className={`mt-3 w-full rounded-xl px-3 py-2 text-xs font-black ${isSelected ? "bg-emerald-100 text-emerald-700 hover:bg-red-100 hover:text-red-700" : "bg-slate-950 text-white hover:bg-slate-800 dark:bg-white dark:text-black"}`}>{isSelected ? "Добавена" : "+ Добави"}</button>
                                         </div>
                                     </div>
                                 )
