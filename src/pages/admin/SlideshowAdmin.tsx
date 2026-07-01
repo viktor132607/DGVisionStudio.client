@@ -10,6 +10,7 @@ type SlideshowImage = {
     altText?: string | null
     albumTitle?: string | null
     categoryName?: string | null
+    portfolioAlbumId?: number | null
 }
 
 type SlideshowResponse = {
@@ -17,13 +18,22 @@ type SlideshowResponse = {
     availableImages?: SlideshowImage[]
 }
 
+type AlbumOption = {
+    key: string
+    title: string
+    category?: string | null
+    count: number
+}
+
 const imageSrc = (image: SlideshowImage) => resolveAssetUrl(image.thumbnailUrl || image.imageUrl || "")
 const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
+const albumKey = (image: SlideshowImage) => String(image.portfolioAlbumId ?? image.albumTitle ?? "no-album")
 
 export default function SlideshowAdmin() {
     const [selected, setSelected] = useState<SlideshowImage[]>([])
     const [available, setAvailable] = useState<SlideshowImage[]>([])
     const [search, setSearch] = useState("")
+    const [selectedAlbumKeys, setSelectedAlbumKeys] = useState<string[]>([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [message, setMessage] = useState("")
@@ -56,18 +66,57 @@ export default function SlideshowAdmin() {
 
     const selectedIds = useMemo(() => new Set(selected.map((image) => image.id)), [selected])
 
+    const albumOptions = useMemo<AlbumOption[]>(() => {
+        const map = new Map<string, AlbumOption>()
+
+        available.forEach((image) => {
+            const key = albumKey(image)
+            const existing = map.get(key)
+
+            if (existing) {
+                existing.count += 1
+                return
+            }
+
+            map.set(key, {
+                key,
+                title: image.albumTitle || "Без албум",
+                category: image.categoryName,
+                count: 1,
+            })
+        })
+
+        return [...map.values()].sort((a, b) =>
+            a.title.localeCompare(b.title, "bg") || a.key.localeCompare(b.key)
+        )
+    }, [available])
+
     const filteredAvailable = useMemo(() => {
         const term = search.trim().toLowerCase()
-        if (!term) return available
+        const albumFilter = new Set(selectedAlbumKeys)
 
-        return available.filter((image) =>
-            String(image.id).includes(term) ||
-            image.caption?.toLowerCase().includes(term) ||
-            image.altText?.toLowerCase().includes(term) ||
-            image.albumTitle?.toLowerCase().includes(term) ||
-            image.categoryName?.toLowerCase().includes(term)
+        return available.filter((image) => {
+            if (albumFilter.size > 0 && !albumFilter.has(albumKey(image))) return false
+
+            if (!term) return true
+
+            return (
+                String(image.id).includes(term) ||
+                image.caption?.toLowerCase().includes(term) ||
+                image.altText?.toLowerCase().includes(term) ||
+                image.albumTitle?.toLowerCase().includes(term) ||
+                image.categoryName?.toLowerCase().includes(term)
+            )
+        })
+    }, [available, search, selectedAlbumKeys])
+
+    const toggleAlbum = (key: string) => {
+        setSelectedAlbumKeys((current) =>
+            current.includes(key)
+                ? current.filter((item) => item !== key)
+                : [...current, key]
         )
-    }, [available, search])
+    }
 
     const toggleSelected = (image: SlideshowImage) => {
         setSelected((current) => {
@@ -75,6 +124,16 @@ export default function SlideshowAdmin() {
             if (isSelected) return current.filter((item) => item.id !== image.id)
             return [...current, image]
         })
+    }
+
+    const addAllFiltered = () => {
+        setSelected((current) => {
+            const currentIds = new Set(current.map((image) => image.id))
+            const toAdd = filteredAvailable.filter((image) => !currentIds.has(image.id))
+            return [...current, ...toAdd]
+        })
+        setMessage("Снимките от избраните филтри са добавени. Натисни Запази, за да се публикува редът.")
+        setError("")
     }
 
     const remove = (id: number) => {
@@ -162,6 +221,8 @@ export default function SlideshowAdmin() {
         }
     }
 
+    const addAllDisabled = filteredAvailable.every((image) => selectedIds.has(image.id))
+
     return (
         <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -234,11 +295,40 @@ export default function SlideshowAdmin() {
 
                     <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
                         <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <h2 className="text-lg font-black text-slate-950 dark:text-white">Всички снимки</h2>
-                            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Търси" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-white/10 dark:bg-black dark:text-white" />
+                            <div>
+                                <h2 className="text-lg font-black text-slate-950 dark:text-white">Всички снимки</h2>
+                                <p className="text-xs font-bold text-slate-500 dark:text-white/60">Филтрирани: {filteredAvailable.length}</p>
+                            </div>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Търси" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-white/10 dark:bg-black dark:text-white" />
+                                <button type="button" onClick={addAllFiltered} disabled={addAllDisabled || filteredAvailable.length === 0} className="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">Добави всички</button>
+                            </div>
                         </div>
 
-                        <div className="grid max-h-[70vh] grid-cols-1 gap-3 overflow-auto sm:grid-cols-2 2xl:grid-cols-3">
+                        <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30">
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-white/60">Албуми</p>
+                                {selectedAlbumKeys.length > 0 && (
+                                    <button type="button" onClick={() => setSelectedAlbumKeys([])} className="text-xs font-black text-slate-500 underline dark:text-white/60">Изчисти филтъра</button>
+                                )}
+                            </div>
+                            <div className="flex max-h-40 flex-col gap-2 overflow-auto pr-1">
+                                {albumOptions.map((album) => (
+                                    <label key={album.key} className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700 dark:bg-zinc-900 dark:text-white/80">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedAlbumKeys.includes(album.key)}
+                                            onChange={() => toggleAlbum(album.key)}
+                                            className="h-4 w-4 rounded border-slate-300"
+                                        />
+                                        <span className="min-w-0 flex-1 truncate">{album.title}</span>
+                                        <span className="shrink-0 text-slate-400">{album.count}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid max-h-[60vh] grid-cols-1 gap-3 overflow-auto sm:grid-cols-2 2xl:grid-cols-3">
                             {filteredAvailable.map((image) => {
                                 const isSelected = selectedIds.has(image.id)
 
