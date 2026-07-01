@@ -2,7 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    html,
+    body,
+    #root {
+        width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    img,
+    video,
+    iframe,
+    canvas,
+    svg {
+        max-width: 100%;
+    }
+
+    * {
+        min-width: 0;
+    }
+}
+
 @layer components {
+    @media (min-width: 768px) and (max-width: 1199px) {
+        .tablet-readable {
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tablet-grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+
+        .tablet-stack {
+            grid-template-columns: minmax(0, 1fr) !important;
+        }
+    }
+
     .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
     #albums > .mb-6 > div:last-child > button[type="button"],
     #categories > .mb-6 > div:last-child > button[type="button"] {
