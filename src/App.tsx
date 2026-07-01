@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Link, Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
@@ -34,7 +35,10 @@ import RequireAdmin from "./components/RequireAdmin"
 import AdminRoutes from "./pages/admin/AdminRoutes"
 
 function AppContent() {
+  const { i18n } = useTranslation()
   const location = useLocation()
+  const isBg = i18n.language?.toLowerCase().startsWith("bg")
+  const contactBubbleLabel = isBg ? "Свържи се" : "Contact"
   const isPortfolioPage = location.pathname === "/portfolio"
   const isAdminPage = location.pathname.startsWith("/admin")
   const isContactPage = location.pathname === "/contact"
@@ -136,7 +140,7 @@ function AppContent() {
       {showMobileContactBubble ? (
         <Link
           to="/contact"
-          aria-label="Свържи се"
+          aria-label={contactBubbleLabel}
           className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition active:scale-95 dark:bg-white dark:text-black lg:hidden"
         >
           <svg
@@ -152,7 +156,7 @@ function AppContent() {
           >
             <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
           </svg>
-          Свържи се
+          {contactBubbleLabel}
         </Link>
       ) : null}
 
