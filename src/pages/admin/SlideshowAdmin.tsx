@@ -1,0 +1,182 @@
+import { useEffect, useMemo, useState } from "react"
+import { apiFetchJson } from "../../services/api"
+import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
+
+type SlideshowImage = {
+    id: number
+    imageUrl: string
+    thumbnailUrl?: string | null
+    caption?: string | null
+    altText?: string | null
+    albumTitle?: string | null
+    categoryName?: string | null
+}
+
+type SlideshowResponse = {
+    selectedImages?: SlideshowImage[]
+    availableImages?: SlideshowImage[]
+}
+
+const imageSrc = (image: SlideshowImage) => resolveAssetUrl(image.thumbnailUrl || image.imageUrl || "")
+const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
+
+export default function SlideshowAdmin() {
+    const [selected, setSelected] = useState<SlideshowImage[]>([])
+    const [available, setAvailable] = useState<SlideshowImage[]>([])
+    const [search, setSearch] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
+    const [message, setMessage] = useState("")
+    const [error, setError] = useState("")
+
+    const load = async () => {
+        setLoading(true)
+        setError("")
+        setMessage("")
+
+        try {
+            const data = await apiFetchJson<SlideshowResponse>("/admin/slideshow", {
+                method: "GET",
+                skipJsonContentType: true,
+            })
+
+            setSelected(Array.isArray(data.selectedImages) ? data.selectedImages : [])
+            setAvailable(Array.isArray(data.availableImages) ? data.availableImages : [])
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Грешка при зареждане.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        load()
+    }, [])
+
+    const selectedIds = useMemo(() => new Set(selected.map((image) => image.id)), [selected])
+
+    const filteredAvailable = useMemo(() => {
+        const term = search.trim().toLowerCase()
+        if (!term) return available
+
+        return available.filter((image) =>
+            String(image.id).includes(term) ||
+            image.caption?.toLowerCase().includes(term) ||
+            image.altText?.toLowerCase().includes(term) ||
+            image.albumTitle?.toLowerCase().includes(term) ||
+            image.categoryName?.toLowerCase().includes(term)
+        )
+    }, [available, search])
+
+    const add = (image: SlideshowImage) => {
+        setSelected((current) => current.some((item) => item.id === image.id) ? current : [...current, image])
+    }
+
+    const remove = (id: number) => {
+        setSelected((current) => current.filter((image) => image.id !== id))
+    }
+
+    const move = (id: number, direction: -1 | 1) => {
+        setSelected((current) => {
+            const index = current.findIndex((image) => image.id === id)
+            const nextIndex = index + direction
+            if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current
+
+            const next = [...current]
+            const moved = next[index]
+            next[index] = next[nextIndex]
+            next[nextIndex] = moved
+            return next
+        })
+    }
+
+    const save = async () => {
+        setSaving(true)
+        setError("")
+        setMessage("")
+
+        try {
+            await apiFetchJson<void>("/admin/slideshow", {
+                method: "PUT",
+                body: JSON.stringify({ imageIds: selected.map((image) => image.id) }),
+            })
+
+            setMessage("Слайдшоуто е запазено.")
+            await load()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Грешка при запазване.")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    return (
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Управление на слайдшоу</h1>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Избери снимките и реда за началната страница.</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={load} disabled={loading || saving} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900 dark:text-white">Презареди</button>
+                    <button type="button" onClick={save} disabled={loading || saving} className="rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">{saving ? "Запазване..." : "Запази"}</button>
+                </div>
+            </div>
+
+            {error && <div className="mb-5 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
+            {message && <div className="mb-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{message}</div>}
+
+            {loading ? (
+                <div className="rounded-3xl bg-white p-8 text-sm font-bold text-slate-500 dark:bg-zinc-900">Зареждане...</div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
+                        <h2 className="text-lg font-black text-slate-950 dark:text-white">Текущ ред ({selected.length})</h2>
+                        <div className="mt-4 flex max-h-[70vh] flex-col gap-3 overflow-auto">
+                            {selected.map((image, index) => (
+                                <div key={image.id} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30">
+                                    <img src={imageSrc(image)} alt={imageTitle(image)} className="h-24 w-20 rounded-xl object-cover" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-black text-slate-400">#{index + 1}</p>
+                                        <p className="truncate text-sm font-black text-slate-950 dark:text-white">{imageTitle(image)}</p>
+                                        <p className="truncate text-xs text-slate-500 dark:text-white/60">{image.categoryName || "Без категория"} · {image.albumTitle || "Без албум"}</p>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            <button type="button" onClick={() => move(image.id, -1)} disabled={index === 0} className="rounded-xl border px-3 py-1.5 text-xs font-black disabled:opacity-40">Нагоре</button>
+                                            <button type="button" onClick={() => move(image.id, 1)} disabled={index === selected.length - 1} className="rounded-xl border px-3 py-1.5 text-xs font-black disabled:opacity-40">Надолу</button>
+                                            <button type="button" onClick={() => remove(image.id)} className="rounded-xl bg-red-600 px-3 py-1.5 text-xs font-black text-white">Премахни</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
+                        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <h2 className="text-lg font-black text-slate-950 dark:text-white">Всички снимки</h2>
+                            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Търси" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-white/10 dark:bg-black dark:text-white" />
+                        </div>
+
+                        <div className="grid max-h-[70vh] grid-cols-1 gap-3 overflow-auto sm:grid-cols-2 2xl:grid-cols-3">
+                            {filteredAvailable.map((image) => {
+                                const isSelected = selectedIds.has(image.id)
+
+                                return (
+                                    <div key={image.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-black/30">
+                                        <img src={imageSrc(image)} alt={imageTitle(image)} className="aspect-[4/3] w-full object-cover" />
+                                        <div className="p-3">
+                                            <p className="truncate text-sm font-black text-slate-950 dark:text-white">{imageTitle(image)}</p>
+                                            <p className="truncate text-xs text-slate-500 dark:text-white/60">ID {image.id} · {image.albumTitle || "Без албум"}</p>
+                                            <button type="button" onClick={() => add(image)} disabled={isSelected} className="mt-3 w-full rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white disabled:bg-emerald-100 disabled:text-emerald-700 dark:bg-white dark:text-black">{isSelected ? "Добавена" : "+ Добави"}</button>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </section>
+                </div>
+            )}
+        </div>
+    )
+}
