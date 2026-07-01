@@ -19,7 +19,7 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { quickLinks, serviceCards } = useHomeContent()
-    const { currentImage, previousImage, isTransitioning, direction, isMobile } =
+    const { currentImage, previousImage, isTransitioning, direction } =
         useHomePortfolioSlideshow(4500, 700)
 
     const hasHardcodedVideo = Boolean(ACTIVE_HARDCODED_VIDEO_SRC)
@@ -258,7 +258,7 @@ export default function Home() {
                                                 loading="lazy"
                                                 decoding="async"
                                                 className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                                    direction === "forward" ? "animate-slide-out-left" : "animate-slide-out-right"
+                                                    direction === 1 ? "animate-slide-out-left" : "animate-slide-out-right"
                                                 }`}
                                             />
                                         ) : null}
@@ -272,7 +272,7 @@ export default function Home() {
                                                 decoding="async"
                                                 className={`absolute inset-0 h-full w-full object-cover object-top ${
                                                     isTransitioning
-                                                        ? direction === "forward"
+                                                        ? direction === 1
                                                             ? "animate-slide-in-right"
                                                             : "animate-slide-in-left"
                                                         : ""
@@ -299,15 +299,15 @@ export default function Home() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                         {quickLinks.map((item) => (
                             <Link
-                                key={item.to}
-                                to={item.to}
+                                key={item.href}
+                                to={item.href}
                                 className="group border border-neutral-300 bg-white p-5 transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white sm:p-6"
                             >
                                 <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
-                                    {item.label}
+                                    DG Vision Studio
                                 </p>
                                 <p className="mt-3 text-[18px] font-bold text-neutral-950 dark:text-white sm:text-[20px]">
-                                    {item.title}
+                                    {isBg ? item.bg : item.en}
                                 </p>
                             </Link>
                         ))}
@@ -327,35 +327,42 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {serviceCards.map((item) => (
-                            <Link
-                                key={item.to}
-                                to={item.to}
-                                className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white"
-                            >
-                                <div className="aspect-[4/3] overflow-hidden bg-neutral-200 dark:bg-zinc-900">
-                                    {item.image ? (
-                                        <img
-                                            src={item.image}
-                                            alt={item.title}
-                                            loading="lazy"
-                                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                        />
-                                    ) : null}
-                                </div>
-                                <div className="p-5 sm:p-6">
-                                    <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
-                                        {item.label}
-                                    </p>
-                                    <h3 className="mt-3 text-[20px] font-bold text-neutral-950 dark:text-white sm:text-[22px]">
-                                        {item.title}
-                                    </h3>
-                                    <p className="mt-3 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300">
-                                        {item.description}
-                                    </p>
-                                </div>
-                            </Link>
-                        ))}
+                        {serviceCards.map((item) => {
+                            const title = isBg ? item.titleBg : item.titleEn
+                            const description = isBg ? item.descBg : item.descEn
+
+                            return (
+                                <Link
+                                    key={item.href}
+                                    to={item.href}
+                                    className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white"
+                                >
+                                    <div className="aspect-[4/3] overflow-hidden bg-neutral-200 dark:bg-zinc-900">
+                                        {item.image ? (
+                                            <img
+                                                src={item.image}
+                                                alt={title}
+                                                loading="lazy"
+                                                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                            />
+                                        ) : null}
+                                    </div>
+                                    <div className="p-5 sm:p-6">
+                                        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
+                                            {isBg ? "Услуга" : "Service"}
+                                        </p>
+                                        <h3 className="mt-3 text-[20px] font-bold text-neutral-950 dark:text-white sm:text-[22px]">
+                                            {title}
+                                        </h3>
+                                        {description ? (
+                                            <p className="mt-3 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300">
+                                                {description}
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                </Link>
+                            )
+                        })}
                     </div>
                 </section>
 
