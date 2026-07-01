@@ -12,6 +12,8 @@ export type HomeSlideshowImage = {
     caption?: string
     displayOrder: number
     isPublished: boolean
+    isSelected?: boolean
+    slideshowOrder?: number | null
     portfolioAlbumId?: number
     albumTitle?: string
     categoryName?: string
