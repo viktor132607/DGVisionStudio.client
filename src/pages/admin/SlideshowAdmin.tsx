@@ -76,16 +76,25 @@ export default function SlideshowAdmin() {
         setSelected((current) => current.filter((image) => image.id !== id))
     }
 
-    const move = (id: number, direction: -1 | 1) => {
+    const removeAll = () => {
+        setSelected([])
+        setMessage("")
+        setError("")
+    }
+
+    const moveToPosition = (id: number, rawPosition: string) => {
+        const position = Number.parseInt(rawPosition, 10)
+        if (Number.isNaN(position)) return
+
         setSelected((current) => {
-            const index = current.findIndex((image) => image.id === id)
-            const nextIndex = index + direction
-            if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current
+            const oldIndex = current.findIndex((image) => image.id === id)
+            if (oldIndex < 0) return current
 
             const next = [...current]
-            const moved = next[index]
-            next[index] = next[nextIndex]
-            next[nextIndex] = moved
+            const [item] = next.splice(oldIndex, 1)
+            const newIndex = Math.max(0, Math.min(position - 1, next.length))
+            next.splice(newIndex, 0, item)
+
             return next
         })
     }
@@ -120,6 +129,7 @@ export default function SlideshowAdmin() {
 
                 <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={load} disabled={loading || saving} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900 dark:text-white">Презареди</button>
+                    <button type="button" onClick={removeAll} disabled={loading || saving || selected.length === 0} className="rounded-2xl bg-red-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">Премахни всички</button>
                     <button type="button" onClick={save} disabled={loading || saving} className="rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">{saving ? "Запазване..." : "Запази"}</button>
                 </div>
             </div>
@@ -132,7 +142,10 @@ export default function SlideshowAdmin() {
             ) : (
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
-                        <h2 className="text-lg font-black text-slate-950 dark:text-white">Текущ ред ({selected.length})</h2>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="text-lg font-black text-slate-950 dark:text-white">Текущ ред ({selected.length})</h2>
+                            <button type="button" onClick={removeAll} disabled={selected.length === 0} className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white disabled:opacity-60">Премахни всички</button>
+                        </div>
                         <div className="mt-4 flex max-h-[70vh] flex-col gap-3 overflow-auto">
                             {selected.map((image, index) => (
                                 <div key={image.id} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30">
@@ -141,9 +154,18 @@ export default function SlideshowAdmin() {
                                         <p className="text-xs font-black text-slate-400">#{index + 1}</p>
                                         <p className="truncate text-sm font-black text-slate-950 dark:text-white">{imageTitle(image)}</p>
                                         <p className="truncate text-xs text-slate-500 dark:text-white/60">{image.categoryName || "Без категория"} · {image.albumTitle || "Без албум"}</p>
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            <button type="button" onClick={() => move(image.id, -1)} disabled={index === 0} className="rounded-xl border px-3 py-1.5 text-xs font-black disabled:opacity-40">Нагоре</button>
-                                            <button type="button" onClick={() => move(image.id, 1)} disabled={index === selected.length - 1} className="rounded-xl border px-3 py-1.5 text-xs font-black disabled:opacity-40">Надолу</button>
+                                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                                            <label className="flex items-center gap-2 text-xs font-black text-slate-600 dark:text-white/70">
+                                                Позиция
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    max={selected.length}
+                                                    value={index + 1}
+                                                    onChange={(event) => moveToPosition(image.id, event.target.value)}
+                                                    className="h-9 w-20 rounded-xl border border-slate-200 bg-white px-3 text-center text-xs font-black text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white"
+                                                />
+                                            </label>
                                             <button type="button" onClick={() => remove(image.id)} className="rounded-xl bg-red-600 px-3 py-1.5 text-xs font-black text-white">Премахни</button>
                                         </div>
                                     </div>
