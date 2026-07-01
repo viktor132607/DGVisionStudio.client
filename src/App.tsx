@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Routes, Route, useLocation } from "react-router-dom"
+import { Link, Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
@@ -37,6 +37,8 @@ function AppContent() {
   const location = useLocation()
   const isPortfolioPage = location.pathname === "/portfolio"
   const isAdminPage = location.pathname.startsWith("/admin")
+  const isContactPage = location.pathname === "/contact"
+  const showMobileContactBubble = !isAdminPage && !isContactPage
   const [isPageLoading, setIsPageLoading] = useState(true)
 
   useEffect(() => {
@@ -130,6 +132,29 @@ function AppContent() {
           </Routes>
         </div>
       </main>
+
+      {showMobileContactBubble ? (
+        <Link
+          to="/contact"
+          aria-label="Свържи се"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition active:scale-95 dark:bg-white dark:text-black lg:hidden"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+          </svg>
+          Свържи се
+        </Link>
+      ) : null}
 
       {!isAdminPage ? <Footer /> : null}
       {!isAdminPage ? <CookieBanner /> : null}
