@@ -5,6 +5,7 @@ import Seo from "../components/Seo"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { useThemeLogo } from "../hooks/useThemeLogo"
+import type { HomeSlideshowImage } from "../types/home"
 
 const HARDCODED_SLIDESHOW_VIDEO_SOURCES: string[] = [
     // Add a future hardcoded intro video here, for example:
@@ -19,13 +20,14 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { quickLinks, serviceCards } = useHomeContent()
-    const { currentImage, previousImage, isTransitioning, direction } =
+    const { currentImage, previousImage, isTransitioning, direction, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
     const hasHardcodedVideo = Boolean(ACTIVE_HARDCODED_VIDEO_SRC)
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
     const [introVideoDone, setIntroVideoDone] = useState(!hasHardcodedVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
+    const [selectedSlideshowImage, setSelectedSlideshowImage] = useState<HomeSlideshowImage | null>(null)
 
     useEffect(() => {
         if (location.pathname !== "/") return
@@ -62,6 +64,17 @@ export default function Home() {
 
         return () => window.clearTimeout(timer)
     }, [hasHardcodedVideo, location.key, location.pathname])
+
+    useEffect(() => {
+        if (!selectedSlideshowImage) return
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setSelectedSlideshowImage(null)
+        }
+
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+    }, [selectedSlideshowImage])
 
     const toggleVideoMute = () => {
         const video = introVideoRef.current
@@ -107,6 +120,13 @@ export default function Home() {
           : isBg
             ? "Съвременен визуален стил с внимание към детайла"
             : "Contemporary visual style with attention to detail"
+
+    const selectedImageSrc = selectedSlideshowImage?.imageUrl || selectedSlideshowImage?.thumbnailUrl || ""
+    const selectedImageAlt =
+        selectedSlideshowImage?.albumTitle ||
+        selectedSlideshowImage?.altText ||
+        selectedSlideshowImage?.caption ||
+        "DG Vision Studio"
 
     return (
         <>
@@ -211,21 +231,52 @@ export default function Home() {
                                         ) : null}
 
                                         {currentImage ? (
-                                            <img
-                                                key={currentImage.id}
-                                                src={currentImage.thumbnailUrl?.trim() || currentImage.imageUrl}
-                                                alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
-                                                loading="eager"
-                                                decoding="async"
-                                                className={`absolute inset-0 h-full w-full object-cover object-top ${isTransitioning ? (direction === 1 ? "animate-slide-in-right" : "animate-slide-in-left") : ""}`}
-                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedSlideshowImage(currentImage)}
+                                                className="absolute inset-0 block h-full w-full cursor-zoom-in border-0 bg-transparent p-0 text-left"
+                                                aria-label={isBg ? "Отвори снимката" : "Open image"}
+                                            >
+                                                <img
+                                                    key={currentImage.id}
+                                                    src={currentImage.thumbnailUrl?.trim() || currentImage.imageUrl}
+                                                    alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
+                                                    loading="eager"
+                                                    decoding="async"
+                                                    className={`absolute inset-0 h-full w-full object-cover object-top ${isTransitioning ? (direction === 1 ? "animate-slide-in-right" : "animate-slide-in-left") : ""}`}
+                                                />
+                                            </button>
                                         ) : null}
                                     </>
                                 )}
 
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-20 text-white sm:px-5 sm:pb-5 lg:px-7 lg:pb-7">
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-xs">{slideshowEyebrow}</p>
-                                    <p className="mt-2 max-w-xl text-[15px] font-semibold leading-6 sm:text-[17px] lg:text-[20px] lg:leading-7">{slideshowDescription}</p>
+                                <div className="absolute inset-x-0 bottom-0 z-20 bg-black/78 px-4 py-4 text-white backdrop-blur-sm sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+                                    <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={goPrevious}
+                                            disabled={!currentImage || showingHardcodedVideo}
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
+                                            aria-label={isBg ? "Предишна снимка" : "Previous image"}
+                                        >
+                                            ‹
+                                        </button>
+
+                                        <div className="min-w-0 flex-1 text-center">
+                                            <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-xs">{slideshowEyebrow}</p>
+                                            <p className="mx-auto mt-2 max-w-xl text-[15px] font-semibold leading-6 sm:text-[17px] lg:text-[20px] lg:leading-7">{slideshowDescription}</p>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={goNext}
+                                            disabled={!currentImage || showingHardcodedVideo}
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
+                                            aria-label={isBg ? "Следваща снимка" : "Next image"}
+                                        >
+                                            ›
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -301,6 +352,31 @@ export default function Home() {
                     .animate-slide-out-right { animation: slideOutRight 700ms ease-in-out forwards; }
                 `}</style>
             </div>
+
+            {selectedSlideshowImage && selectedImageSrc ? (
+                <div
+                    className="fixed inset-0 z-[90] flex items-center justify-center bg-black/92 px-4 py-6 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={() => setSelectedSlideshowImage(null)}
+                >
+                    <button
+                        type="button"
+                        aria-label={isBg ? "Затвори" : "Close"}
+                        onClick={() => setSelectedSlideshowImage(null)}
+                        className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 text-2xl font-light text-white transition hover:bg-white hover:text-black sm:right-6 sm:top-6"
+                    >
+                        ×
+                    </button>
+
+                    <img
+                        src={selectedImageSrc}
+                        alt={selectedImageAlt}
+                        className="max-h-[88vh] max-w-[94vw] object-contain shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+                        onClick={(event) => event.stopPropagation()}
+                    />
+                </div>
+            ) : null}
         </>
     )
 }
