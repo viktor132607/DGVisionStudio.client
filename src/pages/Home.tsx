@@ -164,24 +164,26 @@ export default function Home() {
 
                         <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
                             <div className="relative h-full w-full overflow-hidden bg-neutral-950">
-                                <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-950 via-zinc-900 to-black">
-                                    <div className="absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
-                                    <div className="absolute bottom-20 right-0 h-52 w-52 rounded-full bg-white/5 blur-3xl" />
-                                    <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
-                                        <img
-                                            src={logoSrc}
-                                            alt=""
-                                            aria-hidden="true"
-                                            className="h-auto w-44 max-w-[72%] object-contain opacity-90 brightness-0 invert sm:w-52"
-                                        />
-                                        <div className="h-[2px] w-32 overflow-hidden bg-white/15">
-                                            <div className="h-full w-1/2 animate-[homeLoadingBar_1200ms_ease-in-out_infinite] bg-white/70" />
+                                {!currentImage && !showingHardcodedVideo ? (
+                                    <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-950 via-zinc-900 to-black">
+                                        <div className="absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+                                        <div className="absolute bottom-20 right-0 h-52 w-52 rounded-full bg-white/5 blur-3xl" />
+                                        <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
+                                            <img
+                                                src={logoSrc}
+                                                alt=""
+                                                aria-hidden="true"
+                                                className="h-auto w-44 max-w-[72%] object-contain opacity-90 brightness-0 invert sm:w-52"
+                                            />
+                                            <div className="h-[2px] w-32 overflow-hidden bg-white/15">
+                                                <div className="h-full w-1/2 animate-[homeLoadingBar_1200ms_ease-in-out_infinite] bg-white/70" />
+                                            </div>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 sm:text-xs">
+                                                DG Vision Studio
+                                            </p>
                                         </div>
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 sm:text-xs">
-                                            DG Vision Studio
-                                        </p>
                                     </div>
-                                </div>
+                                ) : null}
 
                                 {showingHardcodedVideo ? (
                                     <>
