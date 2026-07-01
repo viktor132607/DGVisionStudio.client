@@ -23,6 +23,9 @@ const initialFormState: ContactFormState = {
     message: "",
 }
 
+const MAP_URL = "https://maps.app.goo.gl/Yynb5RztQio7mL28A?g_st=ic"
+const EMBED_URL = "https://www.google.com/maps?hl=bg&q=Ruse%207000%2C%20Bulgaria&z=15&output=embed"
+
 export default function Contact() {
     const { i18n } = useTranslation()
     const lang = i18n.language?.toLowerCase() ?? "bg"
@@ -46,8 +49,11 @@ export default function Contact() {
             image: "https://dgvisionstudio.com/og-cover.jpg",
             email: "dgvisionstudio@gmail.com",
             telephone: "+359988758434",
+            hasMap: MAP_URL,
             address: {
                 "@type": "PostalAddress",
+                streetAddress: "Coming soon",
+                postalCode: "7000",
                 addressLocality: "Ruse",
                 addressCountry: "BG",
             },
@@ -171,9 +177,6 @@ export default function Contact() {
     const submitButtonClassName =
         "inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200"
 
-    const mapUrl = "https://www.google.com/maps/search/?api=1&query=Ruse%2C%20Bulgaria"
-    const embedUrl = "https://www.google.com/maps?hl=bg&q=Ruse,%20Bulgaria&z=12&output=embed"
-
     return isBg ? (
         <>
             <Seo
@@ -224,9 +227,16 @@ export default function Contact() {
                         <h2 className={sectionTitleClass}>Адрес</h2>
 
                         <div className="mt-5">
-                            <p className={textClass}>
-                                Базирани сме в Русе и работим с клиенти от Русе, Варна, Пловдив, Бургас и други градове в България.
-                            </p>
+                            <p className={textClass}>Русе 7000</p>
+                            <p className={`${textClass} mt-2`}>Точен адрес: Coming soon</p>
+                            <a
+                                className={`${contactLinkClass} mt-3`}
+                                href={MAP_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Виж локацията в Google Maps
+                            </a>
                         </div>
                     </div>
                 </section>
@@ -337,7 +347,7 @@ export default function Contact() {
                                     className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                                     loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
-                                    src={embedUrl}
+                                    src={EMBED_URL}
                                     title="DG Vision Studio Map"
                                 />
                             ) : (
@@ -349,7 +359,7 @@ export default function Contact() {
                                         className="mt-5 inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        href={mapUrl}
+                                        href={MAP_URL}
                                     >
                                         Отвори в Google Maps
                                     </a>
@@ -363,7 +373,7 @@ export default function Contact() {
                                     className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200 sm:min-h-[48px] sm:w-auto"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={mapUrl}
+                                    href={MAP_URL}
                                 >
                                     Отвори в Google Maps
                                 </a>
@@ -423,9 +433,16 @@ export default function Contact() {
                         <h2 className={sectionTitleClass}>Address</h2>
 
                         <div className="mt-5">
-                            <p className={textClass}>
-                                We are based in Ruse and work with clients from Ruse, Varna, Plovdiv, Burgas and other cities across Bulgaria.
-                            </p>
+                            <p className={textClass}>Ruse 7000</p>
+                            <p className={`${textClass} mt-2`}>Exact address: Coming soon</p>
+                            <a
+                                className={`${contactLinkClass} mt-3`}
+                                href={MAP_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                View location in Google Maps
+                            </a>
                         </div>
                     </div>
                 </section>
@@ -536,7 +553,7 @@ export default function Contact() {
                                     className="h-[300px] w-full border-0 sm:h-[360px] md:h-[420px] lg:h-[480px] xl:h-[520px]"
                                     loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
-                                    src={embedUrl}
+                                    src={EMBED_URL}
                                     title="DG Vision Studio Map"
                                 />
                             ) : (
@@ -548,7 +565,7 @@ export default function Contact() {
                                         className="mt-5 inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        href={mapUrl}
+                                        href={MAP_URL}
                                     >
                                         Open in Google Maps
                                     </a>
@@ -562,7 +579,7 @@ export default function Contact() {
                                     className="inline-flex min-h-[46px] w-full items-center justify-center rounded-full border border-slate-900 bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white transition hover:bg-slate-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-slate-200 sm:min-h-[48px] sm:w-auto"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={mapUrl}
+                                    href={MAP_URL}
                                 >
                                     Open in Google Maps
                                 </a>
