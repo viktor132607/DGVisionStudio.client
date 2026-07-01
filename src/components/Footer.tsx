@@ -86,7 +86,10 @@ export default function Footer() {
         "inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-transparent transition hover:scale-105 sm:h-11 sm:w-11"
 
     const socialIconClass =
-        "h-[70%] w-[70%] object-contain dark:invert dark:brightness-200"
+        "h-full w-full rounded-full object-contain p-[1px] dark:invert dark:brightness-200"
+
+    const tikTokIconClass =
+        "h-full w-full rounded-full object-contain dark:invert dark:brightness-200"
 
     const footerLinkClass =
         "break-words text-slate-600 transition hover:text-slate-950 dark:text-white dark:hover:text-white"
@@ -134,7 +137,7 @@ export default function Footer() {
                                 <img
                                     src="/images/tik-tok_4817846.png"
                                     alt="TikTok"
-                                    className={socialIconClass}
+                                    className={tikTokIconClass}
                                 />
                             </a>
                         </div>
