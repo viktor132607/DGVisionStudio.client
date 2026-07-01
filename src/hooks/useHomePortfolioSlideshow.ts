@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../services/api"
 import type { HomeSlideshowImage } from "../types/home"
 
@@ -106,26 +106,45 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
         void load()
     }, [])
 
-    useEffect(() => {
-        if (images.length <= 1) return
+    const goToIndex = useCallback(
+        (nextIndex: number, nextDirection: 1 | -1) => {
+            if (images.length <= 1) return
 
-        const timer = window.setInterval(() => {
-            setDirection(1)
+            setDirection(nextDirection)
 
             if (isMobile) {
                 setPreviousIndex(null)
-                setCurrentIndex((prev) => (prev + 1) % images.length)
+                setCurrentIndex(nextIndex)
                 setIsTransitioning(false)
                 return
             }
 
             setPreviousIndex(currentIndex)
-            setCurrentIndex((prev) => (prev + 1) % images.length)
+            setCurrentIndex(nextIndex)
             setIsTransitioning(true)
+        },
+        [currentIndex, images.length, isMobile]
+    )
+
+    const goNext = useCallback(() => {
+        if (images.length <= 1) return
+        goToIndex((currentIndex + 1) % images.length, 1)
+    }, [currentIndex, goToIndex, images.length])
+
+    const goPrevious = useCallback(() => {
+        if (images.length <= 1) return
+        goToIndex((currentIndex - 1 + images.length) % images.length, -1)
+    }, [currentIndex, goToIndex, images.length])
+
+    useEffect(() => {
+        if (images.length <= 1) return
+
+        const timer = window.setInterval(() => {
+            goNext()
         }, intervalMs)
 
         return () => window.clearInterval(timer)
-    }, [currentIndex, images.length, intervalMs, isMobile])
+    }, [goNext, images.length, intervalMs])
 
     useEffect(() => {
         if (!isTransitioning) return
@@ -156,5 +175,7 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
         isTransitioning,
         direction,
         isMobile,
+        goNext,
+        goPrevious,
     }
 }
