@@ -66,7 +66,7 @@ function AppContent() {
       <ScrollToTop />
       <Navbar />
 
-      <div className="h-16 shrink-0 lg:h-20" />
+      <div className="h-[72px] shrink-0 sm:h-[78px] xl:h-[88px]" />
 
       <main className="w-full flex-1">
         <div className={isAdminPage || isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
@@ -141,7 +141,7 @@ function AppContent() {
         <Link
           to="/contact"
           aria-label={contactBubbleLabel}
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition active:scale-95 dark:bg-white dark:text-black lg:hidden"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition active:scale-95 dark:bg-white dark:text-black xl:hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
