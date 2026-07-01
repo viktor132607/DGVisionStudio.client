@@ -52,7 +52,7 @@ export default function Contact() {
             hasMap: MAP_URL,
             address: {
                 "@type": "PostalAddress",
-                streetAddress: "Coming soon",
+                streetAddress: "Ruse 7000",
                 postalCode: "7000",
                 addressLocality: "Ruse",
                 addressCountry: "BG",
@@ -228,7 +228,9 @@ export default function Contact() {
 
                         <div className="mt-5">
                             <p className={textClass}>Русе 7000</p>
-                            <p className={`${textClass} mt-2`}>Точен адрес: Coming soon</p>
+                            <p className={`${textClass} mt-2`}>
+                                Студиото е капарирано и е в процес на подготовка. Предстои внасяне на техника, оборудване и интериор. Официалната дата на отваряне ще бъде обявена скоро.
+                            </p>
                             <a
                                 className={`${contactLinkClass} mt-3`}
                                 href={MAP_URL}
@@ -434,7 +436,9 @@ export default function Contact() {
 
                         <div className="mt-5">
                             <p className={textClass}>Ruse 7000</p>
-                            <p className={`${textClass} mt-2`}>Exact address: Coming soon</p>
+                            <p className={`${textClass} mt-2`}>
+                                The studio space has been reserved and is currently being prepared. Equipment, gear and interior setup are still pending. The official opening date will be announced soon.
+                            </p>
                             <a
                                 className={`${contactLinkClass} mt-3`}
                                 href={MAP_URL}
