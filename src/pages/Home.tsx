@@ -250,7 +250,7 @@ export default function Home() {
                                     </>
                                 )}
 
-                                <div className="absolute inset-x-0 bottom-0 z-20 bg-black/78 px-4 py-4 text-white backdrop-blur-sm sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+                                <div className="absolute inset-x-0 bottom-0 z-20 bg-black/88 px-4 py-4 text-white shadow-[0_-18px_40px_rgba(0,0,0,0.35)] sm:px-5 sm:py-5 lg:px-7 lg:py-6">
                                     <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
                                         <button
                                             type="button"
