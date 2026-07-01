@@ -6,7 +6,12 @@ import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { useThemeLogo } from "../hooks/useThemeLogo"
 
-const INTRO_VIDEO_SRC = "/videos/copy_0670ABED-A333-4487-B48C-716BA1415269.mov"
+const HARDCODED_SLIDESHOW_VIDEO_SOURCES: string[] = [
+    // Add a future hardcoded intro video here, for example:
+    // "/videos/example-intro.mov",
+]
+
+const ACTIVE_HARDCODED_VIDEO_SRC = HARDCODED_SLIDESHOW_VIDEO_SOURCES[0] || ""
 
 export default function Home() {
     const { i18n } = useTranslation()
@@ -17,12 +22,18 @@ export default function Home() {
     const { currentImage, previousImage, isTransitioning, direction, isMobile } =
         useHomePortfolioSlideshow(4500, 700)
 
+    const hasHardcodedVideo = Boolean(ACTIVE_HARDCODED_VIDEO_SRC)
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
-    const [introVideoDone, setIntroVideoDone] = useState(false)
+    const [introVideoDone, setIntroVideoDone] = useState(!hasHardcodedVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
 
     useEffect(() => {
         if (location.pathname !== "/") return
+
+        if (!hasHardcodedVideo) {
+            setIntroVideoDone(true)
+            return
+        }
 
         setIntroVideoDone(false)
 
@@ -50,7 +61,7 @@ export default function Home() {
         }, 0)
 
         return () => window.clearTimeout(timer)
-    }, [location.key, location.pathname])
+    }, [hasHardcodedVideo, location.key, location.pathname])
 
     const toggleVideoMute = () => {
         const video = introVideoRef.current
@@ -79,14 +90,15 @@ export default function Home() {
             : "DG Vision Studio offers photography and visual content for brands, products, campaigns, portraits, and events.",
     }
 
-    const slideshowEyebrow =
-        !introVideoDone
-            ? "DG Vision Studio"
-            : (isBg ? currentImage?.categoryName?.trim() : currentImage?.categoryNameEn?.trim()) ||
-              currentImage?.albumTitle?.trim() ||
-              "DG Vision Studio"
+    const showingHardcodedVideo = hasHardcodedVideo && !introVideoDone
 
-    const slideshowDescription = !introVideoDone
+    const slideshowEyebrow = showingHardcodedVideo
+        ? "DG Vision Studio"
+        : (isBg ? currentImage?.categoryName?.trim() : currentImage?.categoryNameEn?.trim()) ||
+          currentImage?.albumTitle?.trim() ||
+          "DG Vision Studio"
+
+    const slideshowDescription = showingHardcodedVideo
         ? isBg
             ? "Фотография и визуално съдържание със стил"
             : "Photography and visual content with style"
@@ -152,11 +164,11 @@ export default function Home() {
 
                         <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
                             <div className="relative h-full w-full overflow-hidden bg-black">
-                                {!introVideoDone ? (
+                                {showingHardcodedVideo ? (
                                     <>
                                         <video
                                             className="absolute inset-0 h-full w-full scale-125 object-cover object-center opacity-45 blur-xl lg:hidden"
-                                            src={INTRO_VIDEO_SRC}
+                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
                                             autoPlay
                                             playsInline
                                             muted
@@ -168,7 +180,7 @@ export default function Home() {
                                             key={location.key}
                                             ref={introVideoRef}
                                             className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top"
-                                            src={INTRO_VIDEO_SRC}
+                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
                                             autoPlay
                                             playsInline
                                             preload="auto"
@@ -255,7 +267,7 @@ export default function Home() {
 
                             <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
                                 <div
-                                    key={introVideoDone ? currentImage?.id ?? "fallback-text" : "intro-video-text"}
+                                    key={showingHardcodedVideo ? "hardcoded-video-text" : currentImage?.id ?? "fallback-text"}
                                     className="animate-[fadeUp_500ms_ease-out]"
                                 >
                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
