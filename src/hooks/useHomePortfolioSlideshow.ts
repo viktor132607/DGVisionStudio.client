@@ -39,6 +39,14 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
                 img.src = src
             })
 
+        const preloadImage = (src: string) => {
+            if (!src) return
+
+            const img = new Image()
+            img.decoding = "async"
+            img.src = src
+        }
+
         const load = async () => {
             try {
                 const response = await apiFetch("/portfolio/slideshow", {
@@ -60,6 +68,14 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
                           )
                     : []
 
+                if (sortedImages.length > 0) {
+                    setImages(sortedImages)
+                    setCurrentIndex(0)
+                    setPreviousIndex(null)
+                    setIsTransitioning(false)
+                    preloadImage(sortedImages[0].thumbnailUrl || sortedImages[0].imageUrl || "")
+                }
+
                 const portraitChecks = await Promise.all(
                     sortedImages.map(async (item) => {
                         const src = item.thumbnailUrl || item.imageUrl || ""
@@ -68,14 +84,17 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
                     })
                 )
 
-                const nextImages = portraitChecks.filter(
+                const portraitImages = portraitChecks.filter(
                     (item): item is HomeSlideshowImage => item !== null
                 )
+
+                const nextImages = portraitImages.length > 0 ? portraitImages : sortedImages
 
                 setImages(nextImages)
                 setCurrentIndex(0)
                 setPreviousIndex(null)
                 setIsTransitioning(false)
+                preloadImage(nextImages[0]?.thumbnailUrl || nextImages[0]?.imageUrl || "")
             } catch {
                 setImages([])
                 setCurrentIndex(0)
