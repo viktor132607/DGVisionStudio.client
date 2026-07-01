@@ -124,6 +124,19 @@ export default function Footer() {
                                     className={socialIconClass}
                                 />
                             </a>
+
+                            <a
+                                href="https://www.tiktok.com/@dgvisionstudio1?is_from_webapp=1&sender_device=pc"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={socialClass}
+                            >
+                                <img
+                                    src="/images/tik-tok_4817846.png"
+                                    alt="TikTok"
+                                    className={socialIconClass}
+                                />
+                            </a>
                         </div>
                     </div>
 
