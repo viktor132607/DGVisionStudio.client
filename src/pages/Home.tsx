@@ -124,22 +124,22 @@ export default function Home() {
             />
 
             <div className="min-h-screen overflow-x-hidden bg-neutral-100 text-neutral-900 dark:bg-zinc-900 dark:text-white">
-                <section className="border-b border-neutral-300 bg-white pt-6 sm:pt-7 lg:pt-8 dark:border-zinc-700 dark:bg-zinc-900">
-                    <div className="mx-auto grid min-h-[auto] w-full max-w-[1700px] grid-cols-1 lg:min-h-[620px] lg:grid-cols-[1.08fr_0.92fr] xl:min-h-[700px] 2xl:min-h-[760px]">
-                        <div className="order-2 flex flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 md:px-8 md:py-14 lg:order-1 lg:px-10 lg:py-16 xl:px-14 2xl:px-20">
+                <section className="border-b border-neutral-300 bg-white pt-6 sm:pt-7 md:pt-8 dark:border-zinc-700 dark:bg-zinc-900">
+                    <div className="mx-auto grid min-h-[auto] w-full max-w-[1120px] grid-cols-1 xl:min-h-[700px] xl:max-w-[1700px] xl:grid-cols-[1.08fr_0.92fr] 2xl:min-h-[760px]">
+                        <div className="order-2 flex flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 md:order-1 md:px-10 md:py-12 lg:px-14 lg:py-14 xl:px-14 xl:py-16 2xl:px-20">
                             <img
                                 src={logoSrc}
                                 alt="DG Vision Studio"
                                 className="mb-4 block h-auto w-[220px] max-w-full object-contain sm:mb-5 sm:w-[260px] md:w-[300px]"
                             />
 
-                            <h1 className="max-w-4xl text-[28px] font-extrabold uppercase leading-[1.06] tracking-[0.02em] text-neutral-950 dark:text-white sm:text-[36px] md:text-[44px] md:leading-[1.05] lg:text-[50px] xl:text-[60px] 2xl:text-[68px]">
+                            <h1 className="max-w-4xl text-[28px] font-extrabold uppercase leading-[1.06] tracking-[0.02em] text-neutral-950 dark:text-white sm:text-[36px] md:text-[42px] md:leading-[1.05] lg:text-[48px] xl:text-[60px] 2xl:text-[68px]">
                                 {isBg
                                     ? "Фотография и визуално съдържание със стил, характер и ясно присъствие"
                                     : "Photography and visual content with style, character, and clear presence"}
                             </h1>
 
-                            <p className="mt-5 max-w-2xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:mt-6 sm:text-[15px] sm:leading-8 md:text-[16px] lg:max-w-[640px] xl:max-w-[700px]">
+                            <p className="mt-5 max-w-2xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:mt-6 sm:text-[15px] sm:leading-8 md:max-w-3xl md:text-[16px] lg:max-w-[760px] xl:max-w-[700px]">
                                 {isBg
                                     ? "Създаваме модерно визуално съдържание за брандове, продукти, кампании и лични фотосесии. Подходът ни е изчистен, силно визуален и насочен към кадри, които остават."
                                     : "We create modern visual content for brands, products, campaigns, and personal photoshoots. Our approach is clean, visually strong, and focused on images that stay with people."}
@@ -162,86 +162,35 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
+                        <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:order-2 md:aspect-[16/10] md:border-t lg:aspect-[16/9] xl:order-2 xl:aspect-auto xl:min-h-full xl:border-b-0 xl:border-l xl:border-t-0">
                             <div className="relative h-full w-full overflow-hidden bg-neutral-950">
                                 {!currentImage && !showingHardcodedVideo ? (
                                     <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-950 via-zinc-900 to-black">
                                         <div className="absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
                                         <div className="absolute bottom-20 right-0 h-52 w-52 rounded-full bg-white/5 blur-3xl" />
                                         <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
-                                            <img
-                                                src={logoSrc}
-                                                alt=""
-                                                aria-hidden="true"
-                                                className="h-auto w-44 max-w-[72%] object-contain opacity-90 brightness-0 invert sm:w-52"
-                                            />
+                                            <img src={logoSrc} alt="" aria-hidden="true" className="h-auto w-44 max-w-[72%] object-contain opacity-90 brightness-0 invert sm:w-52" />
                                             <div className="h-[2px] w-32 overflow-hidden bg-white/15">
                                                 <div className="h-full w-1/2 animate-[homeLoadingBar_1200ms_ease-in-out_infinite] bg-white/70" />
                                             </div>
-                                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 sm:text-xs">
-                                                DG Vision Studio
-                                            </p>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/55 sm:text-xs">DG Vision Studio</p>
                                         </div>
                                     </div>
                                 ) : null}
 
                                 {showingHardcodedVideo ? (
                                     <>
-                                        <video
-                                            className="absolute inset-0 h-full w-full scale-125 object-cover object-center opacity-45 blur-xl lg:hidden"
-                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
-                                            autoPlay
-                                            playsInline
-                                            muted
-                                            loop
-                                            preload="auto"
-                                        />
-
-                                        <video
-                                            key={location.key}
-                                            ref={introVideoRef}
-                                            className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top"
-                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
-                                            autoPlay
-                                            playsInline
-                                            preload="auto"
-                                            muted={isVideoMuted}
-                                            onEnded={() => setIntroVideoDone(true)}
-                                            onError={() => setIntroVideoDone(true)}
-                                        />
-
-                                        <button
-                                            type="button"
-                                            onClick={toggleVideoMute}
-                                            aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
-                                            className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border border-white/40 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:h-11 sm:w-11"
-                                        >
+                                        <video className="absolute inset-0 h-full w-full scale-125 object-cover object-center opacity-45 blur-xl lg:hidden" src={ACTIVE_HARDCODED_VIDEO_SRC} autoPlay playsInline muted loop preload="auto" />
+                                        <video key={location.key} ref={introVideoRef} className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top" src={ACTIVE_HARDCODED_VIDEO_SRC} autoPlay playsInline preload="auto" muted={isVideoMuted} onEnded={() => setIntroVideoDone(true)} onError={() => setIntroVideoDone(true)} />
+                                        <button type="button" onClick={toggleVideoMute} aria-label={isVideoMuted ? "Unmute video" : "Mute video"} className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border border-white/40 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:h-11 sm:w-11">
                                             {isVideoMuted ? (
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="h-5 w-5"
-                                                >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
                                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                                                     <line x1="23" y1="9" x2="17" y2="15" />
                                                     <line x1="17" y1="9" x2="23" y2="15" />
                                                 </svg>
                                             ) : (
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="h-5 w-5"
-                                                >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
                                                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                                                     <path d="M15.5 8.5a5 5 0 0 1 0 7" />
                                                     <path d="M19 5a10 10 0 0 1 0 14" />
@@ -257,9 +206,7 @@ export default function Home() {
                                                 alt={previousImage.albumTitle || previousImage.altText || previousImage.caption || "DG Vision Studio"}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                                    direction === 1 ? "animate-slide-out-left" : "animate-slide-out-right"
-                                                }`}
+                                                className={`absolute inset-0 h-full w-full object-cover object-top ${direction === 1 ? "animate-slide-out-left" : "animate-slide-out-right"}`}
                                             />
                                         ) : null}
 
@@ -270,25 +217,15 @@ export default function Home() {
                                                 alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
                                                 loading="eager"
                                                 decoding="async"
-                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
-                                                    isTransitioning
-                                                        ? direction === 1
-                                                            ? "animate-slide-in-right"
-                                                            : "animate-slide-in-left"
-                                                        : ""
-                                                }`}
+                                                className={`absolute inset-0 h-full w-full object-cover object-top ${isTransitioning ? (direction === 1 ? "animate-slide-in-right" : "animate-slide-in-left") : ""}`}
                                             />
                                         ) : null}
                                     </>
                                 )}
 
                                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-20 text-white sm:px-5 sm:pb-5 lg:px-7 lg:pb-7">
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-xs">
-                                        {slideshowEyebrow}
-                                    </p>
-                                    <p className="mt-2 max-w-xl text-[15px] font-semibold leading-6 sm:text-[17px] lg:text-[20px] lg:leading-7">
-                                        {slideshowDescription}
-                                    </p>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70 sm:text-xs">{slideshowEyebrow}</p>
+                                    <p className="mt-2 max-w-xl text-[15px] font-semibold leading-6 sm:text-[17px] lg:text-[20px] lg:leading-7">{slideshowDescription}</p>
                                 </div>
                             </div>
                         </div>
@@ -296,19 +233,11 @@ export default function Home() {
                 </section>
 
                 <section className="mx-auto w-full max-w-[1700px] px-4 py-8 sm:px-6 sm:py-10 md:px-8 lg:px-10 lg:py-12 xl:px-12 2xl:px-16">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
                         {quickLinks.map((item) => (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className="group border border-neutral-300 bg-white p-5 transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white sm:p-6"
-                            >
-                                <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
-                                    DG Vision Studio
-                                </p>
-                                <p className="mt-3 text-[18px] font-bold text-neutral-950 dark:text-white sm:text-[20px]">
-                                    {isBg ? item.bg : item.en}
-                                </p>
+                            <Link key={item.href} to={item.href} className="group border border-neutral-300 bg-white p-5 transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white sm:p-6">
+                                <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">DG Vision Studio</p>
+                                <p className="mt-3 text-[18px] font-bold text-neutral-950 dark:text-white sm:text-[20px]">{isBg ? item.bg : item.en}</p>
                             </Link>
                         ))}
                     </div>
@@ -317,9 +246,7 @@ export default function Home() {
                 <section className="mx-auto w-full max-w-[1700px] px-4 pb-12 sm:px-6 sm:pb-14 md:px-8 lg:px-10 lg:pb-16 xl:px-12 2xl:px-16">
                     <div className="mb-6 flex flex-col gap-3 sm:mb-8 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[12px] font-extrabold uppercase tracking-[0.22em] text-neutral-500 dark:text-zinc-400">
-                                {isBg ? "Нашите услуги" : "Our services"}
-                            </p>
+                            <p className="text-[12px] font-extrabold uppercase tracking-[0.22em] text-neutral-500 dark:text-zinc-400">{isBg ? "Нашите услуги" : "Our services"}</p>
                             <h2 className="mt-3 max-w-4xl text-[28px] font-extrabold uppercase leading-[1.08] text-neutral-950 dark:text-white sm:text-[36px] md:text-[44px] lg:text-[50px]">
                                 {isBg ? "Визуално съдържание за всяка история" : "Visual content for every story"}
                             </h2>
@@ -332,33 +259,14 @@ export default function Home() {
                             const description = isBg ? item.descBg : item.descEn
 
                             return (
-                                <Link
-                                    key={item.href}
-                                    to={item.href}
-                                    className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white"
-                                >
+                                <Link key={item.href} to={item.href} className="group overflow-hidden border border-neutral-300 bg-white transition hover:-translate-y-1 hover:border-neutral-950 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-white">
                                     <div className="aspect-[4/3] overflow-hidden bg-neutral-200 dark:bg-zinc-900">
-                                        {item.image ? (
-                                            <img
-                                                src={item.image}
-                                                alt={title}
-                                                loading="lazy"
-                                                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                                            />
-                                        ) : null}
+                                        {item.image ? <img src={item.image} alt={title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : null}
                                     </div>
                                     <div className="p-5 sm:p-6">
-                                        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">
-                                            {isBg ? "Услуга" : "Service"}
-                                        </p>
-                                        <h3 className="mt-3 text-[20px] font-bold text-neutral-950 dark:text-white sm:text-[22px]">
-                                            {title}
-                                        </h3>
-                                        {description ? (
-                                            <p className="mt-3 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300">
-                                                {description}
-                                            </p>
-                                        ) : null}
+                                        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-neutral-500 dark:text-zinc-400">{isBg ? "Услуга" : "Service"}</p>
+                                        <h3 className="mt-3 text-[20px] font-bold text-neutral-950 dark:text-white sm:text-[22px]">{title}</h3>
+                                        {description ? <p className="mt-3 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300">{description}</p> : null}
                                     </div>
                                 </Link>
                             )
