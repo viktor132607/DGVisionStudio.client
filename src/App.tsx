@@ -38,7 +38,7 @@ function AppContent() {
   const { i18n } = useTranslation()
   const location = useLocation()
   const isBg = i18n.language?.toLowerCase().startsWith("bg")
-  const contactBubbleLabel = isBg ? "Свържи се" : "Contact"
+  const contactBubbleLabel = isBg ? "Свържете се" : "Contact us"
   const isPortfolioPage = location.pathname === "/portfolio"
   const isAdminPage = location.pathname.startsWith("/admin")
   const isContactPage = location.pathname === "/contact"
