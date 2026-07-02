@@ -1,8 +1,8 @@
 import { Mail, MapPin, Phone } from "lucide-react"
 import Seo from "../components/Seo"
 
-const MAP_URL = "https://www.google.com/maps/search/?api=1&query=Yalta%20Shopping%20Complex%2C%20Ruse%207000"
-const EMBED_URL = "https://www.google.com/maps?hl=bg&q=Yalta%20Shopping%20Complex%2C%20Ruse%207000&z=17&output=embed"
+const MAP_URL = "https://www.google.com/maps/search/?api=1&query=Yalta%20Shopping%20Complex%2C%20Ruse"
+const EMBED_URL = "https://www.google.com/maps?hl=bg&q=Yalta%20Shopping%20Complex%2C%20Ruse&z=17&output=embed"
 
 export default function Contact() {
     const contactJsonLd = {
@@ -19,7 +19,6 @@ export default function Contact() {
             address: {
                 "@type": "PostalAddress",
                 streetAddress: "Yalta Shopping Complex",
-                postalCode: "7000",
                 addressLocality: "Ruse",
                 addressCountry: "BG"
             }
@@ -44,7 +43,7 @@ export default function Contact() {
                 <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-8">
                     <div className={cardClass}>
                         <h2 className={titleClass}>Телефон</h2>
-                        <div className="mt-5 space-y-3">
+                        <div className="mt-5 flex flex-col gap-3">
                             <a className={contactLinkClass} href="tel:+359988758434">
                                 <Phone size={16} className={iconClass} />
                                 <span className="whitespace-nowrap">+359 988 758 434</span>
@@ -71,9 +70,8 @@ export default function Contact() {
                         <div className="mt-5">
                             <p className={textWithIconClass}>
                                 <MapPin size={16} className={iconClass} />
-                                <span>Търговски комплекс Ялта, Русе 7000</span>
+                                <span>Търговски комплекс Ялта, Русе</span>
                             </p>
-                            <p className="mt-3 inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-700 dark:border-zinc-600 dark:text-zinc-200">Coming soon</p>
                             <a className={`${contactLinkClass} mt-3`} href={MAP_URL} target="_blank" rel="noopener noreferrer">
                                 <MapPin size={16} className={iconClass} />
                                 <span>Виж локацията в Google Maps</span>
