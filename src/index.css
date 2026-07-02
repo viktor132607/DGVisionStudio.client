@@ -45,11 +45,6 @@
         background-color: #000000 !important;
     }
 
-    .relative.h-full.w-full.overflow-hidden.bg-neutral-950 > img,
-    .relative.h-full.w-full.overflow-hidden.bg-neutral-950 > video {
-        z-index: 10;
-    }
-
     .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
     #albums > .mb-6 > div:last-child > button[type="button"],
     #categories > .mb-6 > div:last-child > button[type="button"] {
