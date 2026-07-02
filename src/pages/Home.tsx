@@ -5,13 +5,7 @@ import Seo from "../components/Seo"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { useThemeLogo } from "../hooks/useThemeLogo"
-
-const HARDCODED_SLIDESHOW_VIDEO_SOURCES: string[] = [
-    // Add a future hardcoded intro video here, for example:
-    // "/videos/example-intro.mov",
-]
-
-const ACTIVE_HARDCODED_VIDEO_SRC = HARDCODED_SLIDESHOW_VIDEO_SOURCES[0] || ""
+import { resolveAssetUrl } from "../utils/resolveAssetUrl"
 
 export default function Home() {
     const { i18n } = useTranslation()
@@ -19,18 +13,19 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { quickLinks, serviceCards } = useHomeContent()
-    const { currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
+    const { introVideoUrl, currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
-    const hasHardcodedVideo = Boolean(ACTIVE_HARDCODED_VIDEO_SRC)
+    const activeIntroVideoSrc = introVideoUrl ? resolveAssetUrl(introVideoUrl) : ""
+    const hasIntroVideo = Boolean(activeIntroVideoSrc)
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
-    const [introVideoDone, setIntroVideoDone] = useState(!hasHardcodedVideo)
+    const [introVideoDone, setIntroVideoDone] = useState(!hasIntroVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
 
     useEffect(() => {
         if (location.pathname !== "/") return
 
-        if (!hasHardcodedVideo) {
+        if (!hasIntroVideo) {
             setIntroVideoDone(true)
             return
         }
@@ -61,7 +56,7 @@ export default function Home() {
         }, 0)
 
         return () => window.clearTimeout(timer)
-    }, [hasHardcodedVideo, location.key, location.pathname])
+    }, [activeIntroVideoSrc, hasIntroVideo, location.key, location.pathname])
 
     const toggleVideoMute = () => {
         const video = introVideoRef.current
@@ -90,15 +85,15 @@ export default function Home() {
             : "DG Vision Studio offers photography and visual content for brands, products, campaigns, portraits, and events.",
     }
 
-    const showingHardcodedVideo = hasHardcodedVideo && !introVideoDone
+    const showingIntroVideo = hasIntroVideo && !introVideoDone
 
-    const slideshowEyebrow = showingHardcodedVideo
+    const slideshowEyebrow = showingIntroVideo
         ? "DG Vision Studio"
         : (isBg ? currentImage?.categoryName?.trim() : currentImage?.categoryNameEn?.trim()) ||
           currentImage?.albumTitle?.trim() ||
           "DG Vision Studio"
 
-    const slideshowDescription = showingHardcodedVideo
+    const slideshowDescription = showingIntroVideo
         ? isBg
             ? "Фотография и визуално съдържание със стил"
             : "Photography and visual content with style"
@@ -183,11 +178,11 @@ export default function Home() {
                                     </div>
                                 </div>
 
-                                {showingHardcodedVideo ? (
+                                {showingIntroVideo ? (
                                     <>
                                         <video
                                             className="absolute inset-0 h-full w-full scale-125 object-cover object-center opacity-45 blur-xl lg:hidden"
-                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
+                                            src={activeIntroVideoSrc}
                                             autoPlay
                                             playsInline
                                             muted
@@ -196,10 +191,10 @@ export default function Home() {
                                         />
 
                                         <video
-                                            key={location.key}
+                                            key={`${location.key}-${activeIntroVideoSrc}`}
                                             ref={introVideoRef}
                                             className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top"
-                                            src={ACTIVE_HARDCODED_VIDEO_SRC}
+                                            src={activeIntroVideoSrc}
                                             autoPlay
                                             playsInline
                                             preload="auto"
@@ -273,7 +268,7 @@ export default function Home() {
                                     <button
                                         type="button"
                                         onClick={goPrevious}
-                                        disabled={!currentImage || showingHardcodedVideo}
+                                        disabled={!currentImage || showingIntroVideo}
                                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
                                         aria-label={isBg ? "Предишна снимка" : "Previous image"}
                                     >
@@ -281,7 +276,7 @@ export default function Home() {
                                     </button>
 
                                     <div
-                                        key={showingHardcodedVideo ? "hardcoded-video-text" : currentImage?.id ?? "fallback-text"}
+                                        key={showingIntroVideo ? "intro-video-text" : currentImage?.id ?? "fallback-text"}
                                         className="min-w-0 flex-1 animate-[fadeUp_500ms_ease-out] text-center"
                                     >
                                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
@@ -295,7 +290,7 @@ export default function Home() {
                                     <button
                                         type="button"
                                         onClick={goNext}
-                                        disabled={!currentImage || showingHardcodedVideo}
+                                        disabled={!currentImage || showingIntroVideo}
                                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
                                         aria-label={isBg ? "Следваща снимка" : "Next image"}
                                     >
