@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type DragEvent } from "react"
-import { apiFetchJson } from "../../services/api"
+import { useEffect, useMemo, useState, type ChangeEvent, type DragEvent } from "react"
+import { apiFetch, apiFetchJson } from "../../services/api"
 import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 
 type SlideshowImage = {
@@ -16,6 +16,7 @@ type SlideshowImage = {
 type SlideshowResponse = {
     selectedImages?: SlideshowImage[]
     availableImages?: SlideshowImage[]
+    introVideoUrl?: string | null
 }
 
 type AlbumOption = {
@@ -29,13 +30,30 @@ const imageSrc = (image: SlideshowImage) => resolveAssetUrl(image.thumbnailUrl |
 const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
 const albumKey = (image: SlideshowImage) => String(image.portfolioAlbumId ?? image.albumTitle ?? "no-album")
 
+async function readErrorMessage(response: Response) {
+    try {
+        const contentType = response.headers.get("content-type") || ""
+        if (contentType.includes("application/json")) {
+            const data = await response.json()
+            return data?.message || data?.title || data?.error || "Грешка при заявката."
+        }
+
+        const text = await response.text()
+        return text || "Грешка при заявката."
+    } catch {
+        return "Грешка при заявката."
+    }
+}
+
 export default function SlideshowAdmin() {
     const [selected, setSelected] = useState<SlideshowImage[]>([])
     const [available, setAvailable] = useState<SlideshowImage[]>([])
+    const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null)
     const [search, setSearch] = useState("")
     const [selectedAlbumKeys, setSelectedAlbumKeys] = useState<string[]>([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [uploadingVideo, setUploadingVideo] = useState(false)
     const [message, setMessage] = useState("")
     const [error, setError] = useState("")
     const [draggedId, setDraggedId] = useState<number | null>(null)
@@ -53,6 +71,7 @@ export default function SlideshowAdmin() {
 
             setSelected(Array.isArray(data.selectedImages) ? data.selectedImages : [])
             setAvailable(Array.isArray(data.availableImages) ? data.availableImages : [])
+            setIntroVideoUrl(data.introVideoUrl?.trim() || null)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Грешка при зареждане.")
         } finally {
@@ -201,6 +220,62 @@ export default function SlideshowAdmin() {
         setDraggedId(null)
     }
 
+    const handleVideoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        event.target.value = ""
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append("file", file)
+
+        setUploadingVideo(true)
+        setError("")
+        setMessage("")
+
+        try {
+            const response = await apiFetch("/admin/slideshow/video", {
+                method: "POST",
+                body: formData,
+                skipJsonContentType: true,
+            })
+
+            if (!response.ok) throw new Error(await readErrorMessage(response))
+
+            setMessage("Intro видеото е качено. Ще се пусне веднъж преди слайдшоуто.")
+            await load()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Грешка при качване на видео.")
+        } finally {
+            setUploadingVideo(false)
+        }
+    }
+
+    const removeVideo = async () => {
+        const confirmed = window.confirm("Да премахна ли intro видеото?")
+        if (!confirmed) return
+
+        setUploadingVideo(true)
+        setError("")
+        setMessage("")
+
+        try {
+            const response = await apiFetch("/admin/slideshow/video", {
+                method: "DELETE",
+                skipJsonContentType: true,
+            })
+
+            if (!response.ok) throw new Error(await readErrorMessage(response))
+
+            setIntroVideoUrl(null)
+            setMessage("Intro видеото е премахнато.")
+            await load()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Грешка при премахване на видео.")
+        } finally {
+            setUploadingVideo(false)
+        }
+    }
+
     const save = async () => {
         setSaving(true)
         setError("")
@@ -222,13 +297,14 @@ export default function SlideshowAdmin() {
     }
 
     const addAllDisabled = filteredAvailable.every((image) => selectedIds.has(image.id))
+    const videoBusy = loading || saving || uploadingVideo
 
     return (
         <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Управление на слайдшоу</h1>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Избери снимките и реда за началната страница.</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Качи intro видео или избери снимките и реда за началната страница.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -240,6 +316,34 @@ export default function SlideshowAdmin() {
 
             {error && <div className="mb-5 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
             {message && <div className="mb-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{message}</div>}
+
+            <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 className="text-lg font-black text-slate-950 dark:text-white">Intro видео</h2>
+                        <p className="mt-1 text-xs font-bold text-slate-500 dark:text-white/60">Ако има качено видео, то се пуска веднъж и после започва слайдшоуто. Ако няма видео, слайдшоуто тръгва директно.</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        <label className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white transition hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+                            {uploadingVideo ? "Качване..." : introVideoUrl ? "Смени видео" : "Качи видео"}
+                            <input type="file" accept="video/*,.mp4,.mov,.webm,.m4v" onChange={handleVideoUpload} disabled={videoBusy} className="hidden" />
+                        </label>
+
+                        {introVideoUrl ? (
+                            <button type="button" onClick={removeVideo} disabled={videoBusy} className="rounded-2xl bg-red-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">Премахни видео</button>
+                        ) : null}
+                    </div>
+                </div>
+
+                {introVideoUrl ? (
+                    <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-black dark:border-white/10">
+                        <video src={resolveAssetUrl(introVideoUrl)} controls playsInline className="max-h-[420px] w-full bg-black object-contain" />
+                    </div>
+                ) : (
+                    <div className="mt-5 rounded-2xl bg-slate-50 p-5 text-sm font-bold text-slate-500 dark:bg-black/30 dark:text-white/60">Няма качено intro видео.</div>
+                )}
+            </section>
 
             {loading ? (
                 <div className="rounded-3xl bg-white p-8 text-sm font-bold text-slate-500 dark:bg-zinc-900">Зареждане...</div>
