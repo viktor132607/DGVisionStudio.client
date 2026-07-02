@@ -1,16 +1,66 @@
+import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import Seo from "../components/Seo"
+import { apiFetchJson } from "../services/api"
 
-type PriceItem = {
+type PricingMode = "Fixed" | "Negotiable"
+
+type PricingItem = {
+    id: number
     title: string
     description: string
-    price: string
+    pricingMode: PricingMode
+    priceText?: string | null
+    displayOrder: number
+    isActive: boolean
+}
+
+function normalizePricingMode(value?: string | null): PricingMode {
+    return value === "Negotiable" ? "Negotiable" : "Fixed"
 }
 
 export default function PriceList() {
     const { i18n } = useTranslation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
+    const [items, setItems] = useState<PricingItem[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        let isMounted = true
+
+        apiFetchJson<PricingItem[]>("/pricing", {
+            method: "GET",
+            skipJsonContentType: true,
+            skipCsrfToken: true,
+        })
+            .then((data) => {
+                if (!isMounted) return
+                setItems(Array.isArray(data) ? data : [])
+            })
+            .catch(() => {
+                if (!isMounted) return
+                setItems([])
+            })
+            .finally(() => {
+                if (!isMounted) return
+                setLoading(false)
+            })
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
+
+    const sortedItems = useMemo(() => {
+        return [...items]
+            .filter((item) => item.isActive !== false)
+            .sort(
+                (a, b) =>
+                    (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+                    (a.id ?? 0) - (b.id ?? 0)
+            )
+    }, [items])
 
     const t = isBg
         ? {
@@ -22,59 +72,15 @@ export default function PriceList() {
                   "Ясен и изчистен преглед на основните фотографски услуги и началните им цени.",
               includedTitle: "Важно",
               includedText:
-                  "При услуги с цена „По запитване“ офертата се определя според обем, локация, продължителност и конкретни изисквания.",
+                  "При услуги с цена „По договаряне“ офертата се определя според обем, локация, продължителност и конкретни изисквания.",
               ctaTitle: "Имаш конкретно запитване?",
               ctaText:
                   "Свържи се с нас за персонална оферта според твоя проект, събитие или фотосесия.",
               contact: "Изпрати запитване",
               priceLabel: "Цена",
-              items: [
-                  {
-                      title: "Портретна фотография",
-                      description: "Индивидуални, артистични и професионални портретни фотосесии.",
-                      price: "От 60 € / фотосесия",
-                  },
-                  {
-                      title: "Абитуриентска фотография",
-                      description: "Сесии за абитуриенти с акцент върху стил, присъствие и детайл.",
-                      price: "От 60 € / час",
-                  },
-                  {
-                      title: "Заснемане на кръщене",
-                      description: "Дискретно и емоционално заснемане на важни семейни моменти.",
-                      price: "От 60 € / час",
-                  },
-                  {
-                      title: "Сватбена фотография",
-                      description: "Заснемане на сватбен ден, ключови моменти и атмосфера.",
-                      price: "120 € / час + 30 € дрон",
-                  },
-                  {
-                      title: "Продуктова фотография",
-                      description: "Кадри за продукти, брандове и онлайн магазини.",
-                      price: "По запитване",
-                  },
-                  {
-                      title: "Рекламна фотография",
-                      description: "Съдържание за кампании, социални мрежи и бранд присъствие.",
-                      price: "По запитване",
-                  },
-                  {
-                      title: "Корпоративна фотография",
-                      description: "Професионални кадри за екипи, бизнес среда и услуги.",
-                      price: "По запитване",
-                  },
-                  {
-                      title: "Семейна фотография",
-                      description: "Естествени и емоционални кадри за семейства и деца.",
-                      price: "По запитване",
-                  },
-                  {
-                      title: "Заснемане на събития",
-                      description: "Заснемане на частни, фирмени и сценични събития.",
-                      price: "От 60 € / час",
-                  },
-              ] as PriceItem[],
+              loading: "Зареждане...",
+              empty: "Все още няма добавени цени.",
+              negotiable: "По договаряне",
           }
         : {
               seoTitle: "Price List | DG Vision Studio",
@@ -85,60 +91,22 @@ export default function PriceList() {
                   "A clean overview of the main photography services and their starting prices.",
               includedTitle: "Important",
               includedText:
-                  "For services marked as “On request”, the final offer depends on scope, location, duration, and specific requirements.",
+                  "For services marked as “By agreement”, the final offer depends on scope, location, duration, and specific requirements.",
               ctaTitle: "Have a specific request?",
               ctaText:
                   "Get in touch for a custom quote based on your project, event, or photo session.",
               contact: "Send inquiry",
               priceLabel: "Price",
-              items: [
-                  {
-                      title: "Portrait Photography",
-                      description: "Individual, artistic, and professional portrait sessions.",
-                      price: "From €60 / session",
-                  },
-                  {
-                      title: "Graduation Photography",
-                      description: "Graduation sessions focused on style, presence, and detail.",
-                      price: "From €60 / hour",
-                  },
-                  {
-                      title: "Baptism Photography",
-                      description: "Discreet and emotional coverage of important family moments.",
-                      price: "From €60 / hour",
-                  },
-                  {
-                      title: "Wedding Photography",
-                      description: "Wedding day coverage with focus on key moments and atmosphere.",
-                      price: "€120 / hour + €30 drone",
-                  },
-                  {
-                      title: "Product Photography",
-                      description: "Visual content for products, brands, and online stores.",
-                      price: "On request",
-                  },
-                  {
-                      title: "Commercial Photography",
-                      description: "Photography for campaigns, social media, and brand presence.",
-                      price: "On request",
-                  },
-                  {
-                      title: "Corporate Photography",
-                      description: "Professional imagery for teams, business spaces, and services.",
-                      price: "On request",
-                  },
-                  {
-                      title: "Family Photography",
-                      description: "Natural and emotional sessions for families and children.",
-                      price: "On request",
-                  },
-                  {
-                      title: "Event Photography",
-                      description: "Coverage for private, corporate, and stage events.",
-                      price: "From €60 / hour",
-                  },
-              ] as PriceItem[],
+              loading: "Loading...",
+              empty: "No pricing items have been added yet.",
+              negotiable: "By agreement",
           }
+
+    const getPriceText = (item: PricingItem) => {
+        return normalizePricingMode(item.pricingMode) === "Negotiable"
+            ? t.negotiable
+            : item.priceText || "-"
+    }
 
     return (
         <>
@@ -162,33 +130,43 @@ export default function PriceList() {
                         </div>
 
                         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 xl:px-10">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                {t.items.map((item) => (
-                                    <article
-                                        key={item.title}
-                                        className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-5 dark:border-zinc-700 dark:bg-zinc-800 sm:p-6"
-                                    >
-                                        <div className="flex h-full flex-col">
-                                            <h2 className="text-[20px] font-bold text-neutral-950 dark:text-white">
-                                                {item.title}
-                                            </h2>
+                            {loading ? (
+                                <div className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-8 text-center text-[14px] font-bold text-neutral-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                    {t.loading}
+                                </div>
+                            ) : sortedItems.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                    {sortedItems.map((item) => (
+                                        <article
+                                            key={item.id}
+                                            className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-5 dark:border-zinc-700 dark:bg-zinc-800 sm:p-6"
+                                        >
+                                            <div className="flex h-full flex-col">
+                                                <h2 className="text-[20px] font-bold text-neutral-950 dark:text-white">
+                                                    {item.title}
+                                                </h2>
 
-                                            <p className="mt-4 flex-1 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px]">
-                                                {item.description}
-                                            </p>
+                                                <p className="mt-4 flex-1 text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px]">
+                                                    {item.description}
+                                                </p>
 
-                                            <div className="mt-6 border-t border-neutral-300 pt-4 dark:border-zinc-700">
-                                                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-neutral-500 dark:text-zinc-400">
-                                                    {t.priceLabel}
-                                                </p>
-                                                <p className="mt-3 text-[18px] font-extrabold text-neutral-950 dark:text-white">
-                                                    {item.price}
-                                                </p>
+                                                <div className="mt-6 border-t border-neutral-300 pt-4 dark:border-zinc-700">
+                                                    <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-neutral-500 dark:text-zinc-400">
+                                                        {t.priceLabel}
+                                                    </p>
+                                                    <p className="mt-3 text-[18px] font-extrabold text-neutral-950 dark:text-white">
+                                                        {getPriceText(item)}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </article>
-                                ))}
-                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-8 text-center text-[14px] font-bold text-neutral-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                    {t.empty}
+                                </div>
+                            )}
 
                             <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                                 <div className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-6 dark:border-zinc-700 dark:bg-zinc-800">
