@@ -45,6 +45,25 @@
         background-color: #000000 !important;
     }
 
+    [class*="bg-gradient-to-br"][class*="items-center"][class*="justify-center"] {
+        z-index: 0 !important;
+    }
+
+    [class*="bg-neutral-950"] > img[loading="eager"],
+    [class*="bg-neutral-950"] > img[loading="lazy"],
+    [class*="bg-neutral-950"] > video {
+        z-index: 10 !important;
+    }
+
+    [class*="bg-gradient-to-t"][class*="from-black/55"] {
+        z-index: 20 !important;
+        pointer-events: none !important;
+    }
+
+    [class*="bottom-0"][class*="bg-black/65"][class*="border-t"] {
+        z-index: 30 !important;
+    }
+
     .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
     #albums > .mb-6 > div:last-child > button[type="button"],
     #categories > .mb-6 > div:last-child > button[type="button"] {
