@@ -6,9 +6,20 @@ type SlideshowIntroVideoResponse = {
     videoUrl?: string | null
 }
 
+type SlideshowSettingsResponse = {
+    intervalMs?: number | null
+}
+
+const normalizeIntervalMs = (value: unknown, fallback: number) => {
+    const next = Number(value)
+    if (!Number.isFinite(next)) return fallback
+    return Math.max(1000, Math.min(30000, Math.round(next)))
+}
+
 export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700) {
     const [images, setImages] = useState<HomeSlideshowImage[]>([])
     const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null)
+    const [activeIntervalMs, setActiveIntervalMs] = useState(intervalMs)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [previousIndex, setPreviousIndex] = useState<number | null>(null)
     const [isTransitioning, setIsTransitioning] = useState(false)
@@ -69,8 +80,26 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
             }
         }
 
+        const loadSettings = async () => {
+            try {
+                const response = await apiFetch("/portfolio/slideshow/settings", {
+                    method: "GET",
+                    skipJsonContentType: true,
+                    skipCsrfToken: true,
+                })
+
+                if (!response.ok) throw new Error()
+
+                const data = (await response.json().catch(() => null)) as SlideshowSettingsResponse | null
+                setActiveIntervalMs(normalizeIntervalMs(data?.intervalMs, intervalMs))
+            } catch {
+                setActiveIntervalMs(intervalMs)
+            }
+        }
+
         const load = async () => {
             void loadIntroVideo()
+            void loadSettings()
 
             try {
                 const response = await apiFetch("/portfolio/slideshow", {
@@ -129,7 +158,7 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
         }
 
         void load()
-    }, [])
+    }, [intervalMs])
 
     const goToIndex = useCallback(
         (nextIndex: number, nextDirection: 1 | -1) => {
@@ -166,10 +195,10 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
 
         const timer = window.setInterval(() => {
             goNext()
-        }, intervalMs)
+        }, activeIntervalMs)
 
         return () => window.clearInterval(timer)
-    }, [goNext, images.length, intervalMs])
+    }, [goNext, images.length, activeIntervalMs])
 
     useEffect(() => {
         if (!isTransitioning) return
