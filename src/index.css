@@ -45,9 +45,9 @@
         background-color: #000000 !important;
     }
 
-    .relative.h-full.w-full.overflow-hidden.bg-neutral-950:has(img[loading="eager"])
-        > .absolute.inset-0.flex.h-full.w-full.items-center.justify-center.overflow-hidden.bg-gradient-to-br {
-        display: none !important;
+    .relative.h-full.w-full.overflow-hidden.bg-neutral-950 > img,
+    .relative.h-full.w-full.overflow-hidden.bg-neutral-950 > video {
+        z-index: 10;
     }
 
     .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
