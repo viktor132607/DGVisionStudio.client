@@ -41,6 +41,10 @@
         }
     }
 
+    [class*="bg-black/88"] {
+        background-color: #000000 !important;
+    }
+
     .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
     #albums > .mb-6 > div:last-child > button[type="button"],
     #categories > .mb-6 > div:last-child > button[type="button"] {
