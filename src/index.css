@@ -103,6 +103,47 @@
         }
     }
 
+    @media (min-width: 1024px) and (max-width: 1024px) and (min-height: 768px) and (max-height: 768px) {
+        .min-h-screen > section:first-of-type > div.mx-auto.grid {
+            max-width: calc(100vw - 72px) !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr) !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+            padding-left: 64px !important;
+            padding-right: 36px !important;
+            padding-top: 84px !important;
+            padding-bottom: 56px !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child img[alt="DG Vision Studio"] {
+            width: 250px !important;
+            margin-bottom: 22px !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 {
+            font-size: 43px !important;
+            line-height: 1.02 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p {
+            margin-top: 22px !important;
+            font-size: 15px !important;
+            line-height: 1.75 !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            align-self: center !important;
+            justify-self: center !important;
+            aspect-ratio: 4 / 5 !important;
+            width: 92% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 40px !important;
+        }
+    }
+
     @media (min-width: 1513px) and (max-width: 1920px) {
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
             align-self: center !important;
