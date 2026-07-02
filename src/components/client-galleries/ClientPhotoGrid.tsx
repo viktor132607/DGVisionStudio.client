@@ -29,9 +29,6 @@ export default function ClientPhotoGrid({ photos, getPhotoDownloadUrl, isBg }: C
                                 <>
                                     <video src={mediaUrl} muted playsInline preload="metadata" className="absolute inset-0 h-full w-full bg-black object-contain transition duration-500 group-hover:scale-[1.02]" />
                                     <div className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">Video</div>
-                                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black/65 text-white shadow-lg transition group-hover:scale-105">▶</div>
-                                    </div>
                                 </>
                             ) : (
                                 <img src={photo.previewUrl} alt={title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
