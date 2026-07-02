@@ -19,7 +19,7 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { quickLinks, serviceCards } = useHomeContent()
-    const { currentImage, previousImage, isTransitioning, direction, isMobile } =
+    const { currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
     const hasHardcodedVideo = Boolean(ACTIVE_HARDCODED_VIDEO_SRC)
@@ -269,16 +269,38 @@ export default function Home() {
                             </div>
 
                             <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
-                                <div
-                                    key={showingHardcodedVideo ? "hardcoded-video-text" : currentImage?.id ?? "fallback-text"}
-                                    className="animate-[fadeUp_500ms_ease-out]"
-                                >
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
-                                        {slideshowEyebrow}
-                                    </p>
-                                    <p className="mt-2 text-xs font-semibold text-white sm:text-sm md:text-[15px]">
-                                        {slideshowDescription}
-                                    </p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={goPrevious}
+                                        disabled={!currentImage || showingHardcodedVideo}
+                                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
+                                        aria-label={isBg ? "Предишна снимка" : "Previous image"}
+                                    >
+                                        ‹
+                                    </button>
+
+                                    <div
+                                        key={showingHardcodedVideo ? "hardcoded-video-text" : currentImage?.id ?? "fallback-text"}
+                                        className="min-w-0 flex-1 animate-[fadeUp_500ms_ease-out] text-center"
+                                    >
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
+                                            {slideshowEyebrow}
+                                        </p>
+                                        <p className="mt-2 text-xs font-semibold text-white sm:text-sm md:text-[15px]">
+                                            {slideshowDescription}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={goNext}
+                                        disabled={!currentImage || showingHardcodedVideo}
+                                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/10 text-xl font-bold text-white transition hover:bg-white hover:text-black disabled:pointer-events-none disabled:opacity-35 sm:h-11 sm:w-11"
+                                        aria-label={isBg ? "Следваща снимка" : "Next image"}
+                                    >
+                                        ›
+                                    </button>
                                 </div>
                             </div>
                         </div>
