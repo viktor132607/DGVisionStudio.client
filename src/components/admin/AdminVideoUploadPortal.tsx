@@ -5,12 +5,21 @@ import { useLocation } from "react-router-dom"
 import { apiFetch } from "../../services/api"
 
 const MAX_VIDEO_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024
-const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm"])
+const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"])
+const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"]
 
 function getGalleryId(search: string) {
     const params = new URLSearchParams(search)
     const id = Number(params.get("id"))
     return Number.isFinite(id) && id > 0 ? id : null
+}
+
+function isAllowedVideo(file: File) {
+    const name = file.name.toLowerCase()
+    const hasAllowedExtension = ALLOWED_VIDEO_EXTENSIONS.some((extension) => name.endsWith(extension))
+    const hasAllowedType = !file.type || ALLOWED_VIDEO_TYPES.has(file.type) || file.type.startsWith("video/")
+
+    return hasAllowedExtension && hasAllowedType
 }
 
 export default function AdminVideoUploadPortal() {
@@ -63,8 +72,8 @@ export default function AdminVideoUploadPortal() {
             return
         }
 
-        if (!ALLOWED_VIDEO_TYPES.has(file.type)) {
-            alert("Можеш да качваш само MP4, MOV или WEBM видео.")
+        if (!isAllowedVideo(file)) {
+            alert("Можеш да качваш само MP4, MOV, WEBM или M4V видео.")
             return
         }
 
@@ -79,7 +88,7 @@ export default function AdminVideoUploadPortal() {
             const formData = new FormData()
             formData.append("file", file)
 
-            const response = await apiFetch(`/admin/client-galleries/${galleryId}/photos/upload`, {
+            const response = await apiFetch(`/admin/client-galleries/${galleryId}/videos/upload`, {
                 method: "POST",
                 body: formData,
                 skipJsonContentType: true,
@@ -111,7 +120,7 @@ export default function AdminVideoUploadPortal() {
             <input
                 ref={inputRef}
                 type="file"
-                accept="video/mp4,video/quicktime,video/webm"
+                accept="video/*,.mp4,.mov,.webm,.m4v"
                 className="hidden"
                 onChange={uploadVideo}
             />
