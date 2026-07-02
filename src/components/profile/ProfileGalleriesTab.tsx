@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import PortfolioLightbox from "../portfolio/PortfolioLightbox"
 import ClientGalleryCard from "../client-galleries/ClientGalleryCard"
-import type { MyClientGalleryDto, ClientGalleryDetailsDto, GalleryType, UserClientGalleryStatus } from "../../types/clientGallery"
+import type {
+    ClientGalleryDetailsDto,
+    ClientPhotoDto,
+    GalleryType,
+    MyClientGalleryDto,
+    UserClientGalleryStatus,
+} from "../../types/clientGallery"
+import type { PortfolioItem } from "../../types/portfolio"
 import {
     createMyClientGallery,
     deleteMyClientGallery,
@@ -26,6 +33,22 @@ const isClientPrintUpload = (galleryType?: GalleryType) => {
 
 const isExpiredStatus = (status?: UserClientGalleryStatus) => {
     return status === "Expired" || status === 3
+}
+
+const isVideoPhoto = (photo: ClientPhotoDto) => {
+    const contentType = photo.contentType?.toLowerCase() || ""
+    const mediaType = photo.mediaType?.toLowerCase() || ""
+    const mediaUrl = photo.originalUrl || photo.previewUrl || ""
+
+    return (
+        mediaType === "video" ||
+        contentType.startsWith("video/") ||
+        /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(mediaUrl)
+    )
+}
+
+const getPhotoTitle = (photo: ClientPhotoDto, fallback: string) => {
+    return photo.name?.trim() || photo.altText?.trim() || photo.caption?.trim() || fallback
 }
 
 const getStatusLabel = (
@@ -88,14 +111,26 @@ export default function ProfileGalleriesTab({
     const userUploadedCount = userPrintGalleries.filter((x) => !isExpiredStatus(x.userGalleryStatus)).length
     const openedGalleryIsClientPrintUpload = isClientPrintUpload(openedGallery?.galleryType)
 
-    const lightboxImages = useMemo(
+    const lightboxItems = useMemo<PortfolioItem[]>(
         () =>
             (openedGallery?.photos ?? [])
                 .map((photo, index) => {
-                    const src = photo.previewUrl || photo.originalUrl || ""
+                    const video = isVideoPhoto(photo)
+                    const originalSrc = photo.originalUrl || photo.previewUrl || ""
+                    const src = video ? originalSrc : photo.previewUrl || originalSrc
+                    const title = getPhotoTitle(photo, `${openedGallery?.title ?? "Gallery"} ${index + 1}`)
+
                     return {
+                        id: photo.id,
                         src,
-                        alt: `${openedGallery?.title ?? "Gallery"} ${index + 1}`,
+                        originalSrc,
+                        category: "",
+                        categoryLabel: "",
+                        albumKey: String(openedGallery?.id ?? ""),
+                        albumLabel: openedGallery?.title ?? "",
+                        title,
+                        mediaType: video ? "Video" : photo.mediaType || "Image",
+                        contentType: photo.contentType,
                     }
                 })
                 .filter((item) => item.src),
@@ -559,12 +594,16 @@ export default function ProfileGalleriesTab({
                         ) : (
                             <div ref={photosSectionRef} className="space-y-4 scroll-mt-24">
                                 {openedGallery.photos.map((photo, index) => {
+                                    const video = isVideoPhoto(photo)
                                     const canDownload =
                                         openedGallery.downloadEnabled &&
                                         !openedGallery.isExpired &&
                                         !openedGalleryIsClientPrintUpload
 
-                                    const imageSrc = photo.previewUrl || photo.originalUrl || ""
+                                    const mediaSrc = video
+                                        ? photo.originalUrl || photo.previewUrl || ""
+                                        : photo.previewUrl || photo.originalUrl || ""
+                                    const title = getPhotoTitle(photo, `${openedGallery.title} ${index + 1}`)
 
                                     return (
                                         <div
@@ -577,12 +616,27 @@ export default function ProfileGalleriesTab({
                                                 className="block w-full text-left"
                                             >
                                                 <div className="relative overflow-hidden bg-neutral-200 dark:bg-zinc-800">
-                                                    <img
-                                                        src={imageSrc}
-                                                        alt={`${openedGallery.title} ${index + 1}`}
-                                                        className="h-auto w-full object-contain transition duration-300 group-hover:scale-[1.01]"
-                                                        loading="lazy"
-                                                    />
+                                                    {video ? (
+                                                        <>
+                                                            <video
+                                                                src={mediaSrc}
+                                                                muted
+                                                                playsInline
+                                                                preload="metadata"
+                                                                className="h-auto w-full bg-black object-contain transition duration-300 group-hover:scale-[1.01]"
+                                                            />
+                                                            <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+                                                                Video
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <img
+                                                            src={mediaSrc}
+                                                            alt={title}
+                                                            className="h-auto w-full object-contain transition duration-300 group-hover:scale-[1.01]"
+                                                            loading="lazy"
+                                                        />
+                                                    )}
                                                 </div>
                                             </button>
 
@@ -603,7 +657,7 @@ export default function ProfileGalleriesTab({
                                                             onClick={(e) => e.stopPropagation()}
                                                             className="inline-flex h-10 items-center justify-center rounded-full bg-emerald-700 px-4 text-[13px] font-semibold text-white shadow-md transition hover:bg-emerald-800"
                                                         >
-                                                            {isBg ? "Изтегли" : "Download"}
+                                                            {video ? (isBg ? "Изтегли видео" : "Download video") : isBg ? "Изтегли" : "Download"}
                                                         </a>
                                                     ) : null}
                                                 </div>
@@ -617,41 +671,24 @@ export default function ProfileGalleriesTab({
                 </div>
             ) : null}
 
-            {selectedIndex !== null && lightboxImages.length > 0 ? (
+            {selectedIndex !== null && lightboxItems[selectedIndex] ? (
                 <PortfolioLightbox
                     isBg={isBg}
-                    item={
-                        {
-                            id: selectedIndex + 1,
-                            src: lightboxImages[selectedIndex]?.src || "",
-                            alt:
-                                lightboxImages[selectedIndex]?.alt ||
-                                `${openedGallery?.title ?? "Gallery"} ${selectedIndex + 1}`,
-                            title:
-                                lightboxImages[selectedIndex]?.alt ||
-                                `${openedGallery?.title ?? "Gallery"} ${selectedIndex + 1}`,
-                            categoryKey: "",
-                            categoryLabel: "",
-                            albumSlug: "",
-                            albumTitle: openedGallery?.title ?? "",
-                            isCover: false,
-                            displayOrder: selectedIndex,
-                        } as any
-                    }
+                    item={lightboxItems[selectedIndex]}
                     selectedIndex={selectedIndex}
-                    totalItems={lightboxImages.length}
+                    totalItems={lightboxItems.length}
                     onClose={closeLightbox}
                     onPrev={() =>
                         setSelectedIndex((prev) =>
-                            prev === null ? 0 : prev === 0 ? lightboxImages.length - 1 : prev - 1
+                            prev === null ? 0 : prev === 0 ? lightboxItems.length - 1 : prev - 1
                         )
                     }
                     onNext={() =>
                         setSelectedIndex((prev) =>
-                            prev === null ? 0 : prev === lightboxImages.length - 1 ? 0 : prev + 1
+                            prev === null ? 0 : prev === lightboxItems.length - 1 ? 0 : prev + 1
                         )
                     }
-                    showNavigation={lightboxImages.length > 1}
+                    showNavigation={lightboxItems.length > 1}
                 />
             ) : null}
         </div>
