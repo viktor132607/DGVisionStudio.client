@@ -26,9 +26,56 @@ type AlbumOption = {
     count: number
 }
 
+type SavedLayout = {
+    name: string
+    imageIds: number[]
+    createdAt: string
+}
+
+const SLIDESHOW_LAYOUTS_STORAGE_KEY = "dgvisionstudio.admin.slideshowLayouts"
+
 const imageSrc = (image: SlideshowImage) => resolveAssetUrl(image.thumbnailUrl || image.imageUrl || "")
 const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
 const albumKey = (image: SlideshowImage) => String(image.portfolioAlbumId ?? image.albumTitle ?? "no-album")
+
+function shuffleImages<T>(items: T[]) {
+    const next = [...items]
+
+    for (let index = next.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1))
+        const current = next[index]
+        next[index] = next[swapIndex]
+        next[swapIndex] = current
+    }
+
+    return next
+}
+
+function readSavedLayouts() {
+    if (typeof window === "undefined") return [] as SavedLayout[]
+
+    try {
+        const raw = window.localStorage.getItem(SLIDESHOW_LAYOUTS_STORAGE_KEY)
+        if (!raw) return [] as SavedLayout[]
+
+        const parsed = JSON.parse(raw) as SavedLayout[]
+        if (!Array.isArray(parsed)) return [] as SavedLayout[]
+
+        return parsed.filter(
+            (layout) =>
+                typeof layout?.name === "string" &&
+                Array.isArray(layout.imageIds) &&
+                layout.imageIds.every((id) => Number.isFinite(Number(id)))
+        )
+    } catch {
+        return [] as SavedLayout[]
+    }
+}
+
+function writeSavedLayouts(layouts: SavedLayout[]) {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(SLIDESHOW_LAYOUTS_STORAGE_KEY, JSON.stringify(layouts))
+}
 
 async function readErrorMessage(response: Response) {
     try {
@@ -51,6 +98,8 @@ export default function SlideshowAdmin() {
     const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null)
     const [search, setSearch] = useState("")
     const [selectedAlbumKeys, setSelectedAlbumKeys] = useState<string[]>([])
+    const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>(() => readSavedLayouts())
+    const [layoutName, setLayoutName] = useState("")
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploadingVideo, setUploadingVideo] = useState(false)
@@ -152,6 +201,71 @@ export default function SlideshowAdmin() {
             return [...current, ...toAdd]
         })
         setMessage("Снимките от избраните филтри са добавени. Натисни Запази, за да се публикува редът.")
+        setError("")
+    }
+
+    const addAllFilteredShuffled = () => {
+        setSelected((current) => {
+            const currentIds = new Set(current.map((image) => image.id))
+            const toAdd = shuffleImages(filteredAvailable.filter((image) => !currentIds.has(image.id)))
+            return [...current, ...toAdd]
+        })
+        setMessage("Снимките от избраните албуми са добавени разбъркано. Натисни Запази, за да се публикува редът.")
+        setError("")
+    }
+
+    const shuffleSelected = () => {
+        setSelected((current) => shuffleImages(current))
+        setMessage("Текущият ред е разбъркан. Натисни Запази, за да се публикува.")
+        setError("")
+    }
+
+    const saveLayout = () => {
+        if (selected.length === 0) {
+            setError("Няма снимки за записване като layout.")
+            setMessage("")
+            return
+        }
+
+        const name = layoutName.trim() || `Layout ${savedLayouts.length + 1}`
+        const nextLayout: SavedLayout = {
+            name,
+            imageIds: selected.map((image) => image.id),
+            createdAt: new Date().toISOString(),
+        }
+
+        const nextLayouts = [
+            nextLayout,
+            ...savedLayouts.filter((layout) => layout.name.toLowerCase() !== name.toLowerCase()),
+        ].slice(0, 12)
+
+        setSavedLayouts(nextLayouts)
+        writeSavedLayouts(nextLayouts)
+        setLayoutName("")
+        setMessage(`Layout "${name}" е запазен локално в браузъра.`)
+        setError("")
+    }
+
+    const applyLayout = (layout: SavedLayout) => {
+        const source = new Map<number, SlideshowImage>()
+
+        available.forEach((image) => source.set(image.id, image))
+        selected.forEach((image) => source.set(image.id, image))
+
+        const nextSelected = layout.imageIds
+            .map((id) => source.get(id))
+            .filter((image): image is SlideshowImage => Boolean(image))
+
+        setSelected(nextSelected)
+        setMessage(`Layout "${layout.name}" е приложен. Натисни Запази, за да се публикува.`)
+        setError("")
+    }
+
+    const deleteLayout = (layoutNameToDelete: string) => {
+        const nextLayouts = savedLayouts.filter((layout) => layout.name !== layoutNameToDelete)
+        setSavedLayouts(nextLayouts)
+        writeSavedLayouts(nextLayouts)
+        setMessage(`Layout "${layoutNameToDelete}" е изтрит.`)
         setError("")
     }
 
@@ -309,6 +423,7 @@ export default function SlideshowAdmin() {
 
                 <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={load} disabled={loading || saving} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900 dark:text-white">Презареди</button>
+                    <button type="button" onClick={shuffleSelected} disabled={loading || saving || selected.length < 2} className="rounded-2xl bg-indigo-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">Разбъркай</button>
                     <button type="button" onClick={removeAll} disabled={loading || saving || selected.length === 0} className="rounded-2xl bg-red-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">Премахни всички</button>
                     <button type="button" onClick={save} disabled={loading || saving} className="rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">{saving ? "Запазване..." : "Запази"}</button>
                 </div>
@@ -327,7 +442,7 @@ export default function SlideshowAdmin() {
                     <div className="flex flex-wrap gap-2">
                         <label className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-slate-950 px-5 py-2 text-sm font-black text-white transition hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
                             {uploadingVideo ? "Качване..." : introVideoUrl ? "Смени видео" : "Качи видео"}
-                            <input type="file" accept="video/*,.mp4,.mov,.webm,.m4v" onChange={handleVideoUpload} disabled={videoBusy} className="hidden" />
+                            <input type="file" accept="video/*,.mp4,.mov,.webm" disabled={videoBusy} onChange={handleVideoUpload} className="hidden" />
                         </label>
 
                         {introVideoUrl ? (
@@ -352,8 +467,41 @@ export default function SlideshowAdmin() {
                     <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <h2 className="text-lg font-black text-slate-950 dark:text-white">Текущ ред ({selected.length})</h2>
-                            <button type="button" onClick={removeAll} disabled={selected.length === 0} className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white disabled:opacity-60">Премахни всички</button>
+                            <div className="flex flex-wrap gap-2">
+                                <button type="button" onClick={shuffleSelected} disabled={selected.length < 2} className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-black text-white disabled:opacity-60">Разбъркай реда</button>
+                                <button type="button" onClick={removeAll} disabled={selected.length === 0} className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white disabled:opacity-60">Премахни всички</button>
+                            </div>
                         </div>
+
+                        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30">
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <input
+                                    value={layoutName}
+                                    onChange={(event) => setLayoutName(event.target.value)}
+                                    placeholder="Име на layout"
+                                    className="min-h-10 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none dark:border-white/10 dark:bg-black dark:text-white"
+                                />
+                                <button type="button" onClick={saveLayout} disabled={selected.length === 0} className="rounded-xl bg-slate-950 px-4 py-2 text-xs font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">Запази layout</button>
+                            </div>
+
+                            {savedLayouts.length > 0 ? (
+                                <div className="mt-3 flex flex-col gap-2">
+                                    {savedLayouts.map((layout) => (
+                                        <div key={layout.name} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 dark:bg-zinc-900">
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-black text-slate-900 dark:text-white">{layout.name}</p>
+                                                <p className="text-[11px] font-bold text-slate-400">{layout.imageIds.length} снимки</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button type="button" onClick={() => applyLayout(layout)} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-black text-white">Приложи</button>
+                                                <button type="button" onClick={() => deleteLayout(layout.name)} className="rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-black text-white">Изтрий</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+
                         <div className="mt-4 flex max-h-[70vh] flex-col gap-3 overflow-auto">
                             {selected.map((image, index) => (
                                 <div
@@ -405,6 +553,7 @@ export default function SlideshowAdmin() {
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Търси" className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-white/10 dark:bg-black dark:text-white" />
+                                <button type="button" onClick={addAllFilteredShuffled} disabled={addAllDisabled || filteredAvailable.length === 0} className="rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-black text-white disabled:opacity-60">Добави разбъркано</button>
                                 <button type="button" onClick={addAllFiltered} disabled={addAllDisabled || filteredAvailable.length === 0} className="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white disabled:opacity-60 dark:bg-white dark:text-black">Добави всички</button>
                             </div>
                         </div>
