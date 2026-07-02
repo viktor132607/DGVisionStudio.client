@@ -25,22 +25,6 @@
 }
 
 @layer components {
-    @media (min-width: 768px) and (max-width: 1199px) {
-        .tablet-readable {
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .tablet-grid-2 {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        }
-
-        .tablet-stack {
-            grid-template-columns: minmax(0, 1fr) !important;
-        }
-    }
-
     [class*="bg-black/88"] {
         background-color: #000000 !important;
     }
@@ -76,7 +60,58 @@
         }
     }
 
-    @media (min-width: 1024px) and (max-width: 1512px) {
+    @media (width: 1024px) and (height: 768px) {
+        .min-h-screen > section:first-of-type > div.mx-auto.grid {
+            max-width: calc(100vw - 72px) !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr) !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+            padding-left: 64px !important;
+            padding-right: 36px !important;
+            padding-top: 32px !important;
+            padding-bottom: 28px !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child img[alt="DG Vision Studio"] {
+            width: 190px !important;
+            margin-bottom: 12px !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 {
+            font-size: 34px !important;
+            line-height: 1.02 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p {
+            margin-top: 14px !important;
+            font-size: 13.5px !important;
+            line-height: 1.55 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p + div {
+            margin-top: 16px !important;
+            gap: 10px !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p + div a {
+            min-height: 40px !important;
+            padding: 8px 15px !important;
+            font-size: 11px !important;
+            letter-spacing: 0.12em !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            aspect-ratio: 4 / 5 !important;
+            width: 92% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 40px !important;
+        }
+    }
+
+    @media (min-width: 1025px) and (max-width: 1512px) {
         .min-h-screen > section:first-of-type > div.mx-auto.grid {
             max-width: min(1700px, calc(100vw - 72px)) !important;
         }
@@ -94,8 +129,6 @@
         }
 
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-            align-self: center !important;
-            justify-self: center !important;
             width: 95% !important;
             height: 95% !important;
             margin-top: 28px !important;
@@ -103,55 +136,45 @@
         }
     }
 
-    @media (min-width: 1024px) and (max-width: 1024px) and (min-height: 768px) and (max-height: 768px) {
+    @media (min-width: 1800px) and (max-width: 1920px) and (min-height: 760px) and (max-height: 980px) {
+        .min-h-screen > section:first-of-type {
+            padding-bottom: 120px !important;
+        }
+
         .min-h-screen > section:first-of-type > div.mx-auto.grid {
-            max-width: calc(100vw - 72px) !important;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr) !important;
+            max-width: calc(100vw - 120px) !important;
         }
 
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
-            padding-left: 64px !important;
-            padding-right: 36px !important;
-            padding-top: 84px !important;
-            padding-bottom: 56px !important;
+            padding-top: 54px !important;
+            padding-bottom: 54px !important;
         }
 
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child img[alt="DG Vision Studio"] {
-            width: 250px !important;
-            margin-bottom: 22px !important;
+            width: 215px !important;
+            margin-bottom: 18px !important;
         }
 
         .min-h-screen > section:first-of-type h1 {
-            font-size: 43px !important;
-            line-height: 1.02 !important;
+            font-size: clamp(44px, 3.7vw, 54px) !important;
+            line-height: 1.04 !important;
         }
 
         .min-h-screen > section:first-of-type h1 + p {
+            margin-top: 18px !important;
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p + div {
+            margin-top: 24px !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            width: 88% !important;
+            height: 88% !important;
             margin-top: 22px !important;
-            font-size: 15px !important;
-            line-height: 1.75 !important;
-        }
-
-        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-            align-self: center !important;
-            justify-self: center !important;
-            aspect-ratio: 4 / 5 !important;
-            width: 92% !important;
-            height: auto !important;
-            min-height: 0 !important;
-            margin-top: 0 !important;
-            margin-bottom: 40px !important;
-        }
-    }
-
-    @media (min-width: 1513px) and (max-width: 1920px) {
-        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-            align-self: center !important;
-            justify-self: center !important;
-            width: 95% !important;
-            height: 95% !important;
-            margin-top: 28px !important;
-            margin-bottom: 64px !important;
+            margin-bottom: 125px !important;
         }
     }
 
@@ -199,92 +222,5 @@
             margin-top: 0 !important;
             margin-bottom: 0 !important;
         }
-    }
-
-    .lg\:pl-72 > main > .w-full > .mb-8 > button[type="button"],
-    #albums > .mb-6 > div:last-child > button[type="button"],
-    #categories > .mb-6 > div:last-child > button[type="button"] {
-        display: none !important;
-    }
-
-    #categories table {
-        table-layout: auto !important;
-        width: 100% !important;
-    }
-
-    #categories th:nth-child(1),
-    #categories td:nth-child(1) {
-        width: 90px !important;
-        min-width: 90px !important;
-        max-width: 90px !important;
-    }
-
-    #categories th:nth-child(2),
-    #categories td:nth-child(2) {
-        width: auto !important;
-        text-align: left !important;
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-    }
-
-    #categories th:nth-child(3),
-    #categories td:nth-child(3) {
-        width: 170px !important;
-        min-width: 170px !important;
-        max-width: 170px !important;
-    }
-
-    #categories th:nth-child(4),
-    #categories td:nth-child(4) {
-        width: 445px !important;
-        min-width: 445px !important;
-        max-width: 445px !important;
-    }
-
-    #categories td:nth-child(4) > div {
-        justify-content: flex-end !important;
-    }
-
-    #categories tbody tr:has(td:nth-child(3) button.bg-slate-100) {
-        background: #f8dede !important;
-    }
-
-    #categories tbody tr:has(td:nth-child(3) button.bg-slate-100):hover {
-        background: #f3d2d2 !important;
-    }
-
-    #categories td:nth-child(3) button.bg-slate-100 {
-        background: #c98282 !important;
-        color: #ffffff !important;
-    }
-
-    #categories td:nth-child(3) button.bg-slate-100:hover {
-        background: #b86f6f !important;
-    }
-
-    .space-y-3.p-3 > button:first-child {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 9999px !important;
-        border: 1px solid rgb(23 23 23) !important;
-        background: rgb(23 23 23) !important;
-        padding: 8px 18px !important;
-        color: transparent !important;
-        font-size: 0 !important;
-        font-weight: 700 !important;
-        transition: background-color 150ms ease, border-color 150ms ease !important;
-    }
-
-    .space-y-3.p-3 > button:first-child::before {
-        content: "Задай като основна";
-        color: white !important;
-        font-size: 13px !important;
-        line-height: 1 !important;
-    }
-
-    .space-y-3.p-3 > button:first-child:hover {
-        background: rgb(38 38 38) !important;
-        border-color: rgb(38 38 38) !important;
     }
 }
