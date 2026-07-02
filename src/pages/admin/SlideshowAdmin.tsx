@@ -17,6 +17,11 @@ type SlideshowResponse = {
     selectedImages?: SlideshowImage[]
     availableImages?: SlideshowImage[]
     introVideoUrl?: string | null
+    useDefaultInterval?: boolean
+    intervalMs?: number | null
+    defaultIntervalMs?: number | null
+    minIntervalMs?: number | null
+    maxIntervalMs?: number | null
 }
 
 type AlbumOption = {
@@ -33,10 +38,14 @@ type SavedLayout = {
 }
 
 const SLIDESHOW_LAYOUTS_STORAGE_KEY = "dgvisionstudio.admin.slideshowLayouts"
+const FALLBACK_DEFAULT_INTERVAL_MS = 4500
+const FALLBACK_MIN_INTERVAL_MS = 1000
+const FALLBACK_MAX_INTERVAL_MS = 30000
 
 const imageSrc = (image: SlideshowImage) => resolveAssetUrl(image.thumbnailUrl || image.imageUrl || "")
 const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
 const albumKey = (image: SlideshowImage) => String(image.portfolioAlbumId ?? image.albumTitle ?? "no-album")
+const msToSecondsLabel = (value: number) => `${Number((value / 1000).toFixed(1))}`
 
 function shuffleImages<T>(items: T[]) {
     const next = [...items]
@@ -100,6 +109,11 @@ export default function SlideshowAdmin() {
     const [selectedAlbumKeys, setSelectedAlbumKeys] = useState<string[]>([])
     const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>(() => readSavedLayouts())
     const [layoutName, setLayoutName] = useState("")
+    const [useDefaultInterval, setUseDefaultInterval] = useState(true)
+    const [intervalSeconds, setIntervalSeconds] = useState(msToSecondsLabel(FALLBACK_DEFAULT_INTERVAL_MS))
+    const [defaultIntervalMs, setDefaultIntervalMs] = useState(FALLBACK_DEFAULT_INTERVAL_MS)
+    const [minIntervalMs, setMinIntervalMs] = useState(FALLBACK_MIN_INTERVAL_MS)
+    const [maxIntervalMs, setMaxIntervalMs] = useState(FALLBACK_MAX_INTERVAL_MS)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploadingVideo, setUploadingVideo] = useState(false)
@@ -118,9 +132,19 @@ export default function SlideshowAdmin() {
                 skipJsonContentType: true,
             })
 
+            const nextDefaultIntervalMs = Number(data.defaultIntervalMs) || FALLBACK_DEFAULT_INTERVAL_MS
+            const nextMinIntervalMs = Number(data.minIntervalMs) || FALLBACK_MIN_INTERVAL_MS
+            const nextMaxIntervalMs = Number(data.maxIntervalMs) || FALLBACK_MAX_INTERVAL_MS
+            const nextIntervalMs = Number(data.intervalMs) || nextDefaultIntervalMs
+
             setSelected(Array.isArray(data.selectedImages) ? data.selectedImages : [])
             setAvailable(Array.isArray(data.availableImages) ? data.availableImages : [])
             setIntroVideoUrl(data.introVideoUrl?.trim() || null)
+            setUseDefaultInterval(data.useDefaultInterval ?? true)
+            setDefaultIntervalMs(nextDefaultIntervalMs)
+            setMinIntervalMs(nextMinIntervalMs)
+            setMaxIntervalMs(nextMaxIntervalMs)
+            setIntervalSeconds(msToSecondsLabel(nextIntervalMs))
         } catch (err) {
             setError(err instanceof Error ? err.message : "Грешка при зареждане.")
         } finally {
@@ -395,10 +419,23 @@ export default function SlideshowAdmin() {
         setError("")
         setMessage("")
 
+        const rawSeconds = Number(intervalSeconds)
+        const nextIntervalMs = Math.round(rawSeconds * 1000)
+
+        if (!useDefaultInterval && (!Number.isFinite(rawSeconds) || nextIntervalMs < minIntervalMs || nextIntervalMs > maxIntervalMs)) {
+            setSaving(false)
+            setError(`Въведи време между ${msToSecondsLabel(minIntervalMs)} и ${msToSecondsLabel(maxIntervalMs)} секунди.`)
+            return
+        }
+
         try {
             await apiFetchJson<void>("/admin/slideshow", {
                 method: "PUT",
-                body: JSON.stringify({ imageIds: selected.map((image) => image.id) }),
+                body: JSON.stringify({
+                    imageIds: selected.map((image) => image.id),
+                    useDefaultInterval,
+                    intervalMs: useDefaultInterval ? null : nextIntervalMs,
+                }),
             })
 
             setMessage("Слайдшоуто е запазено.")
@@ -418,7 +455,7 @@ export default function SlideshowAdmin() {
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Управление на слайдшоу</h1>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Качи intro видео или избери снимките и реда за началната страница.</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Качи intro видео или избери снимките, реда и скоростта за началната страница.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -458,6 +495,44 @@ export default function SlideshowAdmin() {
                 ) : (
                     <div className="mt-5 rounded-2xl bg-slate-50 p-5 text-sm font-bold text-slate-500 dark:bg-black/30 dark:text-white/60">Няма качено intro видео.</div>
                 )}
+            </section>
+
+            <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 className="text-lg font-black text-slate-950 dark:text-white">Смяна на снимките</h2>
+                        <p className="mt-1 text-xs font-bold text-slate-500 dark:text-white/60">Default таймерът е {msToSecondsLabel(defaultIntervalMs)} секунди. Промяната се прилага след Запази.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700 dark:border-white/10 dark:bg-black/30 dark:text-white/80">
+                            <input
+                                type="checkbox"
+                                checked={useDefaultInterval}
+                                onChange={(event) => {
+                                    setUseDefaultInterval(event.target.checked)
+                                    if (event.target.checked) setIntervalSeconds(msToSecondsLabel(defaultIntervalMs))
+                                }}
+                                className="h-4 w-4 rounded border-slate-300"
+                            />
+                            Default
+                        </label>
+
+                        <label className="flex items-center gap-2 text-sm font-black text-slate-700 dark:text-white/80">
+                            Секунди
+                            <input
+                                type="number"
+                                min={msToSecondsLabel(minIntervalMs)}
+                                max={msToSecondsLabel(maxIntervalMs)}
+                                step="0.5"
+                                value={intervalSeconds}
+                                disabled={useDefaultInterval}
+                                onChange={(event) => setIntervalSeconds(event.target.value)}
+                                className="h-11 w-28 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-950 outline-none disabled:bg-slate-100 disabled:text-slate-400 dark:border-white/10 dark:bg-black dark:text-white dark:disabled:bg-black/30"
+                            />
+                        </label>
+                    </div>
+                </div>
             </section>
 
             {loading ? (
