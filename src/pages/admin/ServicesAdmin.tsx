@@ -301,7 +301,7 @@ export default function ServicesAdmin() {
                                             <span className={`rounded-full px-3 py-1 text-xs font-black ${service.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>{service.isActive ? "Видима" : "Скрита"}</span>
                                         </div>
                                         <h3 className="mt-2 truncate text-base font-black text-slate-950 dark:text-white">{service.title}</h3>
-                                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-white/65">{service.shortDescription || service.description || "Без описание"}</p>
+                                        <p className="mt-1 max-h-12 overflow-hidden text-sm leading-6 text-slate-600 dark:text-white/65">{service.shortDescription || service.description || "Без описание"}</p>
                                     </div>
 
                                     <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-stretch">
