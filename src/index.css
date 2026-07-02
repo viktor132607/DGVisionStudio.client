@@ -71,14 +71,6 @@
     }
 
     @media (min-width: 1024px) {
-        .min-h-screen > section:first-of-type {
-            min-height: calc(100svh - 84px) !important;
-        }
-
-        .min-h-screen > section:first-of-type > div.mx-auto.grid {
-            min-height: calc(100svh - 84px) !important;
-        }
-
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
             aspect-ratio: auto !important;
         }
@@ -87,7 +79,6 @@
     @media (min-width: 1024px) and (max-width: 1512px) {
         .min-h-screen > section:first-of-type > div.mx-auto.grid {
             max-width: min(1700px, calc(100vw - 72px)) !important;
-            min-height: calc(100svh - 84px) !important;
         }
 
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
@@ -100,6 +91,13 @@
         .min-h-screen > section:first-of-type h1 {
             font-size: clamp(38px, 4.1vw, 60px) !important;
             line-height: 1.04 !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            align-self: center !important;
+            justify-self: center !important;
+            width: 95% !important;
+            height: 95% !important;
         }
     }
 
