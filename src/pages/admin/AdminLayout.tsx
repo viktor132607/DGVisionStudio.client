@@ -11,6 +11,7 @@ const navItems = [
     { to: "/admin/slideshow", label: "Управление на слайдшоу" },
     { to: "/admin/services", label: "Услуги начален екран" },
     { to: "/admin/pricing", label: "Ценоразпис" },
+    { to: "/admin/gallery-videos", label: "Видео в албуми" },
 ]
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ""

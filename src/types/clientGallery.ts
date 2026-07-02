@@ -73,6 +73,8 @@ export type ClientPhotoDto = {
     displayOrder: number
     description?: string | null
     isPublished: boolean
+    mediaType?: "Image" | "Video" | string
+    contentType?: string | null
     showInPublicGallery: boolean
     visibleToAllAuthorizedUsers: boolean
     allowedUserIds: string[]
