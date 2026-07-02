@@ -10,6 +10,7 @@ const navItems = [
     { to: "/admin/calendar", label: "Календар" },
     { to: "/admin/slideshow", label: "Управление на слайдшоу" },
     { to: "/admin/services", label: "Услуги начален екран" },
+    { to: "/admin/pricing", label: "Ценоразпис" },
 ]
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ""
