@@ -45,7 +45,14 @@
     }
 
     @media (min-width: 900px) and (max-width: 1023px) and (min-height: 600px) and (max-height: 767px) {
-        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) { aspect-ratio: 16 / 10 !important; width: 94% !important; margin-left: auto !important; margin-right: auto !important; }
+        .min-h-screen > section:first-of-type > div.mx-auto.grid { max-width: calc(100vw - 48px) !important; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) !important; }
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child { padding-left: 42px !important; padding-right: 24px !important; padding-top: 24px !important; padding-bottom: 24px !important; }
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child img[alt="DG Vision Studio"] { width: 160px !important; margin-bottom: 9px !important; }
+        .min-h-screen > section:first-of-type h1 { font-size: 29px !important; line-height: 1.02 !important; }
+        .min-h-screen > section:first-of-type h1 + p { margin-top: 11px !important; font-size: 12.8px !important; line-height: 1.46 !important; }
+        .min-h-screen > section:first-of-type h1 + p + div { margin-top: 13px !important; gap: 8px !important; }
+        .min-h-screen > section:first-of-type h1 + p + div a { min-height: 37px !important; padding: 7px 13px !important; font-size: 10.3px !important; }
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) { aspect-ratio: 4 / 5 !important; width: 91% !important; height: auto !important; min-height: 0 !important; margin: 0 auto 30px auto !important; }
     }
 
     @media (min-width: 768px) and (max-width: 1023px) {
