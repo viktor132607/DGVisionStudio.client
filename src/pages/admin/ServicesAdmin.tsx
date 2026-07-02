@@ -372,13 +372,11 @@ export default function ServicesAdmin() {
                             </div>
                         </div>
 
-                        <label className="block text-sm font-black text-slate-700 dark:text-white/80">
-                            Ръчен URL/път към снимка
-                            <input value={form.coverImageUrl} onChange={(event) => setForm((current) => ({ ...current, coverImageUrl: event.target.value }))} placeholder="/images/... или /uploads/..." className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white" />
-                        </label>
-
                         {form.coverImageUrl ? (
-                            <img src={resolveServiceAssetUrl(form.coverImageUrl)} alt="Преглед" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black/30">
+                                <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-500 dark:text-white/55">Избрана снимка</p>
+                                <img src={resolveServiceAssetUrl(form.coverImageUrl)} alt="Преглед" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                            </div>
                         ) : null}
 
                         <label className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-black text-slate-700 dark:bg-black/30 dark:text-white/80">
