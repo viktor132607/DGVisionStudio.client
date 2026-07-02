@@ -67,6 +67,7 @@ export type ClientPhotoDto = {
     previewUrl: string
     originalUrl?: string | null
     downloadUrl?: string | null
+    name?: string | null
     altText?: string | null
     caption?: string | null
     canDownload: boolean
@@ -113,6 +114,7 @@ export type CreateUserClientGalleryRequest = {
 }
 
 export type AdminUpdateClientPhotoRequest = {
+    name?: string | null
     altText?: string | null
     caption?: string | null
     description?: string | null
