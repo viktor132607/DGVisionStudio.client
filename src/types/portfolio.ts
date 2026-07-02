@@ -27,6 +27,9 @@ export type PortfolioImage = {
     thumbnailUrl?: string
     altText?: string
     caption?: string
+    name?: string
+    mediaType?: string
+    contentType?: string | null
     width?: number
     height?: number
     displayOrder: number
@@ -52,11 +55,14 @@ export type AlbumTab = {
 export type PortfolioItem = {
     id: number
     src: string
+    originalSrc?: string
     category: string
     categoryLabel: string
     albumKey: string
     albumLabel: string
     title: string
+    mediaType?: string
+    contentType?: string | null
 }
 
 export type PortfolioAlbumCard = {

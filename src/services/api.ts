@@ -53,6 +53,52 @@ function isUnsafeMethod(method: string | undefined) {
     return ["POST", "PUT", "PATCH", "DELETE"].includes(normalizedMethod)
 }
 
+function getUploadFile(body: BodyInit | null | undefined) {
+    if (!(body instanceof FormData)) return null
+    const file = body.get("file")
+    return file instanceof File ? file : null
+}
+
+function getFileNameWithoutExtension(file: File) {
+    return file.name.replace(/\.[^/.]+$/, "").trim() || file.name.trim()
+}
+
+function getAdminGalleryUploadMatch(path: string) {
+    return path.match(/^\/admin\/client-galleries\/(\d+)\/(photos|videos)\/upload$/)
+}
+
+async function syncUploadedMediaName(
+    path: string,
+    response: Response,
+    body: BodyInit | null | undefined,
+    headers: Headers
+) {
+    if (!response.ok) return
+
+    const match = getAdminGalleryUploadMatch(path)
+    if (!match) return
+
+    const file = getUploadFile(body)
+    if (!file) return
+
+    const galleryId = Number(match[1])
+    if (!Number.isFinite(galleryId) || galleryId <= 0) return
+
+    const data = (await response.clone().json().catch(() => null)) as { id?: number } | null
+    const mediaId = Number(data?.id)
+    if (!Number.isFinite(mediaId) || mediaId <= 0) return
+
+    await fetch(`${API_BASE_URL}/api/admin/client-galleries/${galleryId}/media/${mediaId}/metadata`, {
+        method: "PUT",
+        credentials: "include",
+        headers,
+        body: JSON.stringify({
+            name: getFileNameWithoutExtension(file),
+            clearAltAndCaption: true,
+        }),
+    }).catch(() => undefined)
+}
+
 export async function apiFetch(path: string, options: FetchOptions = {}) {
     const {
         skipJsonContentType = false,
@@ -74,11 +120,15 @@ export async function apiFetch(path: string, options: FetchOptions = {}) {
 
     const normalizedPath = path.startsWith("/") ? path : `/${path}`
 
-    return fetch(`${API_BASE_URL}/api${normalizedPath}`, {
+    const response = await fetch(`${API_BASE_URL}/api${normalizedPath}`, {
         credentials: "include",
         headers: finalHeaders,
         ...rest,
     })
+
+    void syncUploadedMediaName(normalizedPath, response, rest.body, finalHeaders)
+
+    return response
 }
 
 export async function apiFetchJson<T>(path: string, options: FetchOptions = {}): Promise<T> {

@@ -20,6 +20,10 @@ type Point = {
     y: number
 }
 
+function isVideoItem(item: PortfolioItem) {
+    return item.mediaType === "Video" || /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(item.originalSrc || item.src || "")
+}
+
 export default function PortfolioLightbox({
     isBg,
     item,
@@ -46,6 +50,8 @@ export default function PortfolioLightbox({
     const lastTapRef = useRef(0)
 
     const zoom = ZOOM_LEVELS[zoomIndex]
+    const isVideo = isVideoItem(item)
+    const mediaSrc = item.originalSrc || item.src
 
     useEffect(() => {
         setZoomIndex(0)
@@ -58,7 +64,7 @@ export default function PortfolioLightbox({
         const viewport = viewportRef.current
         const image = imageRef.current
 
-        if (!viewport || !image) return { x: 0, y: 0 }
+        if (isVideo || !viewport || !image) return { x: 0, y: 0 }
 
         const viewportWidth = viewport.clientWidth
         const viewportHeight = viewport.clientHeight
@@ -81,6 +87,7 @@ export default function PortfolioLightbox({
     }
 
     const applyZoom = (nextZoomIndex: number) => {
+        if (isVideo) return
         setZoomIndex(nextZoomIndex)
         setPan((prev) => clampPan(prev))
     }
@@ -101,6 +108,8 @@ export default function PortfolioLightbox({
     }
 
     const toggleZoom = () => {
+        if (isVideo) return
+
         if (zoom === 1) {
             zoomTo110()
             return
@@ -110,24 +119,22 @@ export default function PortfolioLightbox({
     }
 
     const handleWheel = (e: WheelEvent<HTMLDivElement>) => {
+        if (isVideo) return
+
         e.preventDefault()
         e.stopPropagation()
 
         if (e.deltaY < 0) {
             const nextZoomIndex = Math.min(zoomIndex + 1, ZOOM_LEVELS.length - 1)
-            if (nextZoomIndex !== zoomIndex) {
-                applyZoom(nextZoomIndex)
-            }
+            if (nextZoomIndex !== zoomIndex) applyZoom(nextZoomIndex)
         } else if (e.deltaY > 0) {
             const nextZoomIndex = Math.max(zoomIndex - 1, 0)
-            if (nextZoomIndex !== zoomIndex) {
-                applyZoom(nextZoomIndex)
-            }
+            if (nextZoomIndex !== zoomIndex) applyZoom(nextZoomIndex)
         }
     }
 
     const startDrag = (clientX: number, clientY: number) => {
-        if (zoom <= 1) return
+        if (isVideo || zoom <= 1) return
 
         setIsDragging(true)
         dragStartRef.current = { x: clientX, y: clientY }
@@ -135,7 +142,7 @@ export default function PortfolioLightbox({
     }
 
     const moveDrag = (clientX: number, clientY: number) => {
-        if (!isDragging || zoom <= 1) return
+        if (isVideo || !isDragging || zoom <= 1) return
 
         const dx = clientX - dragStartRef.current.x
         const dy = clientY - dragStartRef.current.y
@@ -168,34 +175,36 @@ export default function PortfolioLightbox({
             window.removeEventListener("mousemove", handleMouseMove)
             window.removeEventListener("mouseup", handleMouseUp)
         }
-    }, [isDragging, zoom, pan])
+    }, [isDragging, zoom, pan, isVideo])
 
     const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
         const touch = e.touches[0]
         touchStartX.current = touch.clientX
         touchStartY.current = touch.clientY
 
-        const now = Date.now()
-        if (now - lastTapRef.current < 300) {
-            e.preventDefault()
-            toggleZoom()
+        if (!isVideo) {
+            const now = Date.now()
+            if (now - lastTapRef.current < 300) {
+                e.preventDefault()
+                toggleZoom()
+            }
+            lastTapRef.current = now
         }
-        lastTapRef.current = now
 
-        if (zoom > 1) {
+        if (!isVideo && zoom > 1) {
             startDrag(touch.clientX, touch.clientY)
         }
     }
 
     const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
-        if (zoom > 1) {
+        if (!isVideo && zoom > 1) {
             const touch = e.touches[0]
             moveDrag(touch.clientX, touch.clientY)
         }
     }
 
     const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
-        if (zoom > 1) {
+        if (!isVideo && zoom > 1) {
             endDrag()
             return
         }
@@ -218,6 +227,8 @@ export default function PortfolioLightbox({
 
     const handleViewportClick = (e: ReactMouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
+
+        if (isVideo) return
 
         if (mouseDownStartedInsideImageRef.current) {
             mouseDownStartedInsideImageRef.current = false
@@ -273,67 +284,16 @@ export default function PortfolioLightbox({
                 className="absolute right-2 top-2 z-[10001] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:right-4 sm:top-4 sm:h-11 sm:w-11 lg:right-6 lg:top-6"
                 aria-label={isBg ? "Затвори" : "Close"}
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="h-5 w-5 sm:h-6 sm:w-6"
-                >
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
+                ✕
             </button>
 
-            <div className="absolute right-14 top-2 z-[10001] flex items-center gap-2 sm:right-20 sm:top-4 lg:right-24 lg:top-6">
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        zoomOut()
-                    }}
-                    className="hidden sm:inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:h-11 sm:w-11"
-                    aria-label={isBg ? "Намали" : "Zoom out"}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="h-5 w-5 sm:h-6 sm:w-6"
-                    >
-                        <path d="M5 12h14" />
-                    </svg>
-                </button>
-
-                <div className="hidden min-w-[64px] justify-center rounded-full border border-white/20 bg-zinc-900/75 px-3 py-2 text-xs font-bold text-white sm:flex">
-                    {Math.round(zoom * 100)}%
+            {!isVideo ? (
+                <div className="absolute right-14 top-2 z-[10001] flex items-center gap-2 sm:right-20 sm:top-4 lg:right-24 lg:top-6">
+                    <button type="button" onClick={(e) => { e.stopPropagation(); zoomOut() }} className="hidden h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:inline-flex sm:h-11 sm:w-11" aria-label={isBg ? "Намали" : "Zoom out"}>-</button>
+                    <div className="hidden min-w-[64px] justify-center rounded-full border border-white/20 bg-zinc-900/75 px-3 py-2 text-xs font-bold text-white sm:flex">{Math.round(zoom * 100)}%</div>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); zoomIn() }} className="hidden h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:inline-flex sm:h-11 sm:w-11" aria-label={isBg ? "Увеличи" : "Zoom in"}>+</button>
                 </div>
-
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        zoomIn()
-                    }}
-                    className="hidden sm:inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:h-11 sm:w-11"
-                    aria-label={isBg ? "Увеличи" : "Zoom in"}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="h-5 w-5 sm:h-6 sm:w-6"
-                    >
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                    </svg>
-                </button>
-            </div>
+            ) : null}
 
             <div className="flex min-h-screen w-full items-center justify-center px-0 py-14 sm:px-20 sm:py-20 lg:px-24 lg:py-24">
                 <div className="flex w-full max-w-full flex-col items-center">
@@ -347,100 +307,52 @@ export default function PortfolioLightbox({
                         onWheel={handleWheel}
                     >
                         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-                            <div
-                                className={`absolute left-1/2 top-1/2 ${
-                                    zoom > 1
-                                        ? isDragging
-                                            ? "cursor-grabbing"
-                                            : "cursor-grab"
-                                        : "cursor-zoom-in"
-                                }`}
-                                style={{
-                                    transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})`,
-                                    transformOrigin: "center center",
-                                }}
-                                onMouseDown={(e) => {
-                                    mouseDownStartedInsideImageRef.current = true
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    startDrag(e.clientX, e.clientY)
-                                }}
-                            >
-                                <img
-                                    ref={imageRef}
-                                    src={item.src}
-                                    alt={item.title}
-                                    className="block max-h-[calc(100vh-180px)] max-w-[98vw] select-none object-contain sm:max-h-[calc(100vh-220px)] sm:max-w-[96vw]"
-                                    draggable={false}
-                                    onLoad={(e) => {
-                                        imageBoundsRef.current = e.currentTarget.getBoundingClientRect()
-                                    }}
+                            {isVideo ? (
+                                <video
+                                    src={mediaSrc}
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    className="max-h-[calc(100vh-180px)] max-w-[98vw] bg-black object-contain sm:max-h-[calc(100vh-220px)] sm:max-w-[96vw]"
+                                    onClick={(e) => e.stopPropagation()}
                                 />
-                            </div>
+                            ) : (
+                                <div
+                                    className={`absolute left-1/2 top-1/2 ${zoom > 1 ? isDragging ? "cursor-grabbing" : "cursor-grab" : "cursor-zoom-in"}`}
+                                    style={{ transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px)) scale(${zoom})`, transformOrigin: "center center" }}
+                                    onMouseDown={(e) => {
+                                        mouseDownStartedInsideImageRef.current = true
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        startDrag(e.clientX, e.clientY)
+                                    }}
+                                >
+                                    <img
+                                        ref={imageRef}
+                                        src={item.src}
+                                        alt={item.title}
+                                        className="block max-h-[calc(100vh-180px)] max-w-[98vw] select-none object-contain sm:max-h-[calc(100vh-220px)] sm:max-w-[96vw]"
+                                        draggable={false}
+                                        onLoad={(e) => {
+                                            imageBoundsRef.current = e.currentTarget.getBoundingClientRect()
+                                        }}
+                                    />
+                                </div>
+                            )}
 
                             {showNavigation && (
                                 <>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onPrev()
-                                        }}
-                                        className="absolute left-2 top-1/2 z-[10001] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:inline-flex sm:left-4 sm:h-11 sm:w-11 lg:left-6 lg:h-12 lg:w-12"
-                                        aria-label={isBg ? "Предишна" : "Previous"}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            className="h-5 w-5 sm:h-6 sm:w-6"
-                                        >
-                                            <path d="m15 18-6-6 6-6" />
-                                        </svg>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onNext()
-                                        }}
-                                        className="absolute right-2 top-1/2 z-[10001] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:inline-flex sm:right-4 sm:h-11 sm:w-11 lg:right-6 lg:h-12 lg:w-12"
-                                        aria-label={isBg ? "Следваща" : "Next"}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            className="h-5 w-5 sm:h-6 sm:w-6"
-                                        >
-                                            <path d="m9 18 6-6-6-6" />
-                                        </svg>
-                                    </button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); onPrev() }} className="absolute left-2 top-1/2 z-[10001] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:left-4 sm:inline-flex sm:h-11 sm:w-11 lg:left-6 lg:h-12 lg:w-12" aria-label={isBg ? "Предишна" : "Previous"}>‹</button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); onNext() }} className="absolute right-2 top-1/2 z-[10001] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-zinc-900/75 text-white transition hover:bg-zinc-800 sm:right-4 sm:inline-flex sm:h-11 sm:w-11 lg:right-6 lg:h-12 lg:w-12" aria-label={isBg ? "Следваща" : "Next"}>›</button>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    <div
-                        className="mt-4 px-4 text-center sm:px-6"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-white/65 sm:text-[11px] sm:tracking-[0.3em]">
-                            {item.categoryLabel}
-                        </p>
-
-                        <p className="mt-2 text-sm font-semibold text-white sm:text-base lg:text-lg">
-                            {item.albumLabel}
-                        </p>
-
-                        <p className="mt-1 text-xs text-white/70 sm:text-sm">
-                            {selectedIndex !== null ? `${selectedIndex + 1} / ${totalItems}` : ""}
-                        </p>
+                    <div className="mt-4 px-4 text-center sm:px-6" onClick={(e) => e.stopPropagation()}>
+                        <p className="text-[10px] uppercase tracking-[0.24em] text-white/65 sm:text-[11px] sm:tracking-[0.3em]">{item.categoryLabel}</p>
+                        <p className="mt-2 text-sm font-semibold text-white sm:text-base lg:text-lg">{item.albumLabel}</p>
+                        <p className="mt-1 text-xs text-white/70 sm:text-sm">{selectedIndex !== null ? `${selectedIndex + 1} / ${totalItems}` : ""}</p>
                     </div>
                 </div>
             </div>
