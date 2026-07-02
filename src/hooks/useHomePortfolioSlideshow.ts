@@ -2,8 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { apiFetch } from "../services/api"
 import type { HomeSlideshowImage } from "../types/home"
 
+type SlideshowIntroVideoResponse = {
+    videoUrl?: string | null
+}
+
 export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700) {
     const [images, setImages] = useState<HomeSlideshowImage[]>([])
+    const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [previousIndex, setPreviousIndex] = useState<number | null>(null)
     const [isTransitioning, setIsTransitioning] = useState(false)
@@ -47,11 +52,31 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
             img.src = src
         }
 
+        const loadIntroVideo = async () => {
+            try {
+                const response = await apiFetch("/portfolio/slideshow/intro-video", {
+                    method: "GET",
+                    skipJsonContentType: true,
+                    skipCsrfToken: true,
+                })
+
+                if (!response.ok) throw new Error()
+
+                const data = (await response.json().catch(() => null)) as SlideshowIntroVideoResponse | null
+                setIntroVideoUrl(data?.videoUrl?.trim() || null)
+            } catch {
+                setIntroVideoUrl(null)
+            }
+        }
+
         const load = async () => {
+            void loadIntroVideo()
+
             try {
                 const response = await apiFetch("/portfolio/slideshow", {
                     method: "GET",
                     skipJsonContentType: true,
+                    skipCsrfToken: true,
                 })
 
                 if (!response.ok) throw new Error()
@@ -169,6 +194,7 @@ export function useHomePortfolioSlideshow(intervalMs = 4000, transitionMs = 700)
 
     return {
         images,
+        introVideoUrl,
         currentImage,
         previousImage,
         currentIndex,
