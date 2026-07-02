@@ -1,4 +1,5 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { apiFetchJson } from "../services/api"
 import { usePortfolioData } from "./usePortfolioData"
 import type { HomeDynamicCard, QuickLink } from "../types/home"
 
@@ -14,6 +15,16 @@ function resolveStaticAssetUrl(value?: string | null) {
     }
 
     return path
+}
+
+type ApiServiceCard = {
+    id: number
+    title: string
+    shortDescription?: string | null
+    description?: string | null
+    coverImageUrl?: string | null
+    displayOrder?: number | null
+    isActive?: boolean
 }
 
 const CATEGORY_TRANSLATIONS: Record<
@@ -113,6 +124,29 @@ function fallbackTranslation(key: string, name?: string) {
 
 export function useHomeContent() {
     const { categoriesData, albumsData, imagesData } = usePortfolioData()
+    const [apiServiceCards, setApiServiceCards] = useState<ApiServiceCard[]>([])
+
+    useEffect(() => {
+        let isMounted = true
+
+        apiFetchJson<ApiServiceCard[]>("/services", {
+            method: "GET",
+            skipJsonContentType: true,
+            skipCsrfToken: true,
+        })
+            .then((data) => {
+                if (!isMounted) return
+                setApiServiceCards(Array.isArray(data) ? data : [])
+            })
+            .catch(() => {
+                if (!isMounted) return
+                setApiServiceCards([])
+            })
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
 
     const activeCategories = useMemo(() => {
         return [...categoriesData]
@@ -142,7 +176,7 @@ export function useHomeContent() {
         })
     }, [activeCategories])
 
-    const serviceCards = useMemo<HomeDynamicCard[]>(() => {
+    const fallbackServiceCards = useMemo<HomeDynamicCard[]>(() => {
         return HOME_SERVICE_ORDER.map((key, index) => {
             const category = categoriesByKey.get(key)
             const translation =
@@ -202,6 +236,35 @@ export function useHomeContent() {
             }
         })
     }, [categoriesByKey, albumsData, imagesData])
+
+    const serviceCards = useMemo<HomeDynamicCard[]>(() => {
+        const activeApiCards = [...apiServiceCards]
+            .filter((service) => service.isActive !== false)
+            .sort(
+                (a, b) =>
+                    (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+                    (a.id ?? 0) - (b.id ?? 0)
+            )
+
+        if (activeApiCards.length === 0) {
+            return fallbackServiceCards
+        }
+
+        return activeApiCards.map((service) => {
+            const title = service.title?.trim() || "Услуга"
+            const description = service.shortDescription?.trim() || service.description?.trim() || ""
+
+            return {
+                id: service.id,
+                href: "/portfolio",
+                image: resolveStaticAssetUrl(service.coverImageUrl || "/og-cover.jpg"),
+                titleBg: title,
+                titleEn: title,
+                descBg: description,
+                descEn: description,
+            }
+        })
+    }, [apiServiceCards, fallbackServiceCards])
 
     return {
         quickLinks,
