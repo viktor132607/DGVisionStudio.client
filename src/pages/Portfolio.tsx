@@ -21,6 +21,10 @@ function normalizeHash(value: string) {
     return value.replace("#", "").trim().toLowerCase()
 }
 
+function isVideoPath(value?: string | null) {
+    return /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(value || "")
+}
+
 export default function Portfolio() {
     const { i18n } = useTranslation()
     const location = useLocation()
@@ -115,7 +119,7 @@ export default function Portfolio() {
                 if (!category) return null
 
                 const albumImages = publishedImagesByAlbum.get(album.id) ?? []
-                const firstImage = albumImages[0]
+                const firstImage = albumImages.find((image) => !isVideoPath(image.imageUrl)) ?? albumImages[0]
 
                 return {
                     id: album.id,
@@ -168,18 +172,26 @@ export default function Portfolio() {
 
         const albumImages = publishedImagesByAlbum.get(selectedAlbum.id) ?? []
 
-        return albumImages.map((image, index) => ({
-            id: image.id,
-            src: image.thumbnailUrl?.trim() || image.imageUrl,
-            category: category.key,
-            categoryLabel: isBg ? category.name : category.nameEn?.trim() || category.name,
-            albumKey: selectedAlbum.slug,
-            albumLabel: selectedAlbum.title,
-            title:
-                image.altText?.trim() ||
-                image.caption?.trim() ||
-                `${selectedAlbum.title} ${index + 1}`,
-        }))
+        return albumImages.map((image, index) => {
+            const isVideo = image.mediaType === "Video" || isVideoPath(image.imageUrl)
+
+            return {
+                id: image.id,
+                src: isVideo ? image.imageUrl : image.thumbnailUrl?.trim() || image.imageUrl,
+                originalSrc: image.imageUrl,
+                category: category.key,
+                categoryLabel: isBg ? category.name : category.nameEn?.trim() || category.name,
+                albumKey: selectedAlbum.slug,
+                albumLabel: selectedAlbum.title,
+                mediaType: isVideo ? "Video" : image.mediaType || "Image",
+                contentType: image.contentType,
+                title:
+                    image.name?.trim() ||
+                    image.altText?.trim() ||
+                    image.caption?.trim() ||
+                    `${selectedAlbum.title} ${index + 1}`,
+            }
+        })
     }, [activeCategories, publishedImagesByAlbum, selectedAlbum, isBg])
 
     const selectedItem = selectedIndex !== null ? selectedAlbumImages[selectedIndex] : null
