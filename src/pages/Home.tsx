@@ -193,7 +193,7 @@ export default function Home() {
                                         <video
                                             key={`${location.key}-${activeIntroVideoSrc}`}
                                             ref={introVideoRef}
-                                            className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover lg:object-top"
+                                            className="absolute inset-0 h-full w-full object-contain object-center"
                                             src={activeIntroVideoSrc}
                                             autoPlay
                                             playsInline
@@ -232,7 +232,7 @@ export default function Home() {
                                                 alt={previousImage.albumTitle || previousImage.altText || previousImage.caption || "DG Vision Studio"}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
+                                                className={`absolute inset-0 h-full w-full object-contain object-center ${
                                                     !isMobile && direction === 1
                                                         ? "animate-[homeSlideOutLeft_700ms_ease-in-out_forwards]"
                                                         : !isMobile
@@ -248,7 +248,7 @@ export default function Home() {
                                                 alt={currentImage.albumTitle || currentImage.altText || currentImage.caption || "DG Vision Studio"}
                                                 loading="eager"
                                                 decoding="async"
-                                                className={`absolute inset-0 h-full w-full object-cover object-top ${
+                                                className={`absolute inset-0 h-full w-full object-contain object-center ${
                                                     !isMobile && isTransitioning
                                                         ? direction === 1
                                                             ? "animate-[homeSlideInRight_700ms_ease-in-out_forwards]"
