@@ -33,6 +33,52 @@
     [class*="bg-gradient-to-t"][class*="from-black/55"] { z-index: 20 !important; pointer-events: none !important; }
     [class*="bottom-0"][class*="bg-black/65"][class*="border-t"] { z-index: 30 !important; }
 
+    @media (max-width: 599px) {
+        .min-h-screen > section:first-of-type > div.mx-auto.grid {
+            max-width: calc(100vw - 24px) !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+            padding-top: 20px !important;
+            padding-bottom: 18px !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child img[alt="DG Vision Studio"] {
+            width: 132px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 {
+            font-size: 28px !important;
+            line-height: 1.04 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p {
+            margin-top: 12px !important;
+            font-size: 13px !important;
+            line-height: 1.5 !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p + div {
+            margin-top: 16px !important;
+            gap: 8px !important;
+        }
+
+        .min-h-screen > section:first-of-type h1 + p + div a {
+            min-height: 40px !important;
+            padding: 8px 14px !important;
+            font-size: 10.5px !important;
+        }
+
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            width: 100% !important;
+            aspect-ratio: 3 / 4 !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 auto 22px auto !important;
+        }
+    }
+
     @media (min-width: 600px) and (max-width: 767px) and (min-height: 900px) {
         .min-h-screen > section:first-of-type > div.mx-auto.grid { max-width: calc(100vw - 34px) !important; }
         .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child { padding-top: 32px !important; padding-bottom: 26px !important; }
