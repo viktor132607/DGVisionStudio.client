@@ -12,9 +12,12 @@ const defaultForm = {
     assignedTo: "",
     clientName: "",
     clientPhone: "",
+    clientEmail: "",
+    contactRequestId: "",
     location: "",
     description: "",
     color: "#2563eb",
+    remindersEnabled: true,
     startDate: "",
     startTime: "10:00",
     endDate: "",
@@ -30,9 +33,25 @@ type CalendarEvent = {
     location?: string | null
     clientName?: string | null
     clientPhone?: string | null
+    clientEmail?: string | null
+    contactRequestId?: string | null
     color?: string | null
+    remindersEnabled?: boolean
+    reminder24hSentAtUtc?: string | null
+    reminder2hSentAtUtc?: string | null
     startAtUtc: string
     endAtUtc: string
+}
+
+type ContactRequest = {
+    id: string
+    name: string
+    email: string
+    phone?: string | null
+    subject?: string | null
+    message: string
+    createdAtUtc?: string | null
+    status?: string | number | null
 }
 
 type CalendarForm = typeof defaultForm
@@ -45,6 +64,11 @@ function getInitialDate() {
 
     const parsedDate = new Date(`${dateParam}T12:00:00`)
     return Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate
+}
+
+function getInitialContactRequestId() {
+    if (typeof window === "undefined") return ""
+    return new URLSearchParams(window.location.search).get("contactRequestId") || ""
 }
 
 function toDateInputValue(date: Date) {
@@ -103,6 +127,9 @@ function getHoverDetails(event: CalendarEvent) {
         `Край: ${formatDateTime(event.endAtUtc)}`,
         event.clientName ? `Клиент: ${event.clientName}` : "",
         event.clientPhone ? `Телефон: ${event.clientPhone}` : "",
+        event.clientEmail ? `Email: ${event.clientEmail}` : "",
+        event.remindersEnabled && event.clientEmail ? "Напомняния: включени" : "Напомняния: изключени",
+        event.contactRequestId ? `Свързана заявка: ${event.contactRequestId}` : "",
         event.assignedTo ? `Ангажимент към: ${event.assignedTo}` : "",
         event.location ? `Локация: ${event.location}` : "",
         event.description ? `Бележки: ${event.description}` : "",
@@ -118,9 +145,12 @@ function toLocalInputValues(event: CalendarEvent): CalendarForm {
         assignedTo: event.assignedTo || "",
         clientName: event.clientName || "",
         clientPhone: event.clientPhone || "",
+        clientEmail: event.clientEmail || "",
+        contactRequestId: event.contactRequestId || "",
         location: event.location || "",
         description: event.description || "",
         color: event.color || "#2563eb",
+        remindersEnabled: event.remindersEnabled ?? true,
         startDate: toDateInputValue(start),
         startTime: toTimeInputValue(start),
         endDate: toDateInputValue(end),
@@ -138,6 +168,8 @@ function EventTooltip({ event }: { event: CalendarEvent }) {
                 {event.assignedTo ? <div>Ангажимент към: {event.assignedTo}</div> : null}
                 {event.clientName ? <div>Клиент: {event.clientName}</div> : null}
                 {event.clientPhone ? <div>Телефон: {event.clientPhone}</div> : null}
+                {event.clientEmail ? <div>Email: {event.clientEmail}</div> : null}
+                {event.clientEmail ? <div>Напомняния: {event.remindersEnabled ? "включени" : "изключени"}</div> : null}
                 {event.location ? <div>Локация: {event.location}</div> : null}
                 {event.description ? <div className="border-t border-gray-100 pt-2 dark:border-zinc-800">{event.description}</div> : null}
             </div>
@@ -147,8 +179,10 @@ function EventTooltip({ event }: { event: CalendarEvent }) {
 
 export default function CalendarAdmin() {
     const initialDate = useMemo(() => getInitialDate(), [])
+    const initialContactRequestId = useMemo(() => getInitialContactRequestId(), [])
     const { showToast } = useAdminToast()
     const [events, setEvents] = useState<CalendarEvent[]>([])
+    const [contactRequests, setContactRequests] = useState<ContactRequest[]>([])
     const [viewDate, setViewDate] = useState(() => initialDate)
     const [selectedDate, setSelectedDate] = useState(() => initialDate)
     const [form, setForm] = useState<CalendarForm>(() => ({ ...defaultForm, startDate: toDateInputValue(initialDate), endDate: toDateInputValue(initialDate) }))
@@ -161,6 +195,24 @@ export default function CalendarAdmin() {
     const monthGrid = useMemo(() => getMonthGrid(viewDate), [viewDate])
     const selectedDateEvents = useMemo(() => events.filter((e) => isSameDay(new Date(e.startAtUtc), selectedDate)).sort((a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime()), [events, selectedDate])
     const selectedDateLabel = selectedDate.toLocaleDateString("bg-BG", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })
+
+    const setField = (field: keyof CalendarForm, value: string | boolean) => setForm((current) => ({ ...current, [field]: value }))
+
+    const applyContactRequestToForm = (request: ContactRequest) => {
+        setEditingId(null)
+        setForm((current) => ({
+            ...current,
+            title: request.subject?.trim() || `Фотосесия - ${request.name}`,
+            eventType: "Photoshoot",
+            clientName: request.name || "",
+            clientPhone: request.phone || "",
+            clientEmail: request.email || "",
+            contactRequestId: request.id,
+            description: request.message || "",
+            remindersEnabled: true,
+        }))
+        showToast({ type: "success", title: "Импорт", message: "Заявката е заредена във формата. Избери дата/час и запази събитието." })
+    }
 
     const loadEvents = async () => {
         setLoading(true)
@@ -180,9 +232,28 @@ export default function CalendarAdmin() {
         }
     }
 
-    useEffect(() => { void loadEvents() }, [])
+    const loadContactRequests = async () => {
+        const response = await apiFetch(`${API_PATH}/contact-requests`, { method: "GET", skipJsonContentType: true })
+        if (!response.ok) return [] as ContactRequest[]
+        const data = await response.json().catch(() => [])
+        const items = Array.isArray(data) ? data : []
+        setContactRequests(items)
+        return items
+    }
 
-    const setField = (field: keyof CalendarForm, value: string) => setForm((current) => ({ ...current, [field]: value }))
+    useEffect(() => {
+        const init = async () => {
+            await loadEvents()
+            const items = await loadContactRequests()
+            if (initialContactRequestId) {
+                const importedRequest = items.find((item) => item.id === initialContactRequestId)
+                if (importedRequest) applyContactRequestToForm(importedRequest)
+            }
+        }
+
+        void init()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const startNewEvent = (date = selectedDate) => {
         setEditingId(null)
@@ -216,15 +287,22 @@ export default function CalendarAdmin() {
         setError("")
         try {
             if (!form.title.trim()) throw new Error("Заглавието е задължително.")
+            if (form.remindersEnabled && form.eventType === "Photoshoot" && !form.clientEmail.trim()) {
+                throw new Error("За email напомняния е нужен имейл на клиента.")
+            }
+
             const payload = {
                 title: form.title.trim(),
                 eventType: form.eventType,
                 assignedTo: form.assignedTo.trim() || null,
                 clientName: form.clientName.trim() || null,
                 clientPhone: form.clientPhone.trim() || null,
+                clientEmail: form.clientEmail.trim() || null,
+                contactRequestId: form.contactRequestId || null,
                 location: form.location.trim() || null,
                 description: form.description.trim() || null,
                 color: form.color.trim() || null,
+                remindersEnabled: Boolean(form.remindersEnabled),
                 startAtUtc: combineLocalDateTime(form.startDate, form.startTime),
                 endAtUtc: combineLocalDateTime(form.endDate, form.endTime),
             }
@@ -270,12 +348,12 @@ export default function CalendarAdmin() {
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Календар</h1>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">Управление на фотосесии и принт заявки.</p>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">Управление на фотосесии, принт заявки и email напомняния.</p>
                 </div>
-                <button type="button" onClick={() => void loadEvents()} className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">Обнови</button>
+                <button type="button" onClick={() => { void loadEvents(); void loadContactRequests() }} className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">Обнови</button>
             </div>
 
-            {error ? <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div> : null}
+            {error ? <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div> : null}
 
             <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
                 <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
@@ -312,7 +390,7 @@ export default function CalendarAdmin() {
                                             const eventIsPast = isPastEvent(event)
                                             return (
                                                 <button key={event.id} type="button" onClick={(e) => { e.stopPropagation(); editEvent(event) }} className={`group/event relative block w-full truncate rounded-lg px-2 py-1 text-left text-[11px] font-semibold ${eventIsPast ? "bg-gray-400 text-white opacity-70" : "text-white"}`} style={eventIsPast ? undefined : { backgroundColor: event.color || "#2563eb" }} title={getHoverDetails(event)}>
-                                                    {toTimeInputValue(new Date(event.startAtUtc))} {event.title}{event.assignedTo ? ` • ${event.assignedTo}` : ""}
+                                                    {toTimeInputValue(new Date(event.startAtUtc))} {event.title}{event.assignedTo ? ` • ${event.assignedTo}` : ""}{event.clientEmail && event.remindersEnabled ? " ✉" : ""}
                                                     <EventTooltip event={event} />
                                                 </button>
                                             )
@@ -344,13 +422,16 @@ export default function CalendarAdmin() {
                         </div>
 
                         <div className="space-y-4">
+                            <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Импорт от заявка</span><select value={form.contactRequestId} onChange={(e) => { const request = contactRequests.find((item) => item.id === e.target.value); if (request) applyContactRequestToForm(request); else setField("contactRequestId", "") }} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">— Без свързана заявка —</option>{contactRequests.map((request) => <option key={request.id} value={request.id}>{request.name} · {request.email} · {request.subject || "Без тема"}</option>)}</select></label>
                             <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Заглавие</span><input value={form.title} onChange={(e) => setField("title", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Тип</span><select value={form.eventType} onChange={(e) => setField("eventType", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="Photoshoot">Фотосесия</option><option value="Print">Принт на снимки</option></select></label>
                                 <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Ангажимент към</span><select value={form.assignedTo} onChange={(e) => setField("assignedTo", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">—</option><option value="Десислав">Десислав</option><option value="Теодор">Теодор</option><option value="Десислав и Теодор">Десислав и Теодор</option></select></label>
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Клиент</span><input value={form.clientName} onChange={(e) => setField("clientName", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Телефон</span><input value={form.clientPhone} onChange={(e) => setField("clientPhone", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
-                            <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Локация</span><input value={form.location} onChange={(e) => setField("location", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Email за напомняне</span><input type="email" value={form.clientEmail} onChange={(e) => setField("clientEmail", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" placeholder="client@email.com" /></label>
+                            <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-semibold text-gray-700"><input type="checkbox" checked={form.remindersEnabled} onChange={(e) => setField("remindersEnabled", e.target.checked)} className="h-4 w-4" /> Прати напомняния 24 часа и 2 часа преди фотосесията</label>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Локация</span><input value={form.location} onChange={(e) => setField("location", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" placeholder="Търговски комплекс Ялта, Русе" /></label>
                             <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Начало дата</span><input type="date" value={form.startDate} onChange={(e) => setField("startDate", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Начало час</span><input type="time" value={form.startTime} onChange={(e) => setField("startTime", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Край дата</span><input type="date" value={form.endDate} onChange={(e) => setField("endDate", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Край час</span><input type="time" value={form.endTime} onChange={(e) => setField("endTime", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <label className="block"><span className="mb-1 block text-sm font-semibold text-gray-700">Цвят</span><input type="color" value={form.color} onChange={(e) => setField("color", e.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-2 py-1" /></label>
@@ -366,7 +447,7 @@ export default function CalendarAdmin() {
                         <div className="space-y-3">
                             {selectedDateEvents.map((event) => {
                                 const eventIsPast = isPastEvent(event)
-                                return <div key={event.id} className={`rounded-2xl border p-4 ${eventIsPast ? "border-gray-200 bg-gray-100 opacity-70" : "border-gray-200 bg-gray-50"}`} title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className={eventIsPast ? "font-bold text-gray-500" : "font-bold text-gray-900"}>{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: eventIsPast ? "#9ca3af" : event.color || "#2563eb" }} /></div>{eventIsPast ? <p className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Минало</p> : null}{event.assignedTo ? <p className="text-sm text-gray-700">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm text-gray-700">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.location ? <p className="mt-1 text-sm text-gray-700">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>
+                                return <div key={event.id} className={`rounded-2xl border p-4 ${eventIsPast ? "border-gray-200 bg-gray-100 opacity-70" : "border-gray-200 bg-gray-50"}`} title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className={eventIsPast ? "font-bold text-gray-500" : "font-bold text-gray-900"}>{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: eventIsPast ? "#9ca3af" : event.color || "#2563eb" }} /></div>{eventIsPast ? <p className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Минало</p> : null}{event.assignedTo ? <p className="text-sm text-gray-700">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm text-gray-700">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.clientEmail ? <p className="text-sm text-gray-700">Email: {event.clientEmail} {event.remindersEnabled ? "• напомняния включени" : "• напомняния изключени"}</p> : null}{event.location ? <p className="mt-1 text-sm text-gray-700">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>
                             })}
                         </div>
                     </section>
