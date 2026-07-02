@@ -9,6 +9,15 @@ const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm
 const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"]
 const VIDEO_EXTENSION_PATTERN = /\.(mp4|mov|webm|m4v)(\?|#|$)/i
 
+type GalleryMedia = {
+    id: number
+    previewUrl?: string | null
+    originalUrl?: string | null
+    name?: string | null
+    altText?: string | null
+    caption?: string | null
+}
+
 function getGalleryId(search: string) {
     const params = new URLSearchParams(search)
     const id = Number(params.get("id"))
@@ -23,26 +32,111 @@ function isAllowedVideo(file: File) {
     return hasAllowedExtension && hasAllowedType
 }
 
-function patchVideoCards() {
-    const images = Array.from(document.querySelectorAll<HTMLImageElement>("img"))
+function normalizePath(value?: string | null) {
+    if (!value) return ""
 
-    images.forEach((image) => {
-        const src = image.getAttribute("src") || ""
+    try {
+        return new URL(value, window.location.origin).pathname.replace(/^\/+/, "")
+    } catch {
+        return value.replace(/^\/+/, "")
+    }
+}
+
+function mediaKey(value?: string | null) {
+    return normalizePath(value).toLowerCase()
+}
+
+function findMediaBySrc(media: GalleryMedia[], src: string) {
+    const key = mediaKey(src)
+    if (!key) return null
+
+    return media.find((item) => mediaKey(item.previewUrl) === key || mediaKey(item.originalUrl) === key) || null
+}
+
+function getCardRoot(element: Element) {
+    let current: Element | null = element
+
+    while (current && current.parentElement) {
+        const className = current.getAttribute("class") || ""
+        if (className.includes("overflow-hidden") && className.includes("rounded-2xl") && className.includes("border")) {
+            return current as HTMLElement
+        }
+
+        current = current.parentElement
+    }
+
+    return null
+}
+
+function getCardControls(card: HTMLElement) {
+    return Array.from(card.querySelectorAll<HTMLElement>("div")).find((node) => {
+        const className = node.getAttribute("class") || ""
+        return className.includes("space-y-3") && className.includes("p-3")
+    }) || null
+}
+
+async function saveMediaName(galleryId: number, mediaId: number, name: string) {
+    await apiFetch(`/admin/client-galleries/${galleryId}/media/${mediaId}/metadata`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+    })
+}
+
+function insertNameField(card: HTMLElement, controls: HTMLElement, galleryId: number, media: GalleryMedia) {
+    if (card.querySelector(`[data-media-name-field="${media.id}"]`)) return
+
+    const wrapper = document.createElement("div")
+    wrapper.dataset.mediaNameField = String(media.id)
+
+    const label = document.createElement("label")
+    label.className = "mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-zinc-400"
+    label.textContent = "Име"
+
+    const input = document.createElement("input")
+    input.value = media.name || ""
+    input.className = "w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+
+    input.addEventListener("click", (event) => event.stopPropagation())
+    input.addEventListener("change", () => {
+        void saveMediaName(galleryId, media.id, input.value).catch(() => undefined)
+    })
+    input.addEventListener("blur", () => {
+        void saveMediaName(galleryId, media.id, input.value).catch(() => undefined)
+    })
+
+    wrapper.append(label, input)
+    controls.insertBefore(wrapper, controls.firstChild)
+}
+
+function patchVideoCards(media: GalleryMedia[], galleryId: number | null) {
+    const mediaElements = Array.from(document.querySelectorAll<HTMLImageElement | HTMLVideoElement>("img, video"))
+
+    mediaElements.forEach((element) => {
+        const src = element.getAttribute("src") || ""
+        const mediaItem = findMediaBySrc(media, src)
+        const card = getCardRoot(element)
+        const controls = card ? getCardControls(card) : null
+
+        if (card && controls && galleryId && mediaItem) {
+            insertNameField(card, controls, galleryId, mediaItem)
+        }
+
+        if (!(element instanceof HTMLImageElement)) return
         if (!VIDEO_EXTENSION_PATTERN.test(src)) return
-        if (image.dataset.videoPatched === "true") return
+        if (element.dataset.videoPatched === "true") return
 
         const video = document.createElement("video")
         video.src = src
         video.controls = true
         video.playsInline = true
         video.preload = "metadata"
-        video.className = image.className || "h-full w-full object-contain"
+        video.className = element.className || "h-full w-full object-contain"
         video.style.backgroundColor = "black"
         video.dataset.videoPatched = "true"
-        video.setAttribute("aria-label", image.getAttribute("alt") || "Video")
+        video.setAttribute("aria-label", mediaItem?.name || element.getAttribute("alt") || "Video")
 
-        image.dataset.videoPatched = "true"
-        image.replaceWith(video)
+        element.dataset.videoPatched = "true"
+        element.replaceWith(video)
     })
 }
 
@@ -51,7 +145,26 @@ export default function AdminVideoUploadPortal() {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [portalRoot, setPortalRoot] = useState<HTMLSpanElement | null>(null)
     const [isUploading, setIsUploading] = useState(false)
+    const [media, setMedia] = useState<GalleryMedia[]>([])
     const galleryId = getGalleryId(location.search)
+
+    useEffect(() => {
+        if (!location.pathname.endsWith("/admin/client-galleries/edit") || !galleryId) return
+
+        const loadMedia = async () => {
+            const response = await apiFetch(`/admin/client-galleries/${galleryId}`, {
+                method: "GET",
+                skipJsonContentType: true,
+            })
+
+            if (!response.ok) return
+
+            const data = await response.json().catch(() => null)
+            setMedia(Array.isArray(data?.photos) ? data.photos : [])
+        }
+
+        void loadMedia()
+    }, [galleryId, location.pathname, location.search])
 
     useEffect(() => {
         if (!location.pathname.endsWith("/admin/client-galleries/edit")) return
@@ -86,11 +199,11 @@ export default function AdminVideoUploadPortal() {
     useEffect(() => {
         if (!location.pathname.endsWith("/admin/client-galleries/edit")) return
 
-        patchVideoCards()
-        const intervalId = window.setInterval(patchVideoCards, 500)
+        patchVideoCards(media, galleryId)
+        const intervalId = window.setInterval(() => patchVideoCards(media, galleryId), 500)
 
         return () => window.clearInterval(intervalId)
-    }, [location.pathname, location.search])
+    }, [galleryId, location.pathname, location.search, media])
 
     if (!location.pathname.endsWith("/admin/client-galleries/edit") || !portalRoot) return null
 
