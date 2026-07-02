@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { apiFetchJson } from "../../services/api"
-import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 
 type ServiceItem = {
     id: number
@@ -29,11 +28,21 @@ type SlideshowImage = {
     altText?: string | null
     albumTitle?: string | null
     categoryName?: string | null
+    portfolioAlbumId?: number | null
 }
 
 type SlideshowResponse = {
     availableImages?: SlideshowImage[]
 }
+
+type AlbumOption = {
+    key: string
+    title: string
+    category?: string | null
+    count: number
+}
+
+const API_ROOT = (import.meta.env.VITE_API_URL || "http://localhost:10000").replace(/\/+$/, "")
 
 const emptyForm: ServiceForm = {
     title: "",
@@ -45,12 +54,25 @@ const emptyForm: ServiceForm = {
 
 const imageTitle = (image: SlideshowImage) => image.caption || image.altText || image.albumTitle || `Снимка #${image.id}`
 const imagePath = (image: SlideshowImage) => image.thumbnailUrl || image.imageUrl || ""
+const albumKey = (image: SlideshowImage) => String(image.portfolioAlbumId ?? image.albumTitle ?? "no-album")
+
+function resolveServiceAssetUrl(url?: string | null): string {
+    const trimmed = (url || "").trim()
+    if (!trimmed) return ""
+    if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed
+    if (trimmed.startsWith("/images/") || trimmed.startsWith("/uploads/")) return `${API_ROOT}${trimmed}`
+    if (trimmed.startsWith("images/") || trimmed.startsWith("uploads/")) return `${API_ROOT}/${trimmed}`
+    if (trimmed.startsWith("/")) return `${API_ROOT}${trimmed}`
+    return `${API_ROOT}/${trimmed}`
+}
 
 export default function ServicesAdmin() {
     const [services, setServices] = useState<ServiceItem[]>([])
     const [availableImages, setAvailableImages] = useState<SlideshowImage[]>([])
     const [form, setForm] = useState<ServiceForm>(emptyForm)
     const [editingId, setEditingId] = useState<number | null>(null)
+    const [selectedAlbumKey, setSelectedAlbumKey] = useState("")
+    const [imageSearch, setImageSearch] = useState("")
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [message, setMessage] = useState("")
@@ -94,33 +116,82 @@ export default function ServicesAdmin() {
         )
     }, [services])
 
-    const imageOptions = useMemo(() => {
+    const albumOptions = useMemo<AlbumOption[]>(() => {
+        const map = new Map<string, AlbumOption>()
+
+        availableImages.forEach((image) => {
+            const key = albumKey(image)
+            const existing = map.get(key)
+
+            if (existing) {
+                existing.count += 1
+                return
+            }
+
+            map.set(key, {
+                key,
+                title: image.albumTitle || "Без албум",
+                category: image.categoryName,
+                count: 1,
+            })
+        })
+
+        return [...map.values()].sort((a, b) => a.title.localeCompare(b.title, "bg") || a.key.localeCompare(b.key))
+    }, [availableImages])
+
+    const filteredImages = useMemo(() => {
+        const term = imageSearch.trim().toLowerCase()
         const map = new Map<string, SlideshowImage>()
 
         availableImages.forEach((image) => {
             const path = imagePath(image)
-            if (path && !map.has(path)) map.set(path, image)
+            if (!path || map.has(path)) return
+            if (selectedAlbumKey && albumKey(image) !== selectedAlbumKey) return
+
+            if (term) {
+                const matches =
+                    String(image.id).includes(term) ||
+                    imageTitle(image).toLowerCase().includes(term) ||
+                    image.albumTitle?.toLowerCase().includes(term) ||
+                    image.categoryName?.toLowerCase().includes(term)
+
+                if (!matches) return
+            }
+
+            map.set(path, image)
         })
 
-        return [...map.values()].sort((a, b) => imageTitle(a).localeCompare(imageTitle(b), "bg"))
-    }, [availableImages])
+        return [...map.values()]
+    }, [availableImages, selectedAlbumKey, imageSearch])
 
     const resetForm = () => {
         setForm(emptyForm)
         setEditingId(null)
+        setSelectedAlbumKey("")
+        setImageSearch("")
     }
 
     const startEdit = (service: ServiceItem) => {
+        const coverImageUrl = service.coverImageUrl || ""
+        const currentImage = availableImages.find((image) => imagePath(image) === coverImageUrl)
+
         setEditingId(service.id)
         setForm({
             title: service.title || "",
             shortDescription: service.shortDescription || "",
             description: service.description || "",
-            coverImageUrl: service.coverImageUrl || "",
+            coverImageUrl,
             isActive: service.isActive,
         })
+        setSelectedAlbumKey(currentImage ? albumKey(currentImage) : "")
+        setImageSearch("")
         setMessage("")
         setError("")
+    }
+
+    const selectImage = (image: SlideshowImage) => {
+        const path = imagePath(image)
+        setForm((current) => ({ ...current, coverImageUrl: path }))
     }
 
     const save = async (event: FormEvent<HTMLFormElement>) => {
@@ -250,24 +321,64 @@ export default function ServicesAdmin() {
                             <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} rows={5} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white" />
                         </label>
 
-                        <label className="block text-sm font-black text-slate-700 dark:text-white/80">
-                            Снимка от портфолиото
-                            <select value={form.coverImageUrl} onChange={(event) => setForm((current) => ({ ...current, coverImageUrl: event.target.value }))} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white">
-                                <option value="">Без избрана снимка</option>
-                                {imageOptions.map((image) => {
+                        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black/30">
+                            <div className="mb-3">
+                                <h3 className="text-sm font-black text-slate-800 dark:text-white">Избор на снимка от албум</h3>
+                                <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-white/55">Избери албум, после натисни една снимка за картата.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                                <label className="block text-xs font-black text-slate-600 dark:text-white/70">
+                                    Албум
+                                    <select value={selectedAlbumKey} onChange={(event) => setSelectedAlbumKey(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white">
+                                        <option value="">Всички албуми</option>
+                                        {albumOptions.map((album) => (
+                                            <option key={album.key} value={album.key}>
+                                                {album.category ? `${album.category} · ` : ""}{album.title} ({album.count})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="block text-xs font-black text-slate-600 dark:text-white/70">
+                                    Търсене
+                                    <input value={imageSearch} onChange={(event) => setImageSearch(event.target.value)} placeholder="Търси снимка/албум" className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white" />
+                                </label>
+                            </div>
+
+                            <div className="mt-4 grid max-h-96 grid-cols-2 gap-3 overflow-auto pr-1 sm:grid-cols-3 2xl:grid-cols-4">
+                                {filteredImages.map((image) => {
                                     const path = imagePath(image)
-                                    return <option key={`${image.id}-${path}`} value={path}>{imageTitle(image)}</option>
+                                    const isSelected = form.coverImageUrl === path
+
+                                    return (
+                                        <button
+                                            key={`${image.id}-${path}`}
+                                            type="button"
+                                            onClick={() => selectImage(image)}
+                                            className={`overflow-hidden rounded-2xl border bg-white text-left transition dark:bg-zinc-900 ${isSelected ? "border-slate-950 ring-2 ring-slate-950 dark:border-white dark:ring-white" : "border-slate-200 hover:border-slate-500 dark:border-white/10 dark:hover:border-white/60"}`}
+                                        >
+                                            <img src={resolveServiceAssetUrl(path)} alt={imageTitle(image)} className="aspect-[4/3] w-full object-cover" />
+                                            <span className="block truncate px-3 py-2 text-xs font-black text-slate-700 dark:text-white/75">
+                                                {imageTitle(image)}
+                                            </span>
+                                        </button>
+                                    )
                                 })}
-                            </select>
-                        </label>
+
+                                {filteredImages.length === 0 ? (
+                                    <div className="col-span-full rounded-2xl bg-white p-5 text-center text-sm font-bold text-slate-500 dark:bg-zinc-900 dark:text-white/60">Няма снимки за този филтър.</div>
+                                ) : null}
+                            </div>
+                        </div>
 
                         <label className="block text-sm font-black text-slate-700 dark:text-white/80">
-                            Или ръчен URL/път към снимка
+                            Ръчен URL/път към снимка
                             <input value={form.coverImageUrl} onChange={(event) => setForm((current) => ({ ...current, coverImageUrl: event.target.value }))} placeholder="/images/... или /uploads/..." className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-950 outline-none focus:border-slate-500 dark:border-white/10 dark:bg-black dark:text-white" />
                         </label>
 
                         {form.coverImageUrl ? (
-                            <img src={resolveAssetUrl(form.coverImageUrl)} alt="Преглед" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                            <img src={resolveServiceAssetUrl(form.coverImageUrl)} alt="Преглед" className="aspect-[4/3] w-full rounded-2xl object-cover" />
                         ) : null}
 
                         <label className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-black text-slate-700 dark:bg-black/30 dark:text-white/80">
@@ -293,7 +404,7 @@ export default function ServicesAdmin() {
                         <div className="flex flex-col gap-3">
                             {sortedServices.map((service, index) => (
                                 <div key={service.id} className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30 md:grid-cols-[96px_minmax(0,1fr)_auto]">
-                                    <img src={resolveAssetUrl(service.coverImageUrl || "/og-cover.jpg")} alt={service.title} className="aspect-[4/5] w-24 rounded-xl object-cover" />
+                                    <img src={resolveServiceAssetUrl(service.coverImageUrl || "/og-cover.jpg")} alt={service.title} className="aspect-[4/5] w-24 rounded-xl object-cover" />
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
