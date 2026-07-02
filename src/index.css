@@ -98,7 +98,17 @@
             justify-self: center !important;
             width: 95% !important;
             height: 95% !important;
-            margin-bottom: 56px !important;
+            margin-bottom: 64px !important;
+        }
+    }
+
+    @media (min-width: 1513px) and (max-width: 1920px) {
+        .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+            align-self: center !important;
+            justify-self: center !important;
+            width: 95% !important;
+            height: 95% !important;
+            margin-bottom: 64px !important;
         }
     }
 
