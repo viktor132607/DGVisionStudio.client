@@ -94,8 +94,7 @@ async function syncUploadedMediaName(
         headers,
         body: JSON.stringify({
             name: getFileNameWithoutExtension(file),
-            altText: null,
-            caption: null,
+            clearAltAndCaption: true,
         }),
     }).catch(() => undefined)
 }
