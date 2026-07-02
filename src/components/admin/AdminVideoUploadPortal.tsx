@@ -7,6 +7,7 @@ import { apiFetch } from "../../services/api"
 const MAX_VIDEO_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024
 const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"])
 const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"]
+const VIDEO_EXTENSION_PATTERN = /\.(mp4|mov|webm|m4v)(\?|#|$)/i
 
 function getGalleryId(search: string) {
     const params = new URLSearchParams(search)
@@ -20,6 +21,29 @@ function isAllowedVideo(file: File) {
     const hasAllowedType = !file.type || ALLOWED_VIDEO_TYPES.has(file.type) || file.type.startsWith("video/")
 
     return hasAllowedExtension && hasAllowedType
+}
+
+function patchVideoCards() {
+    const images = Array.from(document.querySelectorAll<HTMLImageElement>("img"))
+
+    images.forEach((image) => {
+        const src = image.getAttribute("src") || ""
+        if (!VIDEO_EXTENSION_PATTERN.test(src)) return
+        if (image.dataset.videoPatched === "true") return
+
+        const video = document.createElement("video")
+        video.src = src
+        video.controls = true
+        video.playsInline = true
+        video.preload = "metadata"
+        video.className = image.className || "h-full w-full object-contain"
+        video.style.backgroundColor = "black"
+        video.dataset.videoPatched = "true"
+        video.setAttribute("aria-label", image.getAttribute("alt") || "Video")
+
+        image.dataset.videoPatched = "true"
+        image.replaceWith(video)
+    })
 }
 
 export default function AdminVideoUploadPortal() {
@@ -55,6 +79,15 @@ export default function AdminVideoUploadPortal() {
         const intervalId = window.setInterval(() => {
             if (mount()) window.clearInterval(intervalId)
         }, 150)
+
+        return () => window.clearInterval(intervalId)
+    }, [location.pathname, location.search])
+
+    useEffect(() => {
+        if (!location.pathname.endsWith("/admin/client-galleries/edit")) return
+
+        patchVideoCards()
+        const intervalId = window.setInterval(patchVideoCards, 500)
 
         return () => window.clearInterval(intervalId)
     }, [location.pathname, location.search])
