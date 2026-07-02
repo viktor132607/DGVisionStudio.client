@@ -14,6 +14,10 @@ const isClientPrintUpload = (galleryType?: GalleryType) => {
     return galleryType === "ClientPrintUpload" || galleryType === 2
 }
 
+const isVideoUrl = (value?: string | null) => {
+    return /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(value || "")
+}
+
 export default function ClientGalleryCard({
     gallery,
     isBg,
@@ -24,6 +28,7 @@ export default function ClientGalleryCard({
     const galleryIsClientPrintUpload = isClientPrintUpload(gallery.galleryType)
     const canPreview = gallery.previewEnabled && !gallery.isExpired
     const canDownload = !galleryIsClientPrintUpload && gallery.downloadEnabled && !gallery.isExpired
+    const coverIsVideo = isVideoUrl(gallery.coverImageUrl)
 
     const handleOpen = () => {
         if (loading || !canPreview) return
@@ -46,11 +51,26 @@ export default function ClientGalleryCard({
             >
                 <div className="aspect-[4/5] w-full overflow-hidden bg-neutral-200 dark:bg-zinc-800">
                     {gallery.coverImageUrl ? (
-                        <img
-                            src={gallery.coverImageUrl}
-                            alt={gallery.title}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        />
+                        coverIsVideo ? (
+                            <div className="relative h-full w-full">
+                                <video
+                                    src={gallery.coverImageUrl}
+                                    muted
+                                    playsInline
+                                    preload="metadata"
+                                    className="h-full w-full bg-black object-contain transition duration-500 group-hover:scale-[1.03]"
+                                />
+                                <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+                                    Video
+                                </span>
+                            </div>
+                        ) : (
+                            <img
+                                src={gallery.coverImageUrl}
+                                alt={gallery.title}
+                                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                            />
+                        )
                     ) : (
                         <div className="flex h-full items-center justify-center text-[14px] font-medium text-neutral-500 dark:text-zinc-400">
                             {isBg ? "Няма корица" : "No cover"}
