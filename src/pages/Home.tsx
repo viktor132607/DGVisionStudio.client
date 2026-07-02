@@ -343,7 +343,7 @@ export default function Home() {
                                 <Link
                                     key={item.href + item.bg}
                                     to={item.href}
-                                    className="flex min-h-[42px] items-center justify-center bg-neutral-200 px-2 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-neutral-700 transition hover:bg-white hover:text-neutral-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white sm:text-xs sm:tracking-[0.18em]"
+                                    className="flex min-h-[42px] items-center justify-center bg-neutral-200 px-2 py-2 text-[10px] font-extrabold italic uppercase tracking-[0.14em] text-neutral-700 transition hover:bg-white hover:text-neutral-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white sm:text-xs sm:tracking-[0.18em]"
                                 >
                                     {isBg ? item.bg : item.en}
                                 </Link>
@@ -355,7 +355,7 @@ export default function Home() {
                 <section className="bg-neutral-100 py-12 dark:bg-zinc-900 sm:py-16 lg:py-20 xl:py-24">
                     <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
                         <div className="mb-8 text-center sm:mb-10 lg:mb-12">
-                            <h2 className="text-[28px] font-extrabold uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
+                            <h2 className="text-[28px] font-extrabold italic uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
                                 {isBg ? "Услуги" : "Services"}
                             </h2>
                         </div>
@@ -377,7 +377,7 @@ export default function Home() {
                                     </div>
 
                                     <div className="space-y-3 p-5 sm:p-6">
-                                        <h3 className="text-sm font-extrabold uppercase tracking-[0.14em] text-neutral-950 dark:text-white">
+                                        <h3 className="text-sm font-extrabold italic uppercase tracking-[0.14em] text-neutral-950 dark:text-white">
                                             {isBg ? card.titleBg : card.titleEn}
                                         </h3>
 
