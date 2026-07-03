@@ -28,6 +28,7 @@
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+        position: relative !important;
         justify-content: flex-start !important;
         align-self: stretch !important;
         min-height: 0 !important;
@@ -54,10 +55,10 @@
     }
 
     main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
-        position: relative !important;
+        position: static !important;
         display: block !important;
         width: 100% !important;
-        height: clamp(310px, 38svh, 430px) !important;
+        height: 0 !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div + p,
@@ -91,14 +92,14 @@ main .min-h-screen > section:first-of-type h1 + div a {
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
     left: 0 !important;
-    top: 42px !important;
+    top: 47svh !important;
     z-index: 1 !important;
     transform: rotate(-12deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
     left: 34% !important;
-    top: 0 !important;
+    top: 42svh !important;
     z-index: 2 !important;
     transform: rotate(-2deg) !important;
 }
@@ -144,13 +145,17 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
         margin-top: 22px !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
-        height: clamp(340px, 40svh, 470px) !important;
-    }
-
     main .min-h-screen > section:first-of-type h1 + div a {
         width: clamp(225px, 14vw, 310px) !important;
         padding: 14px 14px 42px !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
+        top: 45svh !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
+        top: 39svh !important;
     }
 }
 
