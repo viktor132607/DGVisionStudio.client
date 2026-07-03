@@ -94,6 +94,7 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
     left: 0 !important;
     top: calc(47svh - 50px) !important;
     z-index: 1 !important;
+    box-shadow: none !important;
     transform: rotate(0deg) !important;
 }
 
@@ -106,7 +107,7 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-    left: calc(68% - 30px) !important;
+    left: calc(68% - 45px) !important;
     top: 42svh !important;
     bottom: auto !important;
     z-index: 2 !important;
