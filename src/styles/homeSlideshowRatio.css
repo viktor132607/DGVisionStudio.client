@@ -99,17 +99,18 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
     left: 34% !important;
-    top: 42svh !important;
-    z-index: 2 !important;
-    transform: rotate(-2deg) !important;
-}
-
-main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-    left: 68% !important;
     top: auto !important;
     bottom: -44px !important;
     z-index: 1 !important;
     transform: rotate(10deg) !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
+    left: 68% !important;
+    top: 42svh !important;
+    bottom: auto !important;
+    z-index: 2 !important;
+    transform: rotate(-2deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a > div:first-child {
@@ -156,11 +157,11 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
-        top: 39svh !important;
+        bottom: -56px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-        bottom: -56px !important;
+        top: 39svh !important;
     }
 }
 
