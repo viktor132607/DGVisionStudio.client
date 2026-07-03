@@ -92,7 +92,7 @@ main .min-h-screen > section:first-of-type h1 + div a {
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
     left: 0 !important;
-    top: calc(47svh - 32px) !important;
+    top: calc(47svh - 50px) !important;
     z-index: 1 !important;
     transform: rotate(-8deg) !important;
 }
@@ -153,7 +153,7 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
-        top: calc(45svh - 32px) !important;
+        top: calc(45svh - 50px) !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
