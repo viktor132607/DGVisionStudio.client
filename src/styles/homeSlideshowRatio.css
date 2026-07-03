@@ -28,7 +28,6 @@
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
-        position: relative !important;
         justify-content: flex-start !important;
         align-self: stretch !important;
         min-height: 0 !important;
@@ -38,27 +37,30 @@
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
-        width: clamp(260px, 16vw, 340px) !important;
+        width: clamp(190px, 11vw, 250px) !important;
         margin-top: 0 !important;
-        margin-bottom: 18px !important;
+        margin-bottom: 10px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 {
+        margin-top: -2px !important;
         font-size: clamp(50px, 3.35vw, 64px) !important;
-        line-height: 1.05 !important;
+        line-height: 1.02 !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div {
+        width: min(100%, 530px) !important;
+        margin-top: 14px !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div + p,
     main .min-h-screen > section:first-of-type h1 + p {
         display: none !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div + p + div,
-    main .min-h-screen > section:first-of-type h1 + p + div {
-        position: absolute !important;
-        left: 2.5rem !important;
-        bottom: 0 !important;
-        margin-top: 0 !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
@@ -81,27 +83,21 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     display: none !important;
 }
 
-@media (min-width: 1280px) and (orientation: landscape) {
-    main .min-h-screen > section:first-of-type h1 + div + p + div,
-    main .min-h-screen > section:first-of-type h1 + p + div {
-        left: 3.5rem !important;
-    }
-}
-
 @media (min-width: 1536px) and (orientation: landscape) {
     main .min-h-screen > section:first-of-type h1 {
+        margin-top: -4px !important;
         font-size: clamp(58px, 3.45vw, 68px) !important;
-        line-height: 1.04 !important;
+        line-height: 1.01 !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
-        width: clamp(320px, 17vw, 390px) !important;
-        margin-bottom: 22px !important;
+        width: clamp(230px, 12vw, 285px) !important;
+        margin-bottom: 12px !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div + p + div,
-    main .min-h-screen > section:first-of-type h1 + p + div {
-        left: 5rem !important;
+    main .min-h-screen > section:first-of-type h1 + div {
+        width: min(100%, 570px) !important;
+        margin-top: 16px !important;
     }
 }
 
