@@ -49,13 +49,15 @@
     }
 
     main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 530px) !important;
-        margin-top: 14px !important;
+        width: min(100%, 500px) !important;
+        margin-top: 18px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 12px !important;
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        height: clamp(190px, 24svh, 260px) !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div + p,
@@ -75,8 +77,64 @@
     }
 }
 
+main .min-h-screen > section:first-of-type h1 + div a {
+    position: absolute !important;
+    display: block !important;
+    width: clamp(115px, 8.5vw, 150px) !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: #ffffff !important;
+    padding: 9px 9px 24px !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16) !important;
+    transform-origin: top center !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 6px !important;
+    left: 50% !important;
+    z-index: 3 !important;
+    width: 11px !important;
+    height: 11px !important;
+    border-radius: 9999px !important;
+    background: #f4f4f4 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28) !important;
+    transform: translateX(-50%) !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
+    left: 8% !important;
+    top: 44px !important;
+    z-index: 1 !important;
+    transform: rotate(-13deg) !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
+    left: 34% !important;
+    top: 10px !important;
+    z-index: 2 !important;
+    transform: rotate(-3deg) !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
+    left: 60% !important;
+    top: 52px !important;
+    z-index: 1 !important;
+    transform: rotate(11deg) !important;
+}
+
 main .min-h-screen > section:first-of-type h1 + div a > div:first-child {
-    aspect-ratio: 4 / 5 !important;
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden !important;
+    background: #f3f3f3 !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a > div:first-child img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
@@ -96,8 +154,12 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 570px) !important;
-        margin-top: 16px !important;
+        width: min(100%, 540px) !important;
+        margin-top: 18px !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
+        height: clamp(210px, 25svh, 285px) !important;
     }
 }
 
