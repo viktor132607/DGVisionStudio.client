@@ -68,6 +68,7 @@ export default function PrintRequestsAdmin() {
                 await markAdminPrintRequestsSeen()
                 setRequests(current => current.map(request => ({ ...request, isSeenByAdmin: true })))
             } catch {
+                // Seen status is best-effort only. The page should still load if it fails.
             }
         }
 
