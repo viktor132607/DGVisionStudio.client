@@ -50,7 +50,7 @@ export default function Home() {
                 }
             })
             .filter((album) => album.coverSrc.trim().length > 0)
-            .slice(0, 4)
+            .slice(0, 3)
     }, [albumsData, imagesData])
 
     useEffect(() => {
