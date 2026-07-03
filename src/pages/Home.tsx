@@ -128,7 +128,7 @@ export default function Home() {
                                 className="mb-4 block h-auto w-[220px] max-w-full object-contain sm:mb-5 sm:w-[260px] md:w-[300px]"
                             />
 
-                            <h1 className="max-w-4xl text-[28px] font-extrabold uppercase leading-[1.06] tracking-[0.02em] text-neutral-950 dark:text-white sm:text-[36px] md:text-[44px] md:leading-[1.05] lg:text-[50px] xl:text-[60px] 2xl:text-[68px]">
+                            <h1 className="max-w-[1080px] text-[28px] font-extrabold uppercase leading-[1.1] tracking-[0.01em] text-neutral-950 [text-wrap:balance] dark:text-white sm:text-[34px] md:text-[40px] md:leading-[1.08] lg:text-[42px] xl:text-[48px] 2xl:text-[52px]">
                                 {isBg
                                     ? "Фотография и визуално съдържание със стил, характер и ясно присъствие"
                                     : "Photography and visual content with style, character, and clear presence"}
@@ -339,7 +339,7 @@ export default function Home() {
                 <section className="bg-white py-12 dark:bg-zinc-900 sm:py-16 lg:py-20 xl:py-24">
                     <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
                         <div className="mb-8 text-center sm:mb-10 lg:mb-12">
-                            <h2 className="[font-family:Messenger,sans-serif] text-[28px] font-extrabold italic uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
+                            <h2 className="[font-family:Messenger,sans-serif] text-[28px] font-black uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
                                 {isBg ? "Услуги" : "Services"}
                             </h2>
                         </div>
@@ -361,7 +361,7 @@ export default function Home() {
                                     </div>
 
                                     <div className="space-y-3 p-5 sm:p-6">
-                                        <h3 className="text-sm font-extrabold italic uppercase tracking-[0.14em] text-neutral-950 dark:text-white">
+                                        <h3 className="text-sm font-black italic uppercase tracking-[0.14em] text-neutral-950 dark:text-white">
                                             {isBg ? card.titleBg : card.titleEn}
                                         </h3>
 
