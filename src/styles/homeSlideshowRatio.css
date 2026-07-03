@@ -13,6 +13,21 @@
         flex: 0 1 auto !important;
     }
 
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+        position: relative !important;
+        justify-content: flex-start !important;
+        align-self: stretch !important;
+        min-height: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
+        width: clamp(260px, 16vw, 340px) !important;
+        margin-top: 0 !important;
+        margin-bottom: 18px !important;
+    }
+
     main .min-h-screen > section:first-of-type h1 {
         font-size: clamp(50px, 3.35vw, 64px) !important;
         line-height: 1.05 !important;
@@ -25,7 +40,10 @@
 
     main .min-h-screen > section:first-of-type h1 + div + p + div,
     main .min-h-screen > section:first-of-type h1 + p + div {
-        margin-top: 20px !important;
+        position: absolute !important;
+        left: 2.5rem !important;
+        bottom: 0 !important;
+        margin-top: 0 !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
@@ -48,10 +66,27 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     display: none !important;
 }
 
+@media (min-width: 1280px) and (orientation: landscape) {
+    main .min-h-screen > section:first-of-type h1 + div + p + div,
+    main .min-h-screen > section:first-of-type h1 + p + div {
+        left: 3.5rem !important;
+    }
+}
+
 @media (min-width: 1536px) and (orientation: landscape) {
     main .min-h-screen > section:first-of-type h1 {
         font-size: clamp(58px, 3.45vw, 68px) !important;
         line-height: 1.04 !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
+        width: clamp(320px, 17vw, 390px) !important;
+        margin-bottom: 22px !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div + p + div,
+    main .min-h-screen > section:first-of-type h1 + p + div {
+        left: 5rem !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
