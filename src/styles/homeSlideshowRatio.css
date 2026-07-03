@@ -2,14 +2,20 @@
     main .min-h-screen > section:first-of-type {
         min-height: calc(100svh - 88px) !important;
         display: flex !important;
-        align-items: center !important;
+        align-items: flex-start !important;
         box-sizing: border-box !important;
+        padding-top: 28px !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid {
         min-height: 0 !important;
         height: auto !important;
         flex: 0 1 auto !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 {
+        font-size: clamp(50px, 3.35vw, 64px) !important;
+        line-height: 1.05 !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
@@ -25,6 +31,11 @@
 }
 
 @media (min-width: 1536px) and (orientation: landscape) {
+    main .min-h-screen > section:first-of-type h1 {
+        font-size: clamp(58px, 3.45vw, 68px) !important;
+        line-height: 1.04 !important;
+    }
+
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
         width: min(100%, 680px) !important;
         max-width: 680px !important;
