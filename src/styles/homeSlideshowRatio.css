@@ -94,7 +94,7 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
     left: 0 !important;
     top: calc(47svh - 50px) !important;
     z-index: 1 !important;
-    transform: rotate(-8deg) !important;
+    transform: rotate(0deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
