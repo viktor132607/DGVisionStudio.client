@@ -78,6 +78,50 @@
     }
 }
 
+@media (min-width: 768px) and (max-width: 1279px) {
+    header {
+        height: 9svh !important;
+    }
+
+    header > div:first-child > div {
+        height: 9svh !important;
+    }
+
+    header + div {
+        height: 10svh !important;
+    }
+
+    header > div:first-child > div > nav {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: clamp(10px, 1.4vw, 18px) !important;
+    }
+
+    header > div:first-child > div > nav a {
+        font-size: clamp(11px, 1.2vw, 13px) !important;
+    }
+
+    header > div:first-child > div > div:last-child {
+        gap: 8px !important;
+    }
+
+    header > div:first-child > div > div:last-child > .xl\:inline-flex {
+        display: inline-flex !important;
+        height: 36px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        font-size: 12px !important;
+    }
+
+    header > div:first-child > div > div:last-child > .md\:inline-flex.xl\:hidden {
+        display: none !important;
+    }
+
+    header > div:nth-child(2) {
+        display: none !important;
+    }
+}
+
 main .min-h-screen > section:first-of-type h1 + div a {
     position: absolute !important;
     display: block !important;
