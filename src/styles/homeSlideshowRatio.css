@@ -49,7 +49,7 @@
     }
 
     main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 620px) !important;
+        width: min(100%, 700px) !important;
         margin-top: 20px !important;
     }
 
@@ -57,7 +57,7 @@
         position: relative !important;
         display: block !important;
         width: 100% !important;
-        height: clamp(250px, 31svh, 340px) !important;
+        height: clamp(310px, 38svh, 430px) !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div + p,
@@ -80,52 +80,38 @@
 main .min-h-screen > section:first-of-type h1 + div a {
     position: absolute !important;
     display: block !important;
-    width: clamp(155px, 11vw, 210px) !important;
+    width: clamp(190px, 13.5vw, 270px) !important;
     overflow: visible !important;
     border: 0 !important;
     background: #ffffff !important;
-    padding: 11px 11px 30px !important;
+    padding: 12px 12px 36px !important;
     box-shadow: 0 18px 34px rgba(0, 0, 0, 0.17) !important;
     transform-origin: top center !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a::before {
-    content: "" !important;
-    position: absolute !important;
-    top: 8px !important;
-    left: 50% !important;
-    z-index: 3 !important;
-    width: 13px !important;
-    height: 13px !important;
-    border-radius: 9999px !important;
-    background: #f4f4f4 !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28) !important;
-    transform: translateX(-50%) !important;
-}
-
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
-    left: 7% !important;
-    top: 58px !important;
+    left: 0 !important;
+    top: 42px !important;
     z-index: 1 !important;
-    transform: rotate(-13deg) !important;
+    transform: rotate(-12deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
     left: 34% !important;
-    top: 8px !important;
+    top: 0 !important;
     z-index: 2 !important;
-    transform: rotate(-3deg) !important;
+    transform: rotate(-2deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-    left: 61% !important;
-    top: 62px !important;
+    left: 68% !important;
+    top: 72px !important;
     z-index: 1 !important;
-    transform: rotate(11deg) !important;
+    transform: rotate(10deg) !important;
 }
 
 main .min-h-screen > section:first-of-type h1 + div a > div:first-child {
-    aspect-ratio: 1 / 1 !important;
+    aspect-ratio: 4 / 5 !important;
     overflow: hidden !important;
     background: #f3f3f3 !important;
 }
@@ -154,17 +140,17 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 680px) !important;
+        width: min(100%, 760px) !important;
         margin-top: 22px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
-        height: clamp(280px, 33svh, 380px) !important;
+        height: clamp(340px, 40svh, 470px) !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div a {
-        width: clamp(185px, 12vw, 240px) !important;
-        padding: 12px 12px 34px !important;
+        width: clamp(225px, 14vw, 310px) !important;
+        padding: 14px 14px 42px !important;
     }
 }
 
