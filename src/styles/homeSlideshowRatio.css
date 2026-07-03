@@ -106,7 +106,7 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
 }
 
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-    left: 68% !important;
+    left: calc(68% - 20px) !important;
     top: 42svh !important;
     bottom: auto !important;
     z-index: 2 !important;
