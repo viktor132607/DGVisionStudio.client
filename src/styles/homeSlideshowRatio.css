@@ -1,9 +1,3 @@
-@layer components {
-    .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-        aspect-ratio: 4 / 5 !important;
-    }
-}
-
 main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
     aspect-ratio: 4 / 5 !important;
 }
