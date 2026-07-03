@@ -2,17 +2,21 @@
     .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
         aspect-ratio: 4 / 5 !important;
     }
+}
 
-    @media (min-width: 1024px), (orientation: landscape) {
-        .min-h-screen > section:first-of-type {
-            min-height: 100svh;
-            display: flex;
-            box-sizing: border-box;
-        }
+main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+    aspect-ratio: 4 / 5 !important;
+}
 
-        .min-h-screen > section:first-of-type > div.mx-auto.grid {
-            min-height: inherit !important;
-            flex: 1 1 auto;
-        }
+@media (min-width: 1024px), (orientation: landscape) {
+    main .min-h-screen > section:first-of-type {
+        min-height: calc(100svh - 88px) !important;
+        display: flex !important;
+        box-sizing: border-box !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid {
+        min-height: calc(100svh - 88px) !important;
+        flex: 1 1 auto !important;
     }
 }
