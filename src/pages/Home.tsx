@@ -50,7 +50,7 @@ export default function Home() {
                 }
             })
             .filter((album) => album.coverSrc.trim().length > 0)
-            .slice(0, 3)
+            .slice(0, 4)
     }, [albumsData, imagesData])
 
     useEffect(() => {
@@ -166,26 +166,23 @@ export default function Home() {
                             </h1>
 
                             {recentAlbums.length > 0 ? (
-                                <div className="mt-5 max-w-[720px]">
+                                <div className="mt-5 max-w-[560px]">
                                     <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
                                         Recent photography
                                     </div>
-                                    <div className="grid grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-2 gap-3">
                                         {recentAlbums.map((album) => (
                                             <Link
                                                 key={album.id}
                                                 to="/portfolio"
                                                 className="group block overflow-hidden border border-neutral-200 bg-white transition hover:border-neutral-950"
                                             >
-                                                <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
+                                                <div className="aspect-[4/5] overflow-hidden bg-neutral-100">
                                                     <img
                                                         src={album.coverSrc}
                                                         alt={album.title}
                                                         className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.04]"
                                                     />
-                                                </div>
-                                                <div className="truncate px-2 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-neutral-950">
-                                                    {album.title}
                                                 </div>
                                             </Link>
                                         ))}
@@ -198,22 +195,6 @@ export default function Home() {
                                     ? "Създаваме модерно визуално съдържание за брандове, продукти, кампании и лични фотосесии. Подходът ни е изчистен, силно визуален и насочен към кадри, които остават."
                                     : "We create modern visual content for brands, products, campaigns, and personal photoshoots. Our approach is clean, visually strong, and focused on images that stay with people."}
                             </p>
-
-                            <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4 lg:mt-10">
-                                <Link
-                                    to="/portfolio"
-                                    className="inline-flex min-h-[48px] w-full items-center justify-center rounded-none border border-neutral-950 bg-neutral-950 px-5 py-3 text-center text-xs font-extrabold uppercase tracking-[0.14em] text-white transition hover:bg-neutral-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 sm:min-h-[52px] sm:w-auto sm:px-6 sm:text-sm sm:tracking-[0.16em]"
-                                >
-                                    {isBg ? "Виж портфолио" : "View Portfolio"}
-                                </Link>
-
-                                <Link
-                                    to="/contact"
-                                    className="inline-flex min-h-[48px] w-full items-center justify-center rounded-none border border-neutral-400 bg-transparent px-5 py-3 text-center text-xs font-extrabold uppercase tracking-[0.14em] text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-100 dark:border-zinc-500 dark:text-white dark:hover:border-white dark:hover:bg-zinc-800 sm:min-h-[52px] sm:w-auto sm:px-6 sm:text-sm sm:tracking-[0.16em]"
-                                >
-                                    {isBg ? "Свържи се" : "Contact"}
-                                </Link>
-                            </div>
                         </div>
 
                         <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
