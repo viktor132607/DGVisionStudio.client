@@ -141,7 +141,8 @@ function AppContent() {
         <Link
           to="/contact"
           aria-label={contactBubbleLabel}
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200 sm:right-6 xl:bottom-8 xl:right-8 xl:px-5 xl:py-4 xl:text-sm"
+          title={contactBubbleLabel}
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-0 z-50 inline-flex h-12 w-12 items-center justify-center rounded-l-full rounded-r-none bg-slate-950 text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200 xl:bottom-8 xl:h-14 xl:w-14"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -151,12 +152,11 @@ function AppContent() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-5 w-5"
+            className="h-5 w-5 xl:h-6 xl:w-6"
             aria-hidden="true"
           >
             <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
           </svg>
-          {contactBubbleLabel}
         </Link>
       ) : null}
 
