@@ -1,16 +1,39 @@
-main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-    aspect-ratio: 4 / 5 !important;
-}
-
 @media (min-width: 1024px), (orientation: landscape) {
     main .min-h-screen > section:first-of-type {
         min-height: calc(100svh - 88px) !important;
         display: flex !important;
+        align-items: center !important;
         box-sizing: border-box !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid {
-        min-height: calc(100svh - 88px) !important;
-        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        flex: 0 1 auto !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+        width: min(100%, 640px) !important;
+        max-width: 640px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        aspect-ratio: 4 / 5 !important;
+        margin: 0 auto !important;
+        align-self: center !important;
+        justify-self: center !important;
+    }
+}
+
+@media (min-width: 1536px) and (orientation: landscape) {
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+        width: min(100%, 680px) !important;
+        max-width: 680px !important;
+    }
+}
+
+@media (max-width: 1023px) and (orientation: portrait) {
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+        height: auto !important;
+        min-height: 0 !important;
     }
 }
