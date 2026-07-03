@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 import Seo from "../components/Seo"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
+import { usePortfolioData } from "../hooks/usePortfolioData"
 import { useThemeLogo } from "../hooks/useThemeLogo"
 import { resolveAssetUrl } from "../utils/resolveAssetUrl"
+
+function isVideoPath(value?: string | null) {
+    return /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(value || "")
+}
 
 export default function Home() {
     const { i18n } = useTranslation()
@@ -13,6 +18,7 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { serviceCards } = useHomeContent()
+    const { albumsData, imagesData } = usePortfolioData()
     const { introVideoUrl, currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
@@ -21,6 +27,31 @@ export default function Home() {
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
     const [introVideoDone, setIntroVideoDone] = useState(!hasIntroVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
+
+    const recentAlbums = useMemo(() => {
+        return albumsData
+            .filter((album) => album.isPublished)
+            .sort((a, b) => {
+                const aDate = a.createdAtUtc ? new Date(a.createdAtUtc).getTime() : 0
+                const bDate = b.createdAtUtc ? new Date(b.createdAtUtc).getTime() : 0
+                return bDate - aDate || b.id - a.id
+            })
+            .map((album) => {
+                const albumImages = imagesData
+                    .filter((image) => image.portfolioAlbumId === album.id && image.isPublished)
+                    .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+                const firstImage = albumImages.find((image) => !isVideoPath(image.imageUrl)) ?? albumImages[0]
+                const coverSrc = album.coverImageUrl?.trim() || firstImage?.thumbnailUrl?.trim() || firstImage?.imageUrl || ""
+
+                return {
+                    id: album.id,
+                    title: album.title,
+                    coverSrc,
+                }
+            })
+            .filter((album) => album.coverSrc.trim().length > 0)
+            .slice(0, 3)
+    }, [albumsData, imagesData])
 
     useEffect(() => {
         if (location.pathname !== "/") return
@@ -133,6 +164,34 @@ export default function Home() {
                                     ? "Фотография и визуално съдържание със стил, характер и ясно присъствие"
                                     : "Photography and visual content with style, character, and clear presence"}
                             </h1>
+
+                            {recentAlbums.length > 0 ? (
+                                <div className="mt-5 max-w-[720px]">
+                                    <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+                                        Recent photography
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {recentAlbums.map((album) => (
+                                            <Link
+                                                key={album.id}
+                                                to="/portfolio"
+                                                className="group block overflow-hidden border border-neutral-200 bg-white transition hover:border-neutral-950"
+                                            >
+                                                <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
+                                                    <img
+                                                        src={album.coverSrc}
+                                                        alt={album.title}
+                                                        className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.04]"
+                                                    />
+                                                </div>
+                                                <div className="truncate px-2 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-neutral-950">
+                                                    {album.title}
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
 
                             <p className="mt-5 max-w-2xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:mt-6 sm:text-[15px] sm:leading-8 md:text-[16px] lg:max-w-[640px] xl:max-w-[700px]">
                                 {isBg
