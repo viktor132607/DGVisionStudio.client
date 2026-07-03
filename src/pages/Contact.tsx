@@ -21,6 +21,13 @@ const initialFormState: ContactFormState = {
 
 const MAP_URL = "https://www.google.com/maps/search/?api=1&query=Yalta%20Shopping%20Complex%2C%20Ruse"
 const EMBED_URL = "https://www.google.com/maps?hl=bg&q=Yalta%20Shopping%20Complex%2C%20Ruse&z=17&output=embed"
+const PHONE_REGEX = /^\+?[0-9\s().-]{7,20}$/
+
+function isValidPhone(value: string) {
+    const trimmed = value.trim()
+    const digitsOnly = trimmed.replace(/\D/g, "")
+    return PHONE_REGEX.test(trimmed) && digitsOnly.length >= 7 && digitsOnly.length <= 15
+}
 
 export default function Contact() {
     const [form, setForm] = useState<ContactFormState>(initialFormState)
@@ -62,8 +69,13 @@ export default function Contact() {
         setSubmitError("")
         setSubmitSuccess("")
 
-        if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-            setSubmitError("Името, имейлът и съобщението са задължителни.")
+        if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
+            setSubmitError("Името, имейлът и телефонът са задължителни.")
+            return
+        }
+
+        if (!isValidPhone(form.phone)) {
+            setSubmitError("Въведи валиден телефонен номер.")
             return
         }
 
@@ -75,7 +87,7 @@ export default function Contact() {
                 body: JSON.stringify({
                     name: form.name.trim(),
                     email: form.email.trim(),
-                    phone: form.phone.trim() || null,
+                    phone: form.phone.trim(),
                     subject: form.subject.trim() || null,
                     message: form.message.trim(),
                 }),
@@ -197,10 +209,11 @@ export default function Contact() {
 
                                 <div>
                                     <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
-                                        Телефон
+                                        Телефон *
                                     </label>
                                     <input
-                                        type="text"
+                                        type="tel"
+                                        inputMode="tel"
                                         value={form.phone}
                                         onChange={handleChange("phone")}
                                         className={inputClassName}
@@ -224,7 +237,7 @@ export default function Contact() {
 
                             <div>
                                 <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">
-                                    Съобщение *
+                                    Съобщение
                                 </label>
                                 <textarea
                                     value={form.message}
