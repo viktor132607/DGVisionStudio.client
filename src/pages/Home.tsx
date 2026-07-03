@@ -161,8 +161,8 @@ export default function Home() {
 
                             <h1 className="max-w-[1080px] text-[28px] font-extrabold uppercase leading-[1.1] tracking-[0.01em] text-neutral-950 [text-wrap:balance] dark:text-white sm:text-[34px] md:text-[40px] md:leading-[1.08] lg:text-[42px] xl:text-[48px] 2xl:text-[52px]">
                                 {isBg
-                                    ? "Фотография и визуално съдържание със стил, характер и ясно присъствие"
-                                    : "Photography and visual content with style, character, and clear presence"}
+                                    ? "Фотография и визуално съдържание"
+                                    : "Photography and visual content"}
                             </h1>
 
                             {recentAlbums.length > 0 ? (
