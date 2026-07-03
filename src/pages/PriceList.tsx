@@ -68,8 +68,6 @@ export default function PriceList() {
               seoDescription: "Цени за фотографски услуги от DG Vision Studio.",
               eyebrow: "УСЛУГИ И ЦЕНИ",
               title: "Ценоразпис",
-              description:
-                  "Ясен и изчистен преглед на основните фотографски услуги и началните им цени.",
               includedTitle: "Важно",
               includedText:
                   "При услуги с цена „По договаряне“ офертата се определя според обем, локация, продължителност и конкретни изисквания.",
@@ -87,8 +85,6 @@ export default function PriceList() {
               seoDescription: "Photography service prices by DG Vision Studio.",
               eyebrow: "SERVICES & PRICING",
               title: "Price List",
-              description:
-                  "A clean overview of the main photography services and their starting prices.",
               includedTitle: "Important",
               includedText:
                   "For services marked as “By agreement”, the final offer depends on scope, location, duration, and specific requirements.",
@@ -123,10 +119,6 @@ export default function PriceList() {
                             <h1 className="mt-4 text-[32px] font-extrabold tracking-tight text-neutral-950 dark:text-white sm:text-[40px] lg:text-[52px]">
                                 {t.title}
                             </h1>
-
-                            <p className="mx-auto mt-5 max-w-3xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:text-[15px] sm:leading-8 md:text-[16px]">
-                                {t.description}
-                            </p>
                         </div>
 
                         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 xl:px-10">
