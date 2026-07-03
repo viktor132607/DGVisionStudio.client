@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, Routes, Route, useLocation } from "react-router-dom"
-import "./styles/homeSlideshowRatio.css"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
@@ -88,13 +87,52 @@ function AppContent() {
             <Route path="/identity/register" element={<Register />} />
             <Route path="/identity/forgot-password" element={<ForgotPassword />} />
             <Route path="/identity/reset-password" element={<ResetPassword />} />
-            <Route path="/identity/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-            <Route path="/identity/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
+            {/*
+            Confirm email логиката е временно спряна.
+            <Route path="/identity/confirm-email" element={<ConfirmEmail />} />
+            */}
+            <Route
+              path="/identity/profile"
+              element={
+                <RequireAuth>
+                  <Profile />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/identity/galleries/:id"
+              element={
+                <RequireAuth>
+                  <MyGalleryDetails />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/identity/change-password"
+              element={
+                <RequireAuth>
+                  <ChangePassword />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/identity/delete-account"
+              element={
+                <RequireAuth>
+                  <DeleteAccount />
+                </RequireAuth>
+              }
+            />
             <Route path="/identity/access-denied" element={<AccessDenied />} />
-            <Route path="/identity/my-galleries/:id" element={<RequireAuth><MyGalleryDetails /></RequireAuth>} />
-            <Route path="/identity/delete-account" element={<RequireAuth><DeleteAccount /></RequireAuth>} />
 
-            <Route path="/admin/*" element={<RequireAdmin><AdminRoutes /></RequireAdmin>} />
+            <Route
+              path="/admin/*"
+              element={
+                <RequireAdmin>
+                  <AdminRoutes />
+                </RequireAdmin>
+              }
+            />
           </Routes>
         </div>
       </main>
@@ -103,14 +141,27 @@ function AppContent() {
         <Link
           to="/contact"
           aria-label={contactBubbleLabel}
-          className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-xl transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-xs font-black uppercase tracking-[0.12em] text-white shadow-2xl shadow-black/30 ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200 sm:right-6 xl:bottom-8 xl:right-8 xl:px-5 xl:py-4 xl:text-sm"
         >
-          ✉
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+          </svg>
+          {contactBubbleLabel}
         </Link>
       ) : null}
 
-      <CookieBanner />
-      <Footer />
+      {!isAdminPage ? <Footer /> : null}
+      {!isAdminPage ? <CookieBanner /> : null}
     </div>
   )
 }
