@@ -40,5 +40,5 @@ export function useThemeLogo() {
         }
     }, [])
 
-    return isDark ? "/images/Pronto100tr.png" : "/images/Pronto101tr.png"
+    return isDark ? "/images/relogo/white.webp" : "/images/relogo/black.webp"
 }
