@@ -40,6 +40,14 @@
     }
 }
 
+main .min-h-screen > section:first-of-type h1 + div a > div:first-child {
+    aspect-ratio: 4 / 5 !important;
+}
+
+main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
+    display: none !important;
+}
+
 @media (min-width: 1536px) and (orientation: landscape) {
     main .min-h-screen > section:first-of-type h1 {
         font-size: clamp(58px, 3.45vw, 68px) !important;
