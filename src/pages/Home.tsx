@@ -12,7 +12,7 @@ export default function Home() {
     const location = useLocation()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
-    const { quickLinks, serviceCards } = useHomeContent()
+    const { serviceCards } = useHomeContent()
     const { introVideoUrl, currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
@@ -118,7 +118,7 @@ export default function Home() {
                 jsonLd={homeJsonLd}
             />
 
-            <div className="min-h-screen overflow-x-hidden bg-neutral-100 text-neutral-900 dark:bg-zinc-900 dark:text-white">
+            <div className="min-h-screen overflow-x-hidden bg-white text-neutral-900 dark:bg-zinc-900 dark:text-white">
                 <section className="border-b border-neutral-300 bg-white pt-6 sm:pt-7 lg:pt-8 dark:border-zinc-700 dark:bg-zinc-900">
                     <div className="mx-auto grid min-h-[auto] w-full max-w-[1700px] grid-cols-1 lg:min-h-[620px] lg:grid-cols-[1.08fr_0.92fr] xl:min-h-[700px] 2xl:min-h-[760px]">
                         <div className="order-2 flex flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 md:px-8 md:py-14 lg:order-1 lg:px-10 lg:py-16 xl:px-14 2xl:px-20">
@@ -336,23 +336,7 @@ export default function Home() {
                     </style>
                 </section>
 
-                <section className="border-b border-neutral-300 bg-neutral-200 dark:border-zinc-700 dark:bg-zinc-800">
-                    <div className="mx-auto max-w-[1700px]">
-                        <div className="grid grid-cols-2 gap-[1px] bg-neutral-200 text-center dark:bg-zinc-800 sm:grid-cols-3 xl:grid-cols-6">
-                            {quickLinks.map((item) => (
-                                <Link
-                                    key={item.href + item.bg}
-                                    to={item.href}
-                                    className="flex min-h-[42px] items-center justify-center bg-neutral-200 px-2 py-2 text-[10px] font-extrabold italic uppercase tracking-[0.14em] text-neutral-700 transition hover:bg-white hover:text-neutral-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white sm:text-xs sm:tracking-[0.18em]"
-                                >
-                                    {isBg ? item.bg : item.en}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="bg-neutral-100 py-12 dark:bg-zinc-900 sm:py-16 lg:py-20 xl:py-24">
+                <section className="bg-white py-12 dark:bg-zinc-900 sm:py-16 lg:py-20 xl:py-24">
                     <div className="mx-auto max-w-[1700px] px-4 sm:px-6 lg:px-8 xl:px-10">
                         <div className="mb-8 text-center sm:mb-10 lg:mb-12">
                             <h2 className="text-[28px] font-extrabold italic uppercase tracking-[0.06em] text-neutral-950 dark:text-white sm:text-[34px] md:text-[40px] xl:text-[44px]">
