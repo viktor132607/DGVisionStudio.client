@@ -146,7 +146,7 @@ main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
 main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
     left: 34% !important;
     top: auto !important;
-    bottom: -44px !important;
+    bottom: 26px !important;
     z-index: 1 !important;
     transform: rotate(10deg) !important;
 }
@@ -203,7 +203,7 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
-        bottom: -56px !important;
+        bottom: 14px !important;
     }
 
     main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
