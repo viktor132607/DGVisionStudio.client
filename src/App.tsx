@@ -69,7 +69,7 @@ function AppContent() {
       <div className="h-[72px] shrink-0 md:h-[132px] xl:h-[84px] 2xl:h-[88px]" />
 
       <main className="w-full flex-1">
-        <div className={isAdminPage || isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1700px]"}>
+        <div className={isAdminPage || isPortfolioPage ? "w-full max-w-none" : "mx-auto w-full max-w-[1800px]"}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />
