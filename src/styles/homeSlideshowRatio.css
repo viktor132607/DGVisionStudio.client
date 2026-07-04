@@ -22,6 +22,7 @@
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid {
+        max-width: 1800px !important;
         min-height: 87svh !important;
         height: 87svh !important;
         flex: 0 1 auto !important;
