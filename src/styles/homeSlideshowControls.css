@@ -1,0 +1,32 @@
+/* Keep home slideshow navigation buttons inside the image frame on every viewport. */
+.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div {
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 12px !important;
+}
+
+.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > button {
+    justify-self: center !important;
+    margin: 0 !important;
+}
+
+.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > div {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+@media (max-width: 599px) {
+    .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div {
+        grid-template-columns: 40px minmax(0, 1fr) 40px !important;
+        gap: 10px !important;
+    }
+}
