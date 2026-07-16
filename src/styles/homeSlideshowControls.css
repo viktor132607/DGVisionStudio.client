@@ -1,17 +1,22 @@
-/* Keep home slideshow navigation buttons inside the image frame on every viewport. */
+/* Keep the slideshow text and arrows perfectly centered inside the image frame. */
 .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div {
     display: grid !important;
-    grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+    grid-template-columns: minmax(44px, 1fr) minmax(0, 62%) minmax(44px, 1fr) !important;
     align-items: center !important;
     width: 100% !important;
-    gap: 12px !important;
+    gap: clamp(10px, 1.5vw, 22px) !important;
     box-sizing: border-box !important;
-    padding-left: clamp(20px, 4vw, 48px) !important;
-    padding-right: clamp(20px, 4vw, 48px) !important;
+    padding-left: clamp(8px, 1.6vw, 24px) !important;
+    padding-right: clamp(8px, 1.6vw, 24px) !important;
 }
 
-.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > button {
-    justify-self: center !important;
+.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > button:first-child {
+    justify-self: end !important;
+    margin: 0 !important;
+}
+
+.min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > button:last-child {
+    justify-self: start !important;
     margin: 0 !important;
 }
 
@@ -20,18 +25,19 @@
     overflow: hidden !important;
     padding-left: 4px !important;
     padding-right: 4px !important;
+    text-align: center !important;
 }
 
 @media (max-width: 599px) {
     .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 {
-        padding-left: 14px !important;
-        padding-right: 14px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 
     .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div {
-        grid-template-columns: 40px minmax(0, 1fr) 40px !important;
-        gap: 10px !important;
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        grid-template-columns: minmax(40px, 1fr) minmax(0, 64%) minmax(40px, 1fr) !important;
+        gap: 8px !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 }
