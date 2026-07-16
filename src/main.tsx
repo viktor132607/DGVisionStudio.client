@@ -84,30 +84,12 @@ document.addEventListener(
     const recentAlbumImage =
       recentAlbumLink?.querySelector<HTMLImageElement>("img[alt]")
 
-    if (recentAlbumImage) {
-      savePendingRecentAlbum({
-        title: recentAlbumImage.alt.trim(),
-        src: recentAlbumImage.currentSrc || recentAlbumImage.src,
-      })
-      return
-    }
-
-    if (target.closest("button")) return
-
-    const slideshow = target.closest<HTMLElement>(
-      "main .min-h-screen > section:first-of-type > div > div:nth-child(2)",
-    )
-    const currentSlideshowImage =
-      slideshow?.querySelector<HTMLImageElement>('img[loading="eager"][alt]')
-
-    if (!currentSlideshowImage) return
+    if (!recentAlbumImage) return
 
     savePendingRecentAlbum({
-      title: currentSlideshowImage.alt.trim(),
-      src: currentSlideshowImage.currentSrc || currentSlideshowImage.src,
+      title: recentAlbumImage.alt.trim(),
+      src: recentAlbumImage.currentSrc || recentAlbumImage.src,
     })
-
-    window.location.assign("/portfolio")
   },
   true,
 )
