@@ -1,5 +1,18 @@
 @media (min-width: 1280px) {
+    main .min-h-screen > section:nth-of-type(2) > div {
+        box-sizing: border-box !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
     main .min-h-screen > section:nth-of-type(2) > div > div.grid {
         grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: clamp(12px, 0.8vw, 18px) !important;
+        width: 100% !important;
     }
 }
