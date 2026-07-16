@@ -163,21 +163,21 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     }
 
     main .min-h-screen > section.home-hero .home-recent-card-1 {
-        top: 1.2svh !important;
+        top: 1svh !important;
         left: 0 !important;
         z-index: 1 !important;
         transform: rotate(0deg) !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-card-2 {
-        top: 7.2svh !important;
+        top: 1svh !important;
         left: 50% !important;
         z-index: 2 !important;
         transform: translateX(-50%) rotate(8deg) !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-card-3 {
-        top: 0.5svh !important;
+        top: 1svh !important;
         right: 0 !important;
         left: auto !important;
         z-index: 1 !important;
