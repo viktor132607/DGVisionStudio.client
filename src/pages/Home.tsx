@@ -6,7 +6,6 @@ import PortfolioLightbox from "../components/portfolio/PortfolioLightbox"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { usePortfolioData } from "../hooks/usePortfolioData"
-import { usePortfolioLightbox } from "../hooks/usePortfolioLightbox"
 import { useThemeLogo } from "../hooks/useThemeLogo"
 import type { PortfolioItem } from "../types/portfolio"
 import { resolveAssetUrl } from "../utils/resolveAssetUrl"
@@ -21,7 +20,7 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { serviceCards } = useHomeContent()
-    const { categoriesData, albumsData, imagesData } = usePortfolioData()
+    const { albumsData, imagesData } = usePortfolioData()
     const { introVideoUrl, currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
@@ -30,8 +29,7 @@ export default function Home() {
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
     const [introVideoDone, setIntroVideoDone] = useState(!hasIntroVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
-    const [lightboxAlbumId, setLightboxAlbumId] = useState<number | null>(null)
-    const [selectedLightboxIndex, setSelectedLightboxIndex] = useState<number | null>(null)
+    const [selectedSlideshowItem, setSelectedSlideshowItem] = useState<PortfolioItem | null>(null)
 
     const recentAlbums = useMemo(() => {
         return albumsData
@@ -58,53 +56,25 @@ export default function Home() {
             .slice(0, 3)
     }, [albumsData, imagesData])
 
-    const lightboxItems = useMemo<PortfolioItem[]>(() => {
-        if (lightboxAlbumId === null) return []
-
-        const album = albumsData.find((item) => item.id === lightboxAlbumId && item.isPublished)
-        if (!album) return []
-
-        const category = categoriesData.find((item) => item.id === album.portfolioCategoryId)
-        const categoryKey = category?.key || "portfolio"
-        const categoryLabel = isBg
-            ? category?.name || album.title
-            : category?.nameEn?.trim() || category?.name || album.title
-
-        return imagesData
-            .filter((image) => image.portfolioAlbumId === lightboxAlbumId && image.isPublished)
-            .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
-            .map((image, index) => {
-                const isVideo = image.mediaType === "Video" || isVideoPath(image.imageUrl)
-
-                return {
-                    id: image.id,
-                    src: isVideo ? image.imageUrl : image.thumbnailUrl?.trim() || image.imageUrl,
-                    originalSrc: image.imageUrl,
-                    category: categoryKey,
-                    categoryLabel,
-                    albumKey: album.slug,
-                    albumLabel: album.title,
-                    mediaType: isVideo ? "Video" : image.mediaType || "Image",
-                    contentType: image.contentType,
-                    title:
-                        image.name?.trim() ||
-                        image.altText?.trim() ||
-                        image.caption?.trim() ||
-                        `${album.title} ${index + 1}`,
-                }
-            })
-    }, [albumsData, categoriesData, imagesData, isBg, lightboxAlbumId])
-
-    const selectedLightboxItem =
-        selectedLightboxIndex !== null ? lightboxItems[selectedLightboxIndex] : null
-
-    usePortfolioLightbox(selectedLightboxIndex, lightboxItems.length, setSelectedLightboxIndex)
-
     useEffect(() => {
-        if (selectedLightboxIndex === null) {
-            setLightboxAlbumId(null)
+        if (!selectedSlideshowItem) return
+
+        const originalOverflow = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setSelectedSlideshowItem(null)
+            }
         }
-    }, [selectedLightboxIndex])
+
+        window.addEventListener("keydown", handleKeyDown)
+
+        return () => {
+            document.body.style.overflow = originalOverflow
+            window.removeEventListener("keydown", handleKeyDown)
+        }
+    }, [selectedSlideshowItem])
 
     useEffect(() => {
         if (location.pathname !== "/") return
@@ -154,31 +124,25 @@ export default function Home() {
     const showingIntroVideo = hasIntroVideo && !introVideoDone
 
     const openCurrentSlideshowImage = () => {
-        const albumId = currentImage?.portfolioAlbumId
-        if (showingIntroVideo || !currentImage || albumId === undefined) return
+        if (showingIntroVideo || !currentImage) return
 
-        const albumImages = imagesData
-            .filter((image) => image.portfolioAlbumId === albumId && image.isPublished)
-            .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+        const album = albumsData.find((item) => item.id === currentImage.portfolioAlbumId)
+        const albumTitle = currentImage.albumTitle?.trim() || album?.title || "DG Vision Studio"
 
-        if (albumImages.length === 0) return
-
-        const currentSrc = currentImage.imageUrl?.trim()
-        const currentThumbnail = currentImage.thumbnailUrl?.trim()
-        const imageIndex = albumImages.findIndex(
-            (image) =>
-                image.id === currentImage.id ||
-                image.imageUrl === currentSrc ||
-                image.thumbnailUrl?.trim() === currentThumbnail
-        )
-
-        setLightboxAlbumId(albumId)
-        setSelectedLightboxIndex(imageIndex >= 0 ? imageIndex : 0)
-    }
-
-    const closeLightbox = () => {
-        setSelectedLightboxIndex(null)
-        setLightboxAlbumId(null)
+        setSelectedSlideshowItem({
+            id: currentImage.id,
+            src: currentImage.imageUrl,
+            originalSrc: currentImage.imageUrl,
+            category: "slideshow",
+            categoryLabel:
+                (isBg ? currentImage.categoryName?.trim() : currentImage.categoryNameEn?.trim()) ||
+                currentImage.categoryName?.trim() ||
+                "DG Vision Studio",
+            albumKey: album?.slug || String(currentImage.portfolioAlbumId || currentImage.id),
+            albumLabel: albumTitle,
+            title: currentImage.altText?.trim() || currentImage.caption?.trim() || albumTitle,
+            mediaType: "Image",
+        })
     }
 
     const homeJsonLd = {
@@ -507,24 +471,16 @@ export default function Home() {
                 </section>
             </div>
 
-            {selectedLightboxItem ? (
+            {selectedSlideshowItem ? (
                 <PortfolioLightbox
                     isBg={isBg}
-                    item={selectedLightboxItem}
-                    selectedIndex={selectedLightboxIndex}
-                    totalItems={lightboxItems.length}
-                    onClose={closeLightbox}
-                    onPrev={() =>
-                        setSelectedLightboxIndex((previous) =>
-                            previous === null ? previous : previous === 0 ? lightboxItems.length - 1 : previous - 1
-                        )
-                    }
-                    onNext={() =>
-                        setSelectedLightboxIndex((previous) =>
-                            previous === null ? previous : previous === lightboxItems.length - 1 ? 0 : previous + 1
-                        )
-                    }
-                    showNavigation={lightboxItems.length > 1}
+                    item={selectedSlideshowItem}
+                    selectedIndex={0}
+                    totalItems={1}
+                    onClose={() => setSelectedSlideshowItem(null)}
+                    onPrev={() => {}}
+                    onNext={() => {}}
+                    showNavigation={false}
                 />
             ) : null}
         </>
