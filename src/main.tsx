@@ -62,6 +62,23 @@ function openPendingRecentAlbum() {
   albumButton.click()
 }
 
+function restoreFullHomeHeroTitle() {
+  const title = document.querySelector<HTMLElement>(".home-hero-title")
+  if (!title) return
+
+  const isBulgarian =
+    document.documentElement.lang.toLowerCase().startsWith("bg") ||
+    title.textContent?.toLowerCase().includes("фотография")
+
+  const fullTitle = isBulgarian
+    ? "Фотография и визуално съдържание с характер и присъствие"
+    : "Photography and visual content with character and presence"
+
+  if (title.textContent?.trim() !== fullTitle) {
+    title.textContent = fullTitle
+  }
+}
+
 document.addEventListener(
   "click",
   (event) => {
@@ -94,9 +111,14 @@ document.addEventListener(
   true,
 )
 
-new MutationObserver(openPendingRecentAlbum).observe(document.body, {
+new MutationObserver(() => {
+  openPendingRecentAlbum()
+  restoreFullHomeHeroTitle()
+}).observe(document.body, {
   childList: true,
   subtree: true,
+  attributes: true,
+  attributeFilter: ["lang"],
 })
 
 window.addEventListener("popstate", () => queueMicrotask(openPendingRecentAlbum))
