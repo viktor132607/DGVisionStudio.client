@@ -228,7 +228,7 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
         max-width: none !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) !important;
+        grid-template-columns: minmax(0, 1fr) calc(87svh * 0.8) !important;
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
@@ -270,9 +270,11 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
     }
 
     main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-        width: min(100%, calc(87svh * 0.8)) !important;
+        width: calc(87svh * 0.8) !important;
+        min-width: calc(87svh * 0.8) !important;
+        max-width: calc(87svh * 0.8) !important;
         height: 87svh !important;
-        max-width: none !important;
+        flex: 0 0 calc(87svh * 0.8) !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
