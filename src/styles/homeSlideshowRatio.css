@@ -1,7 +1,7 @@
 main .min-h-screen > section.home-hero {
     box-sizing: border-box !important;
     width: 100% !important;
-    overflow: hidden !important;
+    overflow: visible !important;
 }
 
 main .min-h-screen > section.home-hero > .home-hero-grid {
@@ -79,19 +79,21 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         display: flex !important;
         align-items: flex-start !important;
         justify-content: center !important;
-        min-height: 88.2svh !important;
-        height: 88.2svh !important;
+        min-height: 87svh !important;
+        height: 87svh !important;
         padding: 0 !important;
     }
 
     main .min-h-screen > section.home-hero > .home-hero-grid {
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) calc(87svh * 0.8) !important;
-        width: min(calc(100vw - 32px), calc(87svh * 1.8)) !important;
-        max-width: none !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
         min-height: 87svh !important;
         height: 87svh !important;
         margin: 0 auto !important;
+        overflow: visible !important;
     }
 
     main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
@@ -103,8 +105,8 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         min-width: 0 !important;
         min-height: 0 !important;
         height: 87svh !important;
-        padding: 1.3svh 3.2svh 0 4svh !important;
-        overflow: hidden !important;
+        padding: 0 3.2svh 0 0 !important;
+        overflow: visible !important;
         box-sizing: border-box !important;
     }
 
@@ -115,7 +117,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     }
 
     main .min-h-screen > section.home-hero .home-hero-title {
-        width: 94% !important;
+        width: 100% !important;
         max-width: none !important;
         font-size: min(6.15svh, 4.25vw) !important;
         line-height: 0.98 !important;
@@ -129,7 +131,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         max-width: none !important;
         min-height: 0 !important;
         margin: 1.6svh 0 0 !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-label {
@@ -144,7 +146,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         flex: 1 1 auto !important;
         width: 100% !important;
         min-height: 0 !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-card {
@@ -197,7 +199,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         min-height: 87svh !important;
         max-height: 87svh !important;
         aspect-ratio: 4 / 5 !important;
-        margin: 1.2svh 0 0 !important;
+        margin: 0 !important;
         border-left: 1px solid rgb(212 212 212) !important;
         border-bottom: 0 !important;
     }
