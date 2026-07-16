@@ -70,3 +70,57 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
         gap: 8px !important;
     }
 }
+
+/* Every non-phone home layout occupies the exact middle 84% of the viewport. */
+@media (min-width: 768px) {
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        box-sizing: border-box !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        padding-left: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-logo,
+    main .min-h-screen > section.home-hero .home-hero-title,
+    main .min-h-screen > section.home-hero .home-recent {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 1024px) and (orientation: landscape) {
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        grid-template-columns: minmax(0, calc(84vw - (87svh * 0.8))) calc(87svh * 0.8) !important;
+        column-gap: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        padding-right: clamp(20px, 2.2vw, 56px) !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        justify-self: end !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px),
+       (min-width: 768px) and (orientation: portrait) {
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        padding-right: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
