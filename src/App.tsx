@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
 import GlobalPageLoader from "./components/GlobalPageLoader"
+import AdminServiceAddShortcut from "./components/AdminServiceAddShortcut"
 
 import Home from "./pages/Home"
 import About from "./pages/About"
@@ -66,6 +67,7 @@ function AppContent() {
 
       <ScrollToTop />
       <Navbar />
+      <AdminServiceAddShortcut />
 
       <div
         className={
