@@ -152,7 +152,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     main .min-h-screen > section.home-hero .home-recent-card {
         position: absolute !important;
         display: block !important;
-        width: min(21.5svh, 27%) !important;
+        width: min(25.8svh, 32.4%) !important;
         overflow: visible !important;
         border: 0 !important;
         background: #ffffff !important;
@@ -171,9 +171,9 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
 
     main .min-h-screen > section.home-hero .home-recent-card-2 {
         top: 7.2svh !important;
-        left: 35% !important;
+        left: 50% !important;
         z-index: 2 !important;
-        transform: rotate(8deg) !important;
+        transform: translateX(-50%) rotate(8deg) !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-card-3 {
