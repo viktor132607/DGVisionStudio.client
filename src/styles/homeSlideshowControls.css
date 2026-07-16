@@ -5,6 +5,9 @@
     align-items: center !important;
     width: 100% !important;
     gap: 12px !important;
+    box-sizing: border-box !important;
+    padding-left: clamp(20px, 4vw, 48px) !important;
+    padding-right: clamp(20px, 4vw, 48px) !important;
 }
 
 .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div > button {
@@ -28,5 +31,7 @@
     .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) > div.absolute.bottom-0 > div {
         grid-template-columns: 40px minmax(0, 1fr) 40px !important;
         gap: 10px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 }
