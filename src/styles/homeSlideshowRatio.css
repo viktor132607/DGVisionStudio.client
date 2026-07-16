@@ -216,3 +216,64 @@ main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
         min-height: 0 !important;
     }
 }
+
+/* Browser zoom increases the CSS viewport. Scale the hero from viewport height instead of fixed pixel caps. */
+@media (min-width: 1536px) and (min-height: 1000px) and (orientation: landscape) {
+    main .min-h-screen > section:first-of-type {
+        justify-content: center !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid {
+        width: min(calc(100vw - 48px), calc(87svh * 1.78)) !important;
+        max-width: none !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
+        padding-left: clamp(40px, 7svh, 150px) !important;
+        padding-right: clamp(28px, 4svh, 90px) !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
+        width: clamp(230px, 31svh, 620px) !important;
+        margin-bottom: clamp(10px, 1.4svh, 28px) !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 {
+        font-size: clamp(58px, 7.2svh, 145px) !important;
+        line-height: 1.01 !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div {
+        width: min(100%, calc(87svh * 0.88)) !important;
+        margin-top: clamp(20px, 2.4svh, 50px) !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a {
+        width: clamp(225px, 27svh, 560px) !important;
+        padding: clamp(12px, 1.5svh, 30px) clamp(12px, 1.5svh, 30px) clamp(36px, 4.6svh, 92px) !important;
+        box-shadow: 0 2svh 4svh rgba(0, 0, 0, 0.17) !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
+        top: 39.5svh !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
+        bottom: 1.5svh !important;
+    }
+
+    main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
+        top: 39svh !important;
+    }
+
+    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+        width: min(100%, calc(87svh * 0.8)) !important;
+        height: 87svh !important;
+        max-width: none !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
