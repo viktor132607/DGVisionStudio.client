@@ -79,8 +79,8 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         display: flex !important;
         align-items: flex-start !important;
         justify-content: center !important;
-        min-height: 87svh !important;
-        height: 87svh !important;
+        min-height: 88.2svh !important;
+        height: 88.2svh !important;
         padding: 0 !important;
     }
 
@@ -197,7 +197,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         min-height: 87svh !important;
         max-height: 87svh !important;
         aspect-ratio: 4 / 5 !important;
-        margin: 0 !important;
+        margin: 1.2svh 0 0 !important;
         border-left: 1px solid rgb(212 212 212) !important;
         border-bottom: 0 !important;
     }
