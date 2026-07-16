@@ -79,7 +79,7 @@ document.addEventListener(
     if (!(target instanceof Element)) return
 
     const recentAlbumLink = target.closest<HTMLAnchorElement>(
-      'main .min-h-screen > section:first-of-type h1 + div a[href="/portfolio"]',
+      'a.home-recent-card[href="/portfolio"]',
     )
     const recentAlbumImage =
       recentAlbumLink?.querySelector<HTMLImageElement>("img[alt]")
