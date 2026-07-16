@@ -1,281 +1,309 @@
-@media (min-width: 1024px), (orientation: landscape) {
-    header {
-        height: 9svh !important;
-    }
-
-    header > div > div {
-        height: 9svh !important;
-    }
-
-    header + div {
-        height: 10svh !important;
-    }
-
-    main .min-h-screen > section:first-of-type {
-        min-height: 87svh !important;
-        height: 87svh !important;
-        display: flex !important;
-        align-items: flex-start !important;
-        box-sizing: border-box !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-    }
-
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid {
-        max-width: 1800px !important;
-        min-height: 87svh !important;
-        height: 87svh !important;
-        flex: 0 1 auto !important;
-    }
-
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
-        position: relative !important;
-        justify-content: flex-start !important;
-        align-self: stretch !important;
-        min-height: 0 !important;
-        height: 87svh !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-    }
-
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
-        width: clamp(190px, 11vw, 250px) !important;
-        margin-top: 0 !important;
-        margin-bottom: 10px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 {
-        margin-top: -2px !important;
-        font-size: clamp(50px, 3.35vw, 64px) !important;
-        line-height: 1.02 !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 700px) !important;
-        margin-top: 20px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div > div:nth-child(2) {
-        position: static !important;
-        display: block !important;
-        width: 100% !important;
-        height: 0 !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div + p,
-    main .min-h-screen > section:first-of-type h1 + p {
-        display: none !important;
-    }
-
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-        height: 87svh !important;
-        width: auto !important;
-        max-width: none !important;
-        min-height: 0 !important;
-        aspect-ratio: 4 / 5 !important;
-        margin: 0 auto !important;
-        align-self: stretch !important;
-        justify-self: center !important;
-    }
+main .min-h-screen > section.home-hero {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    overflow: hidden !important;
 }
 
-@media (min-width: 768px) and (max-width: 1279px) {
-    header {
-        height: 9svh !important;
-    }
-
-    header > div:first-child > div {
-        height: 9svh !important;
-    }
-
-    header + div {
-        height: 10svh !important;
-    }
-
-    header > div:first-child > div > nav {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        gap: clamp(10px, 1.4vw, 18px) !important;
-    }
-
-    header > div:first-child > div > nav a {
-        font-size: clamp(11px, 1.2vw, 13px) !important;
-    }
-
-    header > div:first-child > div > div:last-child {
-        gap: 8px !important;
-    }
-
-    header > div:first-child > div > div:last-child > .xl\:inline-flex {
-        display: inline-flex !important;
-        height: 36px !important;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-        font-size: 12px !important;
-    }
-
-    header > div:first-child > div > div:last-child > .md\:inline-flex.xl\:hidden {
-        display: none !important;
-    }
-
-    header > div:nth-child(2) {
-        display: none !important;
-    }
+main .min-h-screen > section.home-hero > .home-hero-grid {
+    box-sizing: border-box !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a {
-    position: absolute !important;
+main .min-h-screen > section.home-hero .home-hero-logo {
     display: block !important;
-    width: clamp(190px, 13.5vw, 270px) !important;
-    overflow: visible !important;
-    border: 0 !important;
-    background: #ffffff !important;
-    padding: 12px 12px 36px !important;
-    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.17) !important;
-    transform-origin: top center !important;
+    height: auto !important;
+    object-fit: contain !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
-    left: 0 !important;
-    top: calc(47svh - 50px) !important;
-    z-index: 1 !important;
-    transform: rotate(0deg) !important;
+main .min-h-screen > section.home-hero .home-hero-title {
+    margin: 0 !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.01em !important;
+    text-wrap: balance !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
-    left: 34% !important;
-    top: auto !important;
-    bottom: 26px !important;
-    z-index: 1 !important;
-    transform: rotate(10deg) !important;
+main .min-h-screen > section.home-hero .home-recent-label {
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.2em !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-    left: calc(68% - 45px) !important;
-    top: 42svh !important;
-    bottom: auto !important;
-    z-index: 2 !important;
-    transform: rotate(-2deg) !important;
-}
-
-main .min-h-screen > section:first-of-type h1 + div a > div:first-child {
+main .min-h-screen > section.home-hero .home-recent-image-frame {
+    width: 100% !important;
     aspect-ratio: 4 / 5 !important;
     overflow: hidden !important;
     background: #f3f3f3 !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a > div:first-child img {
+main .min-h-screen > section.home-hero .home-recent-image {
+    display: block !important;
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
     object-position: center top !important;
+    transition: transform 300ms ease !important;
 }
 
-main .min-h-screen > section:first-of-type h1 + div a > div:nth-child(2) {
-    display: none !important;
+main .min-h-screen > section.home-hero .home-recent-card:hover .home-recent-image {
+    transform: scale(1.035) !important;
 }
 
-@media (min-width: 1536px) and (orientation: landscape) {
-    main .min-h-screen > section:first-of-type h1 {
-        margin-top: -4px !important;
-        font-size: clamp(58px, 3.45vw, 68px) !important;
-        line-height: 1.01 !important;
-    }
-
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
-        width: clamp(230px, 12vw, 285px) !important;
-        margin-bottom: 12px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, 760px) !important;
-        margin-top: 22px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div a {
-        width: clamp(225px, 14vw, 310px) !important;
-        padding: 14px 14px 42px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
-        top: calc(45svh - 50px) !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
-        bottom: 14px !important;
-    }
-
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-        top: 39svh !important;
-    }
+main .min-h-screen > section.home-hero .home-slideshow {
+    position: relative !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
-@media (max-width: 1023px) and (orientation: portrait) {
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
-        height: auto !important;
-        min-height: 0 !important;
-    }
+main .min-h-screen > section.home-hero .home-slideshow-media {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
 }
 
-/* Browser zoom increases the CSS viewport. Scale the hero from viewport height instead of fixed pixel caps. */
-@media (min-width: 1536px) and (min-height: 1000px) and (orientation: landscape) {
-    main .min-h-screen > section:first-of-type {
+main .min-h-screen > section.home-hero .home-slideshow-controls {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    box-sizing: border-box !important;
+}
+
+@media (min-width: 1024px) and (orientation: landscape) {
+    main .min-h-screen > section.home-hero {
+        display: flex !important;
+        align-items: flex-start !important;
         justify-content: center !important;
+        min-height: 87svh !important;
+        height: 87svh !important;
+        padding: 0 !important;
     }
 
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid {
-        width: min(calc(100vw - 48px), calc(87svh * 1.78)) !important;
-        max-width: none !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        display: grid !important;
         grid-template-columns: minmax(0, 1fr) calc(87svh * 0.8) !important;
+        width: min(calc(100vw - 32px), calc(87svh * 1.8)) !important;
+        max-width: none !important;
+        min-height: 87svh !important;
+        height: 87svh !important;
+        margin: 0 auto !important;
     }
 
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child {
-        padding-left: clamp(40px, 7svh, 150px) !important;
-        padding-right: clamp(28px, 4svh, 90px) !important;
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        position: relative !important;
+        order: 1 !important;
+        display: grid !important;
+        grid-template-rows: auto auto minmax(0, 1fr) !important;
+        align-content: start !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        height: 87svh !important;
+        padding: 1.3svh 3.2svh 0 4svh !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
     }
 
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:first-child > img:first-child {
-        width: clamp(230px, 31svh, 620px) !important;
-        margin-bottom: clamp(10px, 1.4svh, 28px) !important;
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        width: min(27svh, 22vw) !important;
+        max-width: none !important;
+        margin: 0 0 1.2svh !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 {
-        font-size: clamp(58px, 7.2svh, 145px) !important;
-        line-height: 1.01 !important;
+    main .min-h-screen > section.home-hero .home-hero-title {
+        width: 94% !important;
+        max-width: none !important;
+        font-size: min(6.15svh, 4.25vw) !important;
+        line-height: 0.98 !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div {
-        width: min(100%, calc(87svh * 0.88)) !important;
-        margin-top: clamp(20px, 2.4svh, 50px) !important;
+    main .min-h-screen > section.home-hero .home-recent {
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 1.6svh 0 0 !important;
+        overflow: hidden !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div a {
-        width: clamp(225px, 27svh, 560px) !important;
-        padding: clamp(12px, 1.5svh, 30px) clamp(12px, 1.5svh, 30px) clamp(36px, 4.6svh, 92px) !important;
-        box-shadow: 0 2svh 4svh rgba(0, 0, 0, 0.17) !important;
+    main .min-h-screen > section.home-hero .home-recent-label {
+        flex: 0 0 auto !important;
+        margin: 0 0 0.8svh !important;
+        font-size: 0.95svh !important;
+        line-height: 1.2 !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(1) {
-        top: 39.5svh !important;
+    main .min-h-screen > section.home-hero .home-recent-collage {
+        position: relative !important;
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(2) {
-        bottom: 1.5svh !important;
+    main .min-h-screen > section.home-hero .home-recent-card {
+        position: absolute !important;
+        display: block !important;
+        width: min(21.5svh, 27%) !important;
+        overflow: visible !important;
+        border: 0 !important;
+        background: #ffffff !important;
+        padding: 1.15svh 1.15svh 3.5svh !important;
+        box-shadow: 0 1.8svh 3.5svh rgba(0, 0, 0, 0.17) !important;
+        transform-origin: top center !important;
+        box-sizing: border-box !important;
     }
 
-    main .min-h-screen > section:first-of-type h1 + div a:nth-child(3) {
-        top: 39svh !important;
+    main .min-h-screen > section.home-hero .home-recent-card-1 {
+        top: 1.2svh !important;
+        left: 0 !important;
+        z-index: 1 !important;
+        transform: rotate(0deg) !important;
     }
 
-    main .min-h-screen > section:first-of-type > div.mx-auto.grid > div:nth-child(2) {
+    main .min-h-screen > section.home-hero .home-recent-card-2 {
+        top: 7.2svh !important;
+        left: 35% !important;
+        z-index: 2 !important;
+        transform: rotate(8deg) !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-card-3 {
+        top: 0.5svh !important;
+        right: 0 !important;
+        left: auto !important;
+        z-index: 1 !important;
+        transform: rotate(-2deg) !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-description {
+        display: none !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        order: 2 !important;
+        justify-self: end !important;
+        align-self: start !important;
         width: calc(87svh * 0.8) !important;
         min-width: calc(87svh * 0.8) !important;
         max-width: calc(87svh * 0.8) !important;
         height: 87svh !important;
-        flex: 0 0 calc(87svh * 0.8) !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+        min-height: 87svh !important;
+        max-height: 87svh !important;
+        aspect-ratio: 4 / 5 !important;
+        margin: 0 !important;
+        border-left: 1px solid rgb(212 212 212) !important;
+        border-bottom: 0 !important;
+    }
+}
+
+@media (max-width: 1023px), (orientation: portrait) {
+    main .min-h-screen > section.home-hero {
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 12px !important;
+        overflow: visible !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        width: min(100%, 900px) !important;
+        max-width: 900px !important;
+        min-height: 0 !important;
+        height: auto !important;
+        margin: 0 auto !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        order: 1 !important;
+        justify-self: center !important;
+        width: min(100%, 560px) !important;
+        min-width: 0 !important;
+        max-width: 560px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        aspect-ratio: 4 / 5 !important;
+        margin: 0 auto !important;
+        border: 1px solid rgb(212 212 212) !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        order: 2 !important;
+        display: block !important;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 32px 16px 24px !important;
+        overflow: visible !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        width: min(230px, 62vw) !important;
+        max-width: 100% !important;
+        margin: 0 0 16px !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-title {
+        width: 100% !important;
+        max-width: 760px !important;
+        font-size: clamp(32px, 8vw, 56px) !important;
+        line-height: 1.02 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 24px 0 0 !important;
+        overflow: visible !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-label {
+        margin: 0 0 10px !important;
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-collage {
+        position: static !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 14px !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-card {
+        position: static !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        overflow: hidden !important;
+        border: 1px solid rgb(229 229 229) !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-description {
+        display: block !important;
+        max-width: 720px !important;
+        margin: 24px 0 0 !important;
+        font-size: 15px !important;
+        line-height: 1.75 !important;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    main .min-h-screen > section.home-hero .home-recent-collage {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
 }
