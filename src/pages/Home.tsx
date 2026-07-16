@@ -53,7 +53,7 @@ export default function Home() {
                 }
             })
             .filter((album) => album.coverSrc.trim().length > 0)
-            .slice(0, 3)
+            .slice(0, 4)
     }, [albumsData, imagesData])
 
     useEffect(() => {
@@ -220,7 +220,7 @@ export default function Home() {
                                             <Link
                                                 key={album.id}
                                                 to="/portfolio"
-                                                className={`home-recent-card home-recent-card-${index + 1}`}
+                                                className={`home-recent-card home-recent-card-${index + 1} ${index === 3 ? "lg:hidden" : ""}`}
                                             >
                                                 <div className="home-recent-image-frame">
                                                     <img
