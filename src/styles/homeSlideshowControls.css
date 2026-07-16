@@ -73,6 +73,10 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
 
 /* Every non-phone home layout occupies the exact middle 84% of the viewport. */
 @media (min-width: 768px) {
+    main .min-h-screen > section.home-hero {
+        overflow: visible !important;
+    }
+
     main .min-h-screen > section.home-hero > .home-hero-grid {
         box-sizing: border-box !important;
         width: 84vw !important;
@@ -80,22 +84,33 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
         max-width: 84vw !important;
         margin-left: auto !important;
         margin-right: auto !important;
+        overflow: visible !important;
     }
 
     main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        min-width: 0 !important;
         padding-left: 0 !important;
+        overflow: visible !important;
     }
 
     main .min-h-screen > section.home-hero .home-hero-logo,
     main .min-h-screen > section.home-hero .home-hero-title,
     main .min-h-screen > section.home-hero .home-recent {
+        position: relative !important;
+        left: 0 !important;
+        max-width: 100% !important;
         margin-left: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent,
+    main .min-h-screen > section.home-hero .home-recent-collage {
+        overflow: visible !important;
     }
 }
 
 @media (min-width: 1024px) and (orientation: landscape) {
     main .min-h-screen > section.home-hero > .home-hero-grid {
-        grid-template-columns: minmax(0, calc(84vw - (87svh * 0.8))) calc(87svh * 0.8) !important;
+        grid-template-columns: minmax(0, 1fr) clamp(360px, calc(87svh * 0.8), 48vw) !important;
         column-gap: 0 !important;
     }
 
@@ -103,8 +118,22 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
         padding-right: clamp(20px, 2.2vw, 56px) !important;
     }
 
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        width: min(27svh, 100%) !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-title {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: clamp(42px, min(5.8svh, 3.9vw), 72px) !important;
+        overflow: visible !important;
+    }
+
     main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
         justify-self: end !important;
+        width: clamp(360px, calc(87svh * 0.8), 48vw) !important;
+        min-width: clamp(360px, calc(87svh * 0.8), 48vw) !important;
+        max-width: clamp(360px, calc(87svh * 0.8), 48vw) !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
     }
