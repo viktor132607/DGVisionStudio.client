@@ -70,3 +70,35 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
         gap: 8px !important;
     }
 }
+
+/* Non-phone layouts always use an exact 8% / 84% / 8% horizontal split. */
+@media (min-width: 768px) {
+    header > div > div {
+        box-sizing: border-box !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        box-sizing: border-box !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
+        margin-left: 8vw !important;
+        margin-right: 8vw !important;
+    }
+
+    main .min-h-screen > section.home-hero + section > div {
+        box-sizing: border-box !important;
+        width: 84vw !important;
+        min-width: 84vw !important;
+        max-width: 84vw !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
