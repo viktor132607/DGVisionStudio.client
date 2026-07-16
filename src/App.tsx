@@ -67,7 +67,13 @@ function AppContent() {
       <ScrollToTop />
       <Navbar />
 
-      <div className="h-[72px] shrink-0 md:h-[76px] xl:h-[84px] 2xl:h-[88px]" />
+      <div
+        className={
+          isHomePage
+            ? "h-[72px] shrink-0 md:h-[9svh]"
+            : "h-[72px] shrink-0 md:h-[76px] xl:h-[84px] 2xl:h-[88px]"
+        }
+      />
 
       <main className="w-full flex-1">
         <div className={isAdminPage || isPortfolioPage || isHomePage ? "w-full max-w-none" : "mx-auto w-full max-w-[1800px]"}>
