@@ -2,10 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 import Seo from "../components/Seo"
+import PortfolioLightbox from "../components/portfolio/PortfolioLightbox"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
 import { usePortfolioData } from "../hooks/usePortfolioData"
+import { usePortfolioLightbox } from "../hooks/usePortfolioLightbox"
 import { useThemeLogo } from "../hooks/useThemeLogo"
+import type { PortfolioItem } from "../types/portfolio"
 import { resolveAssetUrl } from "../utils/resolveAssetUrl"
 
 function isVideoPath(value?: string | null) {
@@ -18,7 +21,7 @@ export default function Home() {
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const logoSrc = useThemeLogo()
     const { serviceCards } = useHomeContent()
-    const { albumsData, imagesData } = usePortfolioData()
+    const { categoriesData, albumsData, imagesData } = usePortfolioData()
     const { introVideoUrl, currentImage, previousImage, isTransitioning, direction, isMobile, goNext, goPrevious } =
         useHomePortfolioSlideshow(4500, 700)
 
@@ -27,6 +30,8 @@ export default function Home() {
     const introVideoRef = useRef<HTMLVideoElement | null>(null)
     const [introVideoDone, setIntroVideoDone] = useState(!hasIntroVideo)
     const [isVideoMuted, setIsVideoMuted] = useState(false)
+    const [lightboxAlbumId, setLightboxAlbumId] = useState<number | null>(null)
+    const [selectedLightboxIndex, setSelectedLightboxIndex] = useState<number | null>(null)
 
     const recentAlbums = useMemo(() => {
         return albumsData
@@ -52,6 +57,54 @@ export default function Home() {
             .filter((album) => album.coverSrc.trim().length > 0)
             .slice(0, 3)
     }, [albumsData, imagesData])
+
+    const lightboxItems = useMemo<PortfolioItem[]>(() => {
+        if (lightboxAlbumId === null) return []
+
+        const album = albumsData.find((item) => item.id === lightboxAlbumId && item.isPublished)
+        if (!album) return []
+
+        const category = categoriesData.find((item) => item.id === album.portfolioCategoryId)
+        const categoryKey = category?.key || "portfolio"
+        const categoryLabel = isBg
+            ? category?.name || album.title
+            : category?.nameEn?.trim() || category?.name || album.title
+
+        return imagesData
+            .filter((image) => image.portfolioAlbumId === lightboxAlbumId && image.isPublished)
+            .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+            .map((image, index) => {
+                const isVideo = image.mediaType === "Video" || isVideoPath(image.imageUrl)
+
+                return {
+                    id: image.id,
+                    src: isVideo ? image.imageUrl : image.thumbnailUrl?.trim() || image.imageUrl,
+                    originalSrc: image.imageUrl,
+                    category: categoryKey,
+                    categoryLabel,
+                    albumKey: album.slug,
+                    albumLabel: album.title,
+                    mediaType: isVideo ? "Video" : image.mediaType || "Image",
+                    contentType: image.contentType,
+                    title:
+                        image.name?.trim() ||
+                        image.altText?.trim() ||
+                        image.caption?.trim() ||
+                        `${album.title} ${index + 1}`,
+                }
+            })
+    }, [albumsData, categoriesData, imagesData, isBg, lightboxAlbumId])
+
+    const selectedLightboxItem =
+        selectedLightboxIndex !== null ? lightboxItems[selectedLightboxIndex] : null
+
+    usePortfolioLightbox(selectedLightboxIndex, lightboxItems.length, setSelectedLightboxIndex)
+
+    useEffect(() => {
+        if (selectedLightboxIndex === null) {
+            setLightboxAlbumId(null)
+        }
+    }, [selectedLightboxIndex])
 
     useEffect(() => {
         if (location.pathname !== "/") return
@@ -98,6 +151,36 @@ export default function Home() {
         void video.play()
     }
 
+    const showingIntroVideo = hasIntroVideo && !introVideoDone
+
+    const openCurrentSlideshowImage = () => {
+        const albumId = currentImage?.portfolioAlbumId
+        if (showingIntroVideo || !currentImage || albumId === undefined) return
+
+        const albumImages = imagesData
+            .filter((image) => image.portfolioAlbumId === albumId && image.isPublished)
+            .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+
+        if (albumImages.length === 0) return
+
+        const currentSrc = currentImage.imageUrl?.trim()
+        const currentThumbnail = currentImage.thumbnailUrl?.trim()
+        const imageIndex = albumImages.findIndex(
+            (image) =>
+                image.id === currentImage.id ||
+                image.imageUrl === currentSrc ||
+                image.thumbnailUrl?.trim() === currentThumbnail
+        )
+
+        setLightboxAlbumId(albumId)
+        setSelectedLightboxIndex(imageIndex >= 0 ? imageIndex : 0)
+    }
+
+    const closeLightbox = () => {
+        setSelectedLightboxIndex(null)
+        setLightboxAlbumId(null)
+    }
+
     const homeJsonLd = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
@@ -115,8 +198,6 @@ export default function Home() {
             ? "DG Vision Studio предлага фотография и визуално съдържание за брандове, продукти, кампании, портрети и събития."
             : "DG Vision Studio offers photography and visual content for brands, products, campaigns, portraits, and events.",
     }
-
-    const showingIntroVideo = hasIntroVideo && !introVideoDone
 
     const slideshowEyebrow = showingIntroVideo
         ? "DG Vision Studio"
@@ -198,7 +279,12 @@ export default function Home() {
                         </div>
 
                         <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
-                            <div className="relative h-full w-full overflow-hidden bg-neutral-950">
+                            <div
+                                className={`relative h-full w-full overflow-hidden bg-neutral-950 ${
+                                    !showingIntroVideo && currentImage ? "cursor-zoom-in" : ""
+                                }`}
+                                onClick={openCurrentSlideshowImage}
+                            >
                                 <div className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-950 via-zinc-900 to-black">
                                     <div className="absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
                                     <div className="absolute bottom-20 right-0 h-52 w-52 rounded-full bg-white/5 blur-3xl" />
@@ -245,7 +331,10 @@ export default function Home() {
 
                                         <button
                                             type="button"
-                                            onClick={toggleVideoMute}
+                                            onClick={(event) => {
+                                                event.stopPropagation()
+                                                toggleVideoMute()
+                                            }}
                                             aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
                                             className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border border-white/40 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80 sm:right-5 sm:top-5 sm:h-11 sm:w-11"
                                         >
@@ -417,6 +506,27 @@ export default function Home() {
                     </div>
                 </section>
             </div>
+
+            {selectedLightboxItem ? (
+                <PortfolioLightbox
+                    isBg={isBg}
+                    item={selectedLightboxItem}
+                    selectedIndex={selectedLightboxIndex}
+                    totalItems={lightboxItems.length}
+                    onClose={closeLightbox}
+                    onPrev={() =>
+                        setSelectedLightboxIndex((previous) =>
+                            previous === null ? previous : previous === 0 ? lightboxItems.length - 1 : previous - 1
+                        )
+                    }
+                    onNext={() =>
+                        setSelectedLightboxIndex((previous) =>
+                            previous === null ? previous : previous === lightboxItems.length - 1 ? 0 : previous + 1
+                        )
+                    }
+                    showNavigation={lightboxItems.length > 1}
+                />
+            ) : null}
         </>
     )
 }
