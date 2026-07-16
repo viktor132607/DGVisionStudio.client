@@ -25,6 +25,14 @@ function readPendingRecentAlbum(): PendingRecentAlbum | null {
   }
 }
 
+function savePendingRecentAlbum(album: PendingRecentAlbum) {
+  try {
+    sessionStorage.setItem(pendingRecentAlbumKey, JSON.stringify(album))
+  } catch {
+    // Navigation still works normally when storage is unavailable.
+  }
+}
+
 function clearPendingRecentAlbum() {
   try {
     sessionStorage.removeItem(pendingRecentAlbumKey)
@@ -40,12 +48,12 @@ function openPendingRecentAlbum() {
   if (!pendingAlbum) return
 
   const albumImages = Array.from(
-    document.querySelectorAll<HTMLImageElement>('main button img[alt]'),
+    document.querySelectorAll<HTMLImageElement>("main button img[alt]"),
   )
 
   const matchingImage =
-    albumImages.find((image) => image.src === pendingAlbum.src) ??
-    albumImages.find((image) => image.alt.trim() === pendingAlbum.title)
+    albumImages.find((image) => image.alt.trim() === pendingAlbum.title) ??
+    albumImages.find((image) => image.src === pendingAlbum.src)
   const albumButton = matchingImage?.closest<HTMLButtonElement>("button")
 
   if (!albumButton) return
@@ -70,24 +78,36 @@ document.addEventListener(
     const target = event.target
     if (!(target instanceof Element)) return
 
-    const albumLink = target.closest<HTMLAnchorElement>(
+    const recentAlbumLink = target.closest<HTMLAnchorElement>(
       'main .min-h-screen > section:first-of-type h1 + div a[href="/portfolio"]',
     )
-    const albumImage = albumLink?.querySelector<HTMLImageElement>("img[alt]")
+    const recentAlbumImage =
+      recentAlbumLink?.querySelector<HTMLImageElement>("img[alt]")
 
-    if (!albumImage) return
-
-    try {
-      sessionStorage.setItem(
-        pendingRecentAlbumKey,
-        JSON.stringify({
-          title: albumImage.alt.trim(),
-          src: albumImage.currentSrc || albumImage.src,
-        } satisfies PendingRecentAlbum),
-      )
-    } catch {
-      // Navigation still works normally when storage is unavailable.
+    if (recentAlbumImage) {
+      savePendingRecentAlbum({
+        title: recentAlbumImage.alt.trim(),
+        src: recentAlbumImage.currentSrc || recentAlbumImage.src,
+      })
+      return
     }
+
+    if (target.closest("button")) return
+
+    const slideshow = target.closest<HTMLElement>(
+      "main .min-h-screen > section:first-of-type > div > div:nth-child(2)",
+    )
+    const currentSlideshowImage =
+      slideshow?.querySelector<HTMLImageElement>('img[loading="eager"][alt]')
+
+    if (!currentSlideshowImage) return
+
+    savePendingRecentAlbum({
+      title: currentSlideshowImage.alt.trim(),
+      src: currentSlideshowImage.currentSrc || currentSlideshowImage.src,
+    })
+
+    window.location.assign("/portfolio")
   },
   true,
 )
