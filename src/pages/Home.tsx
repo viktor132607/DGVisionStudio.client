@@ -195,38 +195,38 @@ export default function Home() {
             />
 
             <div className="min-h-screen overflow-x-hidden bg-white text-neutral-900 dark:bg-zinc-900 dark:text-white">
-                <section className="bg-white pt-6 sm:pt-7 lg:pt-8 dark:bg-zinc-900">
-                    <div className="mx-auto grid min-h-[auto] w-full max-w-[1700px] grid-cols-1 lg:min-h-[620px] lg:grid-cols-[1.08fr_0.92fr] xl:min-h-[700px] 2xl:min-h-[760px]">
-                        <div className="order-2 flex flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 md:px-8 md:py-14 lg:order-1 lg:px-10 lg:py-16 xl:px-14 2xl:px-20">
+                <section className="home-hero bg-white dark:bg-zinc-900">
+                    <div className="home-hero-grid">
+                        <div className="home-hero-copy">
                             <img
                                 src={logoSrc}
                                 alt="DG Vision Studio"
-                                className="mb-4 block h-auto w-[220px] max-w-full object-contain sm:mb-5 sm:w-[260px] md:w-[300px]"
+                                className="home-hero-logo"
                             />
 
-                            <h1 className="max-w-[1080px] text-[28px] font-extrabold uppercase leading-[1.1] tracking-[0.01em] text-neutral-950 [text-wrap:balance] dark:text-white sm:text-[34px] md:text-[40px] md:leading-[1.08] lg:text-[42px] xl:text-[48px] 2xl:text-[52px]">
+                            <h1 className="home-hero-title text-neutral-950 dark:text-white">
                                 {isBg
                                     ? "Фотография и визуално съдържание"
                                     : "Photography and visual content"}
                             </h1>
 
                             {recentAlbums.length > 0 ? (
-                                <div className="mt-5 max-w-[560px]">
-                                    <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+                                <div className="home-recent">
+                                    <div className="home-recent-label text-neutral-500">
                                         Recent photography
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {recentAlbums.map((album) => (
+                                    <div className="home-recent-collage">
+                                        {recentAlbums.map((album, index) => (
                                             <Link
                                                 key={album.id}
                                                 to="/portfolio"
-                                                className="group block overflow-hidden border border-neutral-200 bg-white transition hover:border-neutral-950"
+                                                className={`home-recent-card home-recent-card-${index + 1}`}
                                             >
-                                                <div className="aspect-[4/5] overflow-hidden bg-neutral-100">
+                                                <div className="home-recent-image-frame">
                                                     <img
                                                         src={album.coverSrc}
                                                         alt={album.title}
-                                                        className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.04]"
+                                                        className="home-recent-image"
                                                     />
                                                 </div>
                                             </Link>
@@ -235,16 +235,16 @@ export default function Home() {
                                 </div>
                             ) : null}
 
-                            <p className="mt-5 max-w-2xl text-[14px] leading-7 text-neutral-600 dark:text-zinc-300 sm:mt-6 sm:text-[15px] sm:leading-8 md:text-[16px] lg:max-w-[640px] xl:max-w-[700px]">
+                            <p className="home-hero-description text-neutral-600 dark:text-zinc-300">
                                 {isBg
                                     ? "Създаваме модерно визуално съдържание за брандове, продукти, кампании и лични фотосесии. Подходът ни е изчистен, силно визуален и насочен към кадри, които остават."
                                     : "We create modern visual content for brands, products, campaigns, and personal photoshoots. Our approach is clean, visually strong, and focused on images that stay with people."}
                             </p>
                         </div>
 
-                        <div className="order-1 relative aspect-[9/16] min-h-0 overflow-hidden border-b border-neutral-300 bg-black dark:border-zinc-700 sm:aspect-[9/16] md:aspect-[9/16] lg:order-2 lg:aspect-auto lg:min-h-full lg:border-b-0 lg:border-l">
+                        <div className="home-slideshow bg-black dark:border-zinc-700">
                             <div
-                                className={`relative h-full w-full overflow-hidden bg-neutral-950 ${
+                                className={`home-slideshow-media bg-neutral-950 ${
                                     !showingIntroVideo && currentImage ? "cursor-zoom-in" : ""
                                 }`}
                                 onClick={openCurrentSlideshowImage}
@@ -356,8 +356,8 @@ export default function Home() {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
                             </div>
 
-                            <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/65 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5 md:px-7 lg:px-6 xl:px-8">
-                                <div className="flex items-center justify-between gap-3">
+                            <div className="home-slideshow-controls border-t border-white/10 bg-black/65 backdrop-blur-sm">
+                                <div className="home-slideshow-controls-grid">
                                     <button
                                         type="button"
                                         onClick={goPrevious}
@@ -370,7 +370,7 @@ export default function Home() {
 
                                     <div
                                         key={showingIntroVideo ? "intro-video-text" : currentImage?.id ?? "fallback-text"}
-                                        className="min-w-0 flex-1 animate-[fadeUp_500ms_ease-out] text-center"
+                                        className="min-w-0 animate-[fadeUp_500ms_ease-out] text-center"
                                     >
                                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:text-[11px] sm:tracking-[0.28em] md:text-[12px]">
                                             {slideshowEyebrow}
