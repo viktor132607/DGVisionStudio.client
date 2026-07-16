@@ -11,8 +11,14 @@
     }
 
     main .min-h-screen > section:nth-of-type(2) > div > div.grid {
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-        gap: clamp(12px, 0.8vw, 18px) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 20px !important;
         width: 100% !important;
+    }
+}
+
+@media (min-width: 1880px) {
+    main .min-h-screen > section:nth-of-type(2) > div > div.grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     }
 }
