@@ -63,6 +63,7 @@ main .min-h-screen > section.home-hero .home-slideshow-media {
     width: 100% !important;
     height: 100% !important;
     overflow: hidden !important;
+    cursor: pointer !important;
 }
 
 main .min-h-screen > section.home-hero .home-slideshow-controls {
