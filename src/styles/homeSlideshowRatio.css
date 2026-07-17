@@ -26,9 +26,13 @@ main .min-h-screen > section.home-hero .home-hero-title {
 }
 
 main .min-h-screen > section.home-hero .home-recent-label {
-    font-weight: 900 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.2em !important;
+    width: 100% !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-style: italic !important;
+    font-weight: 400 !important;
+    text-align: center !important;
+    text-transform: none !important;
+    letter-spacing: 0.08em !important;
 }
 
 main .min-h-screen > section.home-hero .home-recent-image-frame {
@@ -138,7 +142,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     main .min-h-screen > section.home-hero .home-recent-label {
         flex: 0 0 auto !important;
         margin: 0 0 0.8svh !important;
-        font-size: 0.95svh !important;
+        font-size: 1.15svh !important;
         line-height: 1.2 !important;
     }
 
@@ -174,7 +178,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         top: 1svh !important;
         left: 50% !important;
         z-index: 2 !important;
-        transform: translateX(-50%) rotate(8deg) !important;
+        transform: translateX(-50%) rotate(4deg) !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-card-3 {
@@ -269,7 +273,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
 
     main .min-h-screen > section.home-hero .home-recent-label {
         margin: 0 0 10px !important;
-        font-size: 10px !important;
+        font-size: 13px !important;
         line-height: 1.2 !important;
     }
 
