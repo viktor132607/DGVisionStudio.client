@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import Seo from "../components/Seo"
+import { useAuth } from "../context/AuthContext"
 import { apiFetchJson } from "../services/api"
 
 type PricingMode = "Fixed" | "Negotiable"
@@ -22,6 +23,7 @@ function normalizePricingMode(value?: string | null): PricingMode {
 
 export default function PriceList() {
     const { i18n } = useTranslation()
+    const { isAdmin } = useAuth()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
     const [items, setItems] = useState<PricingItem[]>([])
     const [loading, setLoading] = useState(true)
@@ -79,6 +81,7 @@ export default function PriceList() {
               loading: "Зареждане...",
               empty: "Все още няма добавени цени.",
               negotiable: "По договаряне",
+              addPricing: "Добави цена",
           }
         : {
               seoTitle: "Price List | DG Vision Studio",
@@ -96,6 +99,7 @@ export default function PriceList() {
               loading: "Loading...",
               empty: "No pricing items have been added yet.",
               negotiable: "By agreement",
+              addPricing: "Add price",
           }
 
     const getPriceText = (item: PricingItem) => {
@@ -126,7 +130,7 @@ export default function PriceList() {
                                 <div className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-8 text-center text-[14px] font-bold text-neutral-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                                     {t.loading}
                                 </div>
-                            ) : sortedItems.length > 0 ? (
+                            ) : sortedItems.length > 0 || isAdmin ? (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                     {sortedItems.map((item) => (
                                         <article
@@ -153,6 +157,35 @@ export default function PriceList() {
                                             </div>
                                         </article>
                                     ))}
+
+                                    {isAdmin ? (
+                                        <Link
+                                            to="/admin/pricing"
+                                            aria-label={t.addPricing}
+                                            title={t.addPricing}
+                                            className="group flex min-h-[220px] items-center justify-center rounded-[26px] border-2 border-dashed border-neutral-300 bg-neutral-50 p-5 text-neutral-950 transition hover:-translate-y-1 hover:border-neutral-950 hover:bg-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900 sm:p-6"
+                                        >
+                                            <span className="flex flex-col items-center gap-4 text-center">
+                                                <span className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-neutral-950 transition group-hover:scale-105 dark:border-white">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.8"
+                                                        strokeLinecap="round"
+                                                        className="h-10 w-10"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path d="M12 5v14M5 12h14" />
+                                                    </svg>
+                                                </span>
+                                                <span className="text-sm font-black uppercase tracking-[0.14em]">
+                                                    {t.addPricing}
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    ) : null}
                                 </div>
                             ) : (
                                 <div className="rounded-[26px] border border-neutral-300 bg-neutral-50 p-8 text-center text-[14px] font-bold text-neutral-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
