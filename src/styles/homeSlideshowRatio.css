@@ -153,7 +153,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     main .min-h-screen > section.home-hero .home-recent-card {
         position: absolute !important;
         display: block !important;
-        width: min(25.8svh, 32.4%) !important;
+        width: min(28.38svh, 35.64%) !important;
         overflow: visible !important;
         border: 0 !important;
         background: #ffffff !important;
