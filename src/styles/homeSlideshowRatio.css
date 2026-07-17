@@ -26,13 +26,16 @@ main .min-h-screen > section.home-hero .home-hero-title {
 }
 
 main .min-h-screen > section.home-hero .home-recent-label {
+    display: block !important;
     width: 100% !important;
-    font-family: Georgia, "Times New Roman", serif !important;
+    font-family: "Brush Script MT", "Segoe Script", "Snell Roundhand", "Apple Chancery", cursive !important;
     font-style: italic !important;
     font-weight: 400 !important;
     text-align: center !important;
     text-transform: none !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.02em !important;
+    transform: skewX(-10deg) !important;
+    transform-origin: center !important;
 }
 
 main .min-h-screen > section.home-hero .home-recent-image-frame {
@@ -142,8 +145,8 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     main .min-h-screen > section.home-hero .home-recent-label {
         flex: 0 0 auto !important;
         margin: 0 0 0.8svh !important;
-        font-size: 1.15svh !important;
-        line-height: 1.2 !important;
+        font-size: 2svh !important;
+        line-height: 1 !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-collage {
@@ -163,7 +166,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
         background: #ffffff !important;
         padding: 1.15svh 1.15svh 3.5svh !important;
         box-shadow: 0 1.8svh 3.5svh rgba(0, 0, 0, 0.17) !important;
-        transform-origin: top center !important;
+        transform-origin: center center !important;
         box-sizing: border-box !important;
     }
 
@@ -273,8 +276,8 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
 
     main .min-h-screen > section.home-hero .home-recent-label {
         margin: 0 0 10px !important;
-        font-size: 13px !important;
-        line-height: 1.2 !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
     }
 
     main .min-h-screen > section.home-hero .home-recent-collage {
