@@ -48,7 +48,7 @@ export default function HomeSlideshowAlbumLightbox() {
             const visibleImages = Array.from(
                 slideshow.querySelectorAll<HTMLImageElement>("img.object-cover.object-top")
             )
-            const visibleImage = visibleImages.at(-1)
+            const visibleImage = visibleImages[visibleImages.length - 1]
             if (!visibleImage) return
 
             const visiblePath = normalizeMediaPath(visibleImage.currentSrc || visibleImage.src)
@@ -61,7 +61,7 @@ export default function HomeSlideshowAlbumLightbox() {
                     )
                 ) ??
                 imagesData.find((image) =>
-                    [image.name, image.altText, image.caption, image.albumTitle].some(
+                    [image.name, image.altText, image.caption].some(
                         (candidate) => candidate?.trim() === visibleAlt
                     )
                 )
@@ -70,11 +70,9 @@ export default function HomeSlideshowAlbumLightbox() {
 
             const album = albumsData.find((item) => item.id === currentImage.portfolioAlbumId)
             const category = categoriesData.find((item) => item.id === album?.portfolioCategoryId)
-            const albumTitle = currentImage.albumTitle?.trim() || album?.title || "DG Vision Studio"
+            const albumTitle = album?.title || "DG Vision Studio"
             const categoryLabel =
-                (isBg ? currentImage.categoryName?.trim() : currentImage.categoryNameEn?.trim()) ||
                 (isBg ? category?.name : category?.nameEn?.trim() || category?.name) ||
-                currentImage.categoryName?.trim() ||
                 "DG Vision Studio"
 
             const albumItems = imagesData
@@ -89,14 +87,12 @@ export default function HomeSlideshowAlbumLightbox() {
 
                     return {
                         id: image.id,
-                        src: image.imageUrl,
+                        src: image.thumbnailUrl?.trim() || image.imageUrl,
                         originalSrc: image.imageUrl,
                         category: category?.key || "slideshow",
-                        categoryLabel:
-                            (isBg ? image.categoryName?.trim() : image.categoryNameEn?.trim()) ||
-                            categoryLabel,
+                        categoryLabel,
                         albumKey: album?.slug || String(image.portfolioAlbumId || image.id),
-                        albumLabel: image.albumTitle?.trim() || albumTitle,
+                        albumLabel: albumTitle,
                         title:
                             image.name?.trim() ||
                             image.altText?.trim() ||
