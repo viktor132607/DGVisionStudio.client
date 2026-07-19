@@ -1,0 +1,34 @@
+.home-fold-recent-extra {
+    display: none !important;
+}
+
+/* Fold phone used on one half of the display. */
+@media (max-width: 430px) and (orientation: portrait) {
+    main .min-h-screen > section.home-hero .home-recent {
+        margin-top: calc(24px + 1cm) !important;
+    }
+}
+
+/* Fully unfolded fold phone in portrait mode. */
+@media (min-width: 600px) and (max-width: 899px) and (orientation: portrait) {
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        margin-top: 0.5cm !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-collage {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-fold-recent-extra {
+        position: static !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        overflow: hidden !important;
+        border: 1px solid rgb(229 229 229) !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+}
