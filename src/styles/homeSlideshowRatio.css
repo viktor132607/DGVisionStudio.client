@@ -145,7 +145,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     main .min-h-screen > section.home-hero .home-recent-label {
         flex: 0 0 auto !important;
         margin: 0 0 0.8svh !important;
-        font-size: 2svh !important;
+        font-size: 4svh !important;
         line-height: 1 !important;
     }
 
@@ -276,7 +276,7 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
 
     main .min-h-screen > section.home-hero .home-recent-label {
         margin: 0 0 10px !important;
-        font-size: 18px !important;
+        font-size: 36px !important;
         line-height: 1 !important;
     }
 
