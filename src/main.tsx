@@ -6,9 +6,11 @@ import "./index.css"
 import "./styles/homeSlideshowRatio.css"
 import "./styles/homeSlideshowControls.css"
 import "./styles/homeServicesGrid.css"
+import "./styles/foldHomeLayout.css"
 import "./i18n/i18n"
 import App from "./App"
 import HomeSlideshowAlbumLightbox from "./components/HomeSlideshowAlbumLightbox"
+import HomeFoldRecentAlbums from "./components/HomeFoldRecentAlbums"
 import { AuthProvider } from "./context/AuthContext"
 
 const pendingRecentAlbumKey = "dgvisionstudio:pending-recent-album"
@@ -132,6 +134,7 @@ createRoot(document.getElementById("root")!).render(
         <AuthProvider>
           <App />
           <HomeSlideshowAlbumLightbox />
+          <HomeFoldRecentAlbums />
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
