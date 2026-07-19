@@ -38,6 +38,7 @@ export default function AdminServiceAddShortcut() {
             to="/admin/services"
             aria-label="Добави нова услуга"
             title="Добави нова услуга"
+            style={{ order: 2147483647 }}
             className="group flex min-h-[420px] items-center justify-center border-2 border-dashed border-neutral-300 bg-neutral-50 [font-family:Messenger,sans-serif] text-neutral-950 transition hover:-translate-y-1 hover:border-neutral-950 hover:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900"
         >
             <span className="flex flex-col items-center gap-5 text-center">
