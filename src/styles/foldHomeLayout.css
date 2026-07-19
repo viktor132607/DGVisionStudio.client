@@ -62,6 +62,10 @@
         margin-top: 0.5cm !important;
     }
 
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        margin-top: 35svh !important;
+    }
+
     main .min-h-screen > section.home-hero .home-recent-collage {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
