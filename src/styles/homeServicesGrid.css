@@ -22,3 +22,9 @@
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     }
 }
+
+@media (min-width: 1024px) and (orientation: landscape) {
+    main .min-h-screen > section.home-hero .home-recent {
+        margin-top: 4.6svh !important;
+    }
+}
