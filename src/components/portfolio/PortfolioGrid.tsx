@@ -51,6 +51,19 @@ export default function PortfolioGrid({
                                     alt={item.title}
                                     loading="lazy"
                                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                                    onError={(event) => {
+                                        const image = event.currentTarget
+                                        const fallbackSrc = item.originalSrc?.trim()
+
+                                        if (fallbackSrc && image.dataset.originalFallback !== "true") {
+                                            image.dataset.originalFallback = "true"
+                                            image.src = fallbackSrc
+                                            return
+                                        }
+
+                                        image.alt = ""
+                                        image.classList.add("opacity-0")
+                                    }}
                                 />
                             )}
 
