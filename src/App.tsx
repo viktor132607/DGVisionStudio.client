@@ -41,7 +41,8 @@ function AppContent() {
   const isBg = i18n.language?.toLowerCase().startsWith("bg")
   const contactBubbleLabel = isBg ? "Свържете се" : "Contact us"
   const isHomePage = location.pathname === "/" || location.pathname === "/services"
-  const isPortfolioPage = location.pathname === "/portfolio"
+  const isPortfolioPage =
+    location.pathname === "/portfolio" || location.pathname.startsWith("/portfolio/")
   const isAdminPage = location.pathname.startsWith("/admin")
   const isContactPage = location.pathname === "/contact"
   const showContactBubble = !isAdminPage && !isContactPage
@@ -83,6 +84,7 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />
             <Route path="/portfolio" element={<Services />} />
+            <Route path="/portfolio/:albumSlug" element={<Services />} />
             <Route path="/pricing" element={<PriceList />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
