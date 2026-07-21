@@ -1,0 +1,57 @@
+                        <div className="space-y-3">
+                            {eventTypes.map((type) => {
+                                const draft = typeDrafts[type.code] || { name: type.name, color: type.color }
+                                return (
+                                    <div key={type.code} className="rounded-xl border border-gray-200 p-3">
+                                        <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto]">
+                                            <input value={draft.name} disabled={type.isSystem} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, name: event.target.value } }))} className="h-10 rounded-lg border border-gray-300 px-3 text-sm disabled:bg-gray-100" />
+                                            <input type="color" value={draft.color} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, color: event.target.value } }))} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
+                                            <button type="button" onClick={() => void updateEventType(type)} disabled={typeBusy === type.code} className="rounded-lg bg-gray-900 px-3 text-xs font-bold text-white disabled:opacity-50">Запази</button>
+                                        </div>
+                                        {!type.isSystem ? <button type="button" onClick={() => void deleteEventType(type)} disabled={typeBusy === type.code} className="mt-2 text-xs font-bold text-red-600 disabled:opacity-50">Изтрий типа</button> : null}
+                                    </div>
+                                )
+                            })}
+                            <div className="rounded-xl border border-dashed border-gray-300 p-3">
+                                <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto]">
+                                    <input value={newTypeName} onChange={(event) => setNewTypeName(event.target.value)} placeholder="Нов тип" maxLength={40} className="h-10 rounded-lg border border-gray-300 px-3 text-sm" />
+                                    <input type="color" value={newTypeColor} onChange={(event) => setNewTypeColor(event.target.value)} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
+                                    <button type="button" onClick={() => void createEventType()} disabled={typeBusy === "new" || !newTypeName.trim()} className="rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white disabled:opacity-50">Добави</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+                        <div className="mb-5 flex items-center justify-between gap-3"><h2 className="text-xl font-bold text-gray-900 dark:text-white">{editingId ? "Редакция" : "Ново събитие"}</h2>{editingId ? <button type="button" onClick={() => resetForm()} className="text-sm font-semibold text-gray-500">Откажи</button> : null}</div>
+                        <div className="space-y-4">
+                            <label className="block"><span className="mb-1 block text-sm font-semibold">Импорт от заявка</span><select value={form.contactRequestId} onChange={(event) => { const request = contactRequests.find((item) => item.id === event.target.value); if (request) applyContactRequestToForm(request); else setStringField("contactRequestId", "") }} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">— Без свързана заявка —</option>{contactRequests.map((request) => <option key={request.id} value={request.id}>{request.name} · {request.email} · {request.subject || "Без тема"}</option>)}</select></label>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold">Заглавие</span><input value={form.title} onChange={(event) => setStringField("title", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="block"><span className="mb-1 block text-sm font-semibold">Тип</span><select value={form.eventType} onChange={(event) => changeEventType(event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm">{eventTypes.map((type) => <option key={type.code} value={type.code}>{type.name}</option>)}</select><span className="mt-2 flex items-center gap-2 text-xs text-gray-500"><span className="h-3 w-3 rounded-full" style={{ backgroundColor: findEventType(form.eventType)?.color || form.color }} /> Цветът се задава от типа</span></label>
+                                <label className="block"><span className="mb-1 block text-sm font-semibold">Ангажимент към</span><select value={form.assignedTo} onChange={(event) => setStringField("assignedTo", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">—</option><option value="Десислав">Десислав</option><option value="Теодор">Теодор</option><option value="Десислав и Теодор">Десислав и Теодор</option></select></label>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Клиент</span><input value={form.clientName} onChange={(event) => setStringField("clientName", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Телефон</span><input value={form.clientPhone} onChange={(event) => setStringField("clientPhone", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold">Email за напомняне</span><input type="email" value={form.clientEmail} onChange={(event) => setStringField("clientEmail", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
+                            <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-semibold"><input type="checkbox" checked={form.remindersEnabled} onChange={(event) => setForm((current) => ({ ...current, remindersEnabled: event.target.checked }))} className="h-4 w-4" /> Прати напомняния</label>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold">Локация</span><input value={form.location} onChange={(event) => setStringField("location", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
+                            <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Начало дата</span><input type="date" value={form.startDate} onChange={(event) => setStringField("startDate", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Начало час</span><input type="time" value={form.startTime} onChange={(event) => setStringField("startTime", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
+                            <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Край дата</span><input type="date" value={form.endDate} onChange={(event) => setStringField("endDate", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Край час</span><input type="time" value={form.endTime} onChange={(event) => setStringField("endTime", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
+                            <label className="block"><span className="mb-1 block text-sm font-semibold">Бележки</span><textarea value={form.description} onChange={(event) => setStringField("description", event.target.value)} rows={4} className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" /></label>
+                            <button type="button" onClick={() => void saveEvent()} disabled={saving} className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Записване..." : editingId ? "Запази промените" : "Добави събитие"}</button>
+                        </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+                        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Събития за {selectedDate.toLocaleDateString("bg-BG")}</h2>
+                        {loading ? <div className="text-sm text-gray-500">Зареждане...</div> : null}
+                        {!loading && !selectedDateEvents.length ? <div className="text-sm text-gray-500">Няма събития за тази дата.</div> : null}
+                        <div className="space-y-3">
+                            {selectedDateEvents.map((event) => <div key={event.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4" title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className="font-bold text-gray-900">{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: isPastEvent(event) ? "#9ca3af" : getEventColor(event) }} /></div>{event.assignedTo ? <p className="text-sm">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.location ? <p className="mt-1 text-sm">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>)}
+                        </div>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    )
+}
