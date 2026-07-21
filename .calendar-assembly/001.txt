@@ -1,0 +1,90 @@
+import { useEffect, useMemo, useState } from "react"
+import { apiFetch } from "../../services/api"
+import { useAdminToast } from "../../hooks/useAdminToast"
+
+const API_PATH = "/admin/calendar"
+const monthNames = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"]
+const weekdayNames = ["Пон", "Вто", "Сря", "Чет", "Пет", "Съб", "Нед"]
+
+const fallbackEventTypes: CalendarEventType[] = [
+    { code: "Photoshoot", name: "Фотосесия", color: "#2563eb", isSystem: true },
+    { code: "Print", name: "Принт на снимки", color: "#f97316", isSystem: true },
+]
+
+type CalendarEventType = {
+    code: string
+    name: string
+    color: string
+    isSystem: boolean
+}
+
+type CalendarEvent = {
+    id: number
+    title: string
+    eventType?: string | null
+    assignedTo?: string | null
+    clientName?: string | null
+    clientPhone?: string | null
+    clientEmail?: string | null
+    contactRequestId?: string | null
+    location?: string | null
+    description?: string | null
+    color?: string | null
+    remindersEnabled?: boolean
+    startAtUtc: string
+    endAtUtc: string
+}
+
+type ContactRequest = {
+    id: string
+    name: string
+    email: string
+    phone?: string | null
+    subject?: string | null
+    message: string
+}
+
+type CalendarForm = {
+    title: string
+    eventType: string
+    assignedTo: string
+    clientName: string
+    clientPhone: string
+    clientEmail: string
+    contactRequestId: string
+    location: string
+    description: string
+    color: string
+    remindersEnabled: boolean
+    startDate: string
+    startTime: string
+    endDate: string
+    endTime: string
+}
+
+type EventTypeDraft = {
+    name: string
+    color: string
+}
+
+function getInitialDate() {
+    if (typeof window === "undefined") return new Date()
+    const dateParam = new URLSearchParams(window.location.search).get("date")
+    if (!dateParam || !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) return new Date()
+    const parsedDate = new Date(`${dateParam}T12:00:00`)
+    return Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate
+}
+
+function getInitialContactRequestId() {
+    if (typeof window === "undefined") return ""
+    return new URLSearchParams(window.location.search).get("contactRequestId") || ""
+}
+
+function toDateInputValue(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}
+
+function toTimeInputValue(date: Date) {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+}
+
