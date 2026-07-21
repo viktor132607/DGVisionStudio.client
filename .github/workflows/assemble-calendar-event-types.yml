@@ -1,0 +1,51 @@
+name: Assemble calendar event types
+
+on:
+  push:
+    branches: [agent/calendar-event-types]
+    paths:
+      - .github/workflows/assemble-calendar-event-types.yml
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: agent/calendar-event-types
+
+      - name: Assemble calendar source
+        shell: bash
+        run: |
+          cat .calendar-assembly/*.txt > src/pages/admin/CalendarAdmin.tsx
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/components/admin/AdminDashboardCalendarPreview.tsx')
+          content = path.read_text(encoding='utf-8')
+          old = '''function getEventTypeLabel(type?: string | null) {
+              return type === "Print" ? "Принт на снимки" : "Фотосесия"
+          }'''
+          new = '''function getEventTypeLabel(type?: string | null) {
+              if (type === "Print") return "Принт на снимки"
+              if (type === "Photoshoot" || !type) return "Фотосесия"
+              return type
+          }'''
+          if old not in content:
+              raise SystemExit('Calendar preview label function was not found.')
+          path.write_text(content.replace(old, new), encoding='utf-8')
+          PY
+          rm -rf .calendar-assembly
+
+      - name: Commit assembled files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add configurable calendar event type UI"
+          git push origin HEAD:agent/calendar-event-types
