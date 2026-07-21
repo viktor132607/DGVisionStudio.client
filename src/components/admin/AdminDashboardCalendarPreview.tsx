@@ -88,7 +88,9 @@ function formatDateTime(value: string) {
 }
 
 function getEventTypeLabel(type?: string | null) {
-    return type === "Print" ? "Принт на снимки" : "Фотосесия"
+    if (type === "Print") return "Принт на снимки"
+    if (type === "Photoshoot" || !type) return "Фотосесия"
+    return type
 }
 
 function getHoverDetails(event: CalendarEvent) {
