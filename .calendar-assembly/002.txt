@@ -1,0 +1,90 @@
+function combineLocalDateTime(date: string, time: string) {
+    return new Date(`${date}T${time || "00:00"}`).toISOString()
+}
+
+function getMonthGrid(viewDate: Date) {
+    const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1)
+    const startOffset = (firstDay.getDay() + 6) % 7
+    const startDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1 - startOffset)
+
+    return Array.from({ length: 42 }, (_, index) => {
+        const date = new Date(startDate)
+        date.setDate(startDate.getDate() + index)
+        return date
+    })
+}
+
+function isSameDay(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+
+function isPastDate(date: Date) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const checkedDate = new Date(date)
+    checkedDate.setHours(0, 0, 0, 0)
+    return checkedDate < today
+}
+
+function isPastEvent(event: CalendarEvent) {
+    return new Date(event.endAtUtc).getTime() < Date.now()
+}
+
+function formatDateTime(value: string) {
+    return new Intl.DateTimeFormat("bg-BG", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(new Date(value))
+}
+
+function makeDefaultForm(date: Date, eventType: CalendarEventType): CalendarForm {
+    return {
+        title: "",
+        eventType: eventType.code,
+        assignedTo: "",
+        clientName: "",
+        clientPhone: "",
+        clientEmail: "",
+        contactRequestId: "",
+        location: "",
+        description: "",
+        color: eventType.color,
+        remindersEnabled: true,
+        startDate: toDateInputValue(date),
+        startTime: "10:00",
+        endDate: toDateInputValue(date),
+        endTime: "12:00",
+    }
+}
+
+export default function CalendarAdmin() {
+    const initialDate = useMemo(() => getInitialDate(), [])
+    const initialContactRequestId = useMemo(() => getInitialContactRequestId(), [])
+    const { showToast } = useAdminToast()
+
+    const [events, setEvents] = useState<CalendarEvent[]>([])
+    const [eventTypes, setEventTypes] = useState<CalendarEventType[]>(fallbackEventTypes)
+    const [contactRequests, setContactRequests] = useState<ContactRequest[]>([])
+    const [viewDate, setViewDate] = useState(() => initialDate)
+    const [selectedDate, setSelectedDate] = useState(() => initialDate)
+    const [form, setForm] = useState<CalendarForm>(() => makeDefaultForm(initialDate, fallbackEventTypes[0]))
+    const [editingId, setEditingId] = useState<number | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [error, setError] = useState("")
+    const [typeDrafts, setTypeDrafts] = useState<Record<string, EventTypeDraft>>({})
+    const [newTypeName, setNewTypeName] = useState("")
+    const [newTypeColor, setNewTypeColor] = useState("#16a34a")
+    const [typeBusy, setTypeBusy] = useState<string | null>(null)
+
+    const monthGrid = useMemo(() => getMonthGrid(viewDate), [viewDate])
+    const selectedDateEvents = useMemo(
+        () => events
+            .filter((event) => isSameDay(new Date(event.startAtUtc), selectedDate))
+            .sort((a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime()),
+        [events, selectedDate]
+    )
