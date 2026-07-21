@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import Seo from "../components/Seo"
 import PortfolioAlbumTabs from "../components/portfolio/PortfolioAlbumTabs"
@@ -21,6 +21,14 @@ function normalizeHash(value: string) {
     return value.replace("#", "").trim().toLowerCase()
 }
 
+function normalizeSlug(value?: string | null) {
+    return (value || "").trim().toLowerCase()
+}
+
+function albumPath(slug: string) {
+    return `/portfolio/${encodeURIComponent(slug)}`
+}
+
 function isVideoPath(value?: string | null) {
     return /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(value || "")
 }
@@ -28,28 +36,14 @@ function isVideoPath(value?: string | null) {
 export default function Portfolio() {
     const { i18n } = useTranslation()
     const location = useLocation()
+    const navigate = useNavigate()
+    const { albumSlug } = useParams<{ albumSlug?: string }>()
     const isBg = i18n.language?.toLowerCase().startsWith("bg")
 
     const { categoriesData, albumsData, imagesData } = usePortfolioData()
 
     const [activeCategory, setActiveCategory] = useState<string>("all")
-    const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-
-    const portfolioJsonLd = {
-        "@context": "https://schema.org",
-        "@type": "CollectionPage",
-        name: isBg ? "Портфолио" : "Portfolio",
-        url: "https://dgvisionstudio.com/portfolio",
-        description: isBg
-            ? "Разгледайте портфолиото на DG Vision Studio."
-            : "Explore the DG Vision Studio portfolio.",
-        isPartOf: {
-            "@type": "WebSite",
-            name: "DG Vision Studio",
-            url: "https://dgvisionstudio.com",
-        },
-    }
 
     const activeCategories = useMemo(() => {
         return categoriesData
@@ -58,6 +52,8 @@ export default function Portfolio() {
     }, [categoriesData])
 
     useEffect(() => {
+        if (albumSlug) return
+
         const hash = normalizeHash(location.hash)
 
         if (!hash || hash === "all") {
@@ -67,7 +63,7 @@ export default function Portfolio() {
 
         const exists = activeCategories.some((category) => category.key.toLowerCase() === hash)
         setActiveCategory(exists ? hash : "all")
-    }, [location.hash, activeCategories])
+    }, [albumSlug, location.hash, activeCategories])
 
     const categories = useMemo<CategoryTab[]>(() => {
         return [
@@ -141,28 +137,50 @@ export default function Portfolio() {
             )
     }, [activeCategories, albumsData, publishedImagesByAlbum, isBg])
 
+    const selectedAlbum = useMemo(() => {
+        const slug = normalizeSlug(albumSlug)
+        if (!slug) return null
+
+        return albumsData.find((album) => album.isPublished && normalizeSlug(album.slug) === slug) ?? null
+    }, [albumSlug, albumsData])
+
+    useEffect(() => {
+        if (!albumSlug || albumsData.length === 0) return
+
+        if (!selectedAlbum) {
+            navigate("/portfolio", { replace: true })
+            return
+        }
+
+        if (selectedAlbum.slug !== albumSlug) {
+            navigate(albumPath(selectedAlbum.slug), { replace: true })
+        }
+    }, [albumSlug, albumsData.length, navigate, selectedAlbum])
+
+    useEffect(() => {
+        if (!selectedAlbum) return
+
+        const category = activeCategories.find(
+            (item) => item.id === selectedAlbum.portfolioCategoryId
+        )
+
+        if (category) {
+            setActiveCategory(category.key)
+        }
+    }, [activeCategories, selectedAlbum])
+
     const filteredAlbumCards = useMemo(() => {
         return albumCards.filter((album) => {
             return activeCategory === "all" || album.category === activeCategory
         })
     }, [albumCards, activeCategory])
 
-    const selectedAlbum = useMemo(() => {
-        if (selectedAlbumId === null) return null
-        return albumsData.find((album) => album.id === selectedAlbumId) ?? null
-    }, [albumsData, selectedAlbumId])
-
     const albumTabs = useMemo<AlbumTab[]>(() => {
-        const sourceAlbums =
-            activeCategory === "all"
-                ? filteredAlbumCards
-                : filteredAlbumCards.filter((album) => album.category === activeCategory)
-
-        return sourceAlbums.map((album) => ({
+        return filteredAlbumCards.map((album) => ({
             key: String(album.id),
             label: album.title,
         }))
-    }, [activeCategory, filteredAlbumCards])
+    }, [filteredAlbumCards])
 
     const selectedAlbumImages = useMemo<PortfolioItem[]>(() => {
         if (!selectedAlbum) return []
@@ -194,40 +212,66 @@ export default function Portfolio() {
         })
     }, [activeCategories, publishedImagesByAlbum, selectedAlbum, isBg])
 
+    const selectedAlbumCard = useMemo(() => {
+        if (!selectedAlbum) return null
+        return albumCards.find((album) => album.id === selectedAlbum.id) ?? null
+    }, [albumCards, selectedAlbum])
+
     const selectedItem = selectedIndex !== null ? selectedAlbumImages[selectedIndex] : null
+    const defaultDescription = isBg
+        ? "Разгледайте портфолиото на DG Vision Studio."
+        : "Explore the DG Vision Studio portfolio."
+    const pageDescription = selectedAlbum?.description?.trim() || defaultDescription
+    const canonicalPath = selectedAlbum ? albumPath(selectedAlbum.slug) : "/portfolio"
+
+    const portfolioJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: selectedAlbum?.title || (isBg ? "Портфолио" : "Portfolio"),
+        url: `https://dgvisionstudio.com${canonicalPath}`,
+        description: pageDescription,
+        isPartOf: {
+            "@type": "WebSite",
+            name: "DG Vision Studio",
+            url: "https://dgvisionstudio.com",
+        },
+    }
 
     useEffect(() => {
-        setSelectedAlbumId(null)
         setSelectedIndex(null)
-    }, [activeCategory])
-
-    useEffect(() => {
-        setSelectedIndex(null)
-    }, [selectedAlbumId])
+    }, [selectedAlbum?.id])
 
     usePortfolioLightbox(selectedIndex, selectedAlbumImages.length, setSelectedIndex)
 
     const handleCategoryChange = (category: string) => {
         setActiveCategory(category)
-        setSelectedAlbumId(null)
         setSelectedIndex(null)
 
         const nextHash = category === "all" ? "" : `#${category}`
-        const nextUrl = `${window.location.pathname}${nextHash}`
-        window.history.replaceState(null, "", nextUrl)
+        navigate(`/portfolio${nextHash}`)
+    }
+
+    const handleAlbumSelect = (albumId: number) => {
+        const album = albumCards.find((item) => item.id === albumId)
+        if (!album) return
+
+        setSelectedIndex(null)
+        navigate(albumPath(album.slug))
+    }
+
+    const handleBackToAlbums = () => {
+        const nextHash = activeCategory === "all" ? "" : `#${activeCategory}`
+        setSelectedIndex(null)
+        navigate(`/portfolio${nextHash}`)
     }
 
     return (
         <>
             <Seo
-                title={isBg ? "Портфолио" : "Portfolio"}
-                description={
-                    isBg
-                        ? "Разгледайте портфолиото на DG Vision Studio."
-                        : "Explore the DG Vision Studio portfolio."
-                }
-                canonical="/portfolio"
-                image="/og-cover.jpg"
+                title={selectedAlbum?.title || (isBg ? "Портфолио" : "Portfolio")}
+                description={pageDescription}
+                canonical={canonicalPath}
+                image={selectedAlbumCard?.coverSrc || "/og-cover.jpg"}
                 type="website"
                 jsonLd={portfolioJsonLd}
             />
@@ -236,7 +280,7 @@ export default function Portfolio() {
                 <div className="border-b border-neutral-300 bg-neutral-50 px-[5mm] py-8 dark:border-zinc-700 dark:bg-zinc-800 sm:py-10 lg:py-12">
                     <div className="w-full">
                         <h1 className="text-center text-[28px] font-bold uppercase tracking-[0.12em] text-slate-900 dark:text-white sm:text-[36px] sm:tracking-[0.14em] lg:text-[44px] xl:text-[52px]">
-                            {isBg ? "Портфолио" : "Portfolio"}
+                            {selectedAlbum?.title || (isBg ? "Портфолио" : "Portfolio")}
                         </h1>
                     </div>
                 </div>
@@ -253,7 +297,7 @@ export default function Portfolio() {
                             <div className="mx-auto flex w-full max-w-[1800px] items-center gap-3 px-4 py-4 sm:px-6 lg:px-8">
                                 <button
                                     type="button"
-                                    onClick={() => setSelectedAlbumId(null)}
+                                    onClick={handleBackToAlbums}
                                     className="inline-flex items-center rounded-full border border-neutral-400 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-neutral-900 transition hover:border-neutral-950 hover:bg-neutral-200 dark:border-zinc-600 dark:text-white dark:hover:border-white dark:hover:bg-zinc-800 sm:text-xs"
                                 >
                                     {isBg ? "Назад към албумите" : "Back to albums"}
@@ -269,8 +313,8 @@ export default function Portfolio() {
 
                         <PortfolioAlbumTabs
                             albums={albumTabs}
-                            activeAlbum={String(selectedAlbumId)}
-                            onChange={(value) => setSelectedAlbumId(Number(value))}
+                            activeAlbum={String(selectedAlbum.id)}
+                            onChange={(value) => handleAlbumSelect(Number(value))}
                         />
 
                         {selectedAlbumImages.length > 0 ? (
@@ -282,7 +326,7 @@ export default function Portfolio() {
                 ) : filteredAlbumCards.length > 0 ? (
                     <PortfolioAlbumGrid
                         items={filteredAlbumCards}
-                        onSelect={setSelectedAlbumId}
+                        onSelect={handleAlbumSelect}
                     />
                 ) : (
                     <PortfolioEmptyState isBg={isBg} />
