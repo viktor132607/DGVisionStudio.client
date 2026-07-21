@@ -1,0 +1,90 @@
+            if (!initialContactRequestId) return
+            const importedRequest = requests.find((item) => item.id === initialContactRequestId)
+            if (importedRequest) applyContactRequestToForm(importedRequest)
+        }
+        void init()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const applyContactRequestToForm = (request: ContactRequest) => {
+        const photoshootType = eventTypes.find((type) => type.code === "Photoshoot") || eventTypes[0]
+        setEditingId(null)
+        setForm((current) => ({
+            ...current,
+            title: request.subject?.trim() || `Фотосесия - ${request.name}`,
+            eventType: photoshootType?.code || "Photoshoot",
+            color: photoshootType?.color || "#2563eb",
+            clientName: request.name || "",
+            clientPhone: request.phone || "",
+            clientEmail: request.email || "",
+            contactRequestId: request.id,
+            description: request.message || "",
+            remindersEnabled: true,
+        }))
+        showToast({ type: "success", title: "Импорт", message: "Заявката е заредена във формата." })
+    }
+
+    const resetForm = (date = selectedDate) => {
+        setEditingId(null)
+        setForm(makeDefaultForm(date, eventTypes[0] || fallbackEventTypes[0]))
+    }
+
+    const startNewEvent = (date = selectedDate) => {
+        setSelectedDate(date)
+        setViewDate(new Date(date.getFullYear(), date.getMonth(), 1))
+        resetForm(date)
+    }
+
+    const selectDay = (date: Date) => {
+        setSelectedDate(date)
+        if (!editingId) {
+            setForm((current) => ({ ...current, startDate: toDateInputValue(date), endDate: toDateInputValue(date) }))
+        }
+    }
+
+    const editEvent = (event: CalendarEvent) => {
+        const start = new Date(event.startAtUtc)
+        const end = new Date(event.endAtUtc)
+        const type = findEventType(event.eventType)
+        setEditingId(event.id)
+        setSelectedDate(start)
+        setViewDate(new Date(start.getFullYear(), start.getMonth(), 1))
+        setForm({
+            title: event.title || "",
+            eventType: event.eventType || eventTypes[0]?.code || "Photoshoot",
+            assignedTo: event.assignedTo || "",
+            clientName: event.clientName || "",
+            clientPhone: event.clientPhone || "",
+            clientEmail: event.clientEmail || "",
+            contactRequestId: event.contactRequestId || "",
+            location: event.location || "",
+            description: event.description || "",
+            color: type?.color || event.color || "#2563eb",
+            remindersEnabled: event.remindersEnabled ?? true,
+            startDate: toDateInputValue(start),
+            startTime: toTimeInputValue(start),
+            endDate: toDateInputValue(end),
+            endTime: toTimeInputValue(end),
+        })
+    }
+
+    const changeEventType = (code: string) => {
+        const type = eventTypes.find((item) => item.code === code)
+        setForm((current) => ({ ...current, eventType: code, color: type?.color || current.color }))
+    }
+
+    const saveEvent = async () => {
+        setSaving(true)
+        setError("")
+        try {
+            if (!form.title.trim()) throw new Error("Заглавието е задължително.")
+            if (form.remindersEnabled && form.eventType === "Photoshoot" && !form.clientEmail.trim()) {
+                throw new Error("За email напомняния е нужен имейл на клиента.")
+            }
+
+            const selectedType = findEventType(form.eventType)
+            const payload = {
+                title: form.title.trim(),
+                eventType: form.eventType,
+                assignedTo: form.assignedTo.trim() || null,
+                clientName: form.clientName.trim() || null,
