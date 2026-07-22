@@ -31,9 +31,7 @@ function AdminLayoutContent() {
 
     return (
         <div className="min-h-screen bg-gray-100 text-slate-900 dark:bg-zinc-950 dark:text-white lg:pl-72">
-            <div className="sticky top-0 z-40 flex items-start justify-between border-b border-slate-200 bg-white px-4 pb-4 pt-5 shadow-sm dark:border-white/10 dark:bg-black lg:hidden">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">DG Vision Studio</p>
-
+            <div className="sticky top-0 z-40 flex justify-end border-b border-slate-200 bg-white px-4 pb-4 pt-5 shadow-sm dark:border-white/10 dark:bg-black lg:hidden">
                 <button
                     type="button"
                     onClick={() => setMobileMenuOpen(true)}
@@ -57,13 +55,11 @@ function AdminLayoutContent() {
                     mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
                 }`}
             >
-                <div className="mb-6 flex items-start justify-between gap-4">
-                    <p className="text-xs font-bold uppercase tracking-[0.28em] text-white/45">DG Vision Studio</p>
-
+                <div className="mb-2 flex justify-end lg:hidden">
                     <button
                         type="button"
                         onClick={closeMobileMenu}
-                        className="rounded-xl bg-white/10 px-3 py-2 text-sm font-black text-white lg:hidden"
+                        className="rounded-xl bg-white/10 px-3 py-2 text-sm font-black text-white"
                     >
                         ✕
                     </button>
