@@ -82,6 +82,10 @@ function AdminLayoutContent() {
             </aside>
 
             <style>{`
+                main[data-calendar-layout="true"] > div {
+                    padding-top: 0 !important;
+                }
+
                 main[data-calendar-layout="true"] > div > div.grid {
                     grid-template-columns: minmax(0, 1fr) !important;
                 }
@@ -117,9 +121,9 @@ function AdminLayoutContent() {
 
             <main
                 data-calendar-layout={isCalendar ? "true" : undefined}
-                className={`min-h-screen w-full px-0 py-4 sm:py-6 lg:py-8 ${
-                    hidePageHeader ? "[&>div>div:first-child]:hidden" : ""
-                }`}
+                className={`min-h-screen w-full px-0 ${
+                    isCalendar ? "py-0" : "py-4 sm:py-6 lg:py-8"
+                } ${hidePageHeader ? "[&>div>div:first-child]:hidden" : ""}`}
             >
                 <Outlet />
             </main>
