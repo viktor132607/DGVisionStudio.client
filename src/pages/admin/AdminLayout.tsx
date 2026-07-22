@@ -11,11 +11,7 @@ const navItems = [
     { to: "/admin/slideshow", label: "Управление на слайдшоу" },
     { to: "/admin/services", label: "Услуги начален екран" },
     { to: "/admin/pricing", label: "Ценоразпис" },
-    { to: "/admin/gallery-videos", label: "Видео в албуми" },
 ]
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || ""
-const DOWNLOAD_ALL_ALBUMS_URL = `${API_BASE_URL}/api/admin/client-galleries/download-all-file`
 
 function AdminLayoutContent() {
     const location = useLocation()
@@ -83,15 +79,6 @@ function AdminLayoutContent() {
                         </Link>
                     ))}
                 </nav>
-
-                <a
-                    href={DOWNLOAD_ALL_ALBUMS_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex min-h-11 items-center justify-center rounded-2xl bg-white px-4 text-sm font-black text-gray-950 transition hover:bg-gray-100"
-                >
-                    Изтегли всички албуми
-                </a>
             </aside>
 
             <main
