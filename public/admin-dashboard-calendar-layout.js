@@ -6,6 +6,23 @@
   const style = document.createElement("style")
   style.id = STYLE_ID
   style.textContent = `
+    main:has(#admin-dashboard-calendar-preview-root) {
+      padding-top: 0 !important;
+    }
+
+    main:has(#admin-dashboard-calendar-preview-root) > div {
+      padding-top: 0 !important;
+    }
+
+    main:has(#admin-dashboard-calendar-preview-root) > div > div:has(+ #admin-dashboard-calendar-preview-root) {
+      margin-bottom: 1rem !important;
+    }
+
+    #admin-dashboard-calendar-preview-root > section {
+      margin-top: 0 !important;
+      margin-bottom: 1rem !important;
+    }
+
     @media (min-width: 1280px) {
       #admin-dashboard-calendar-preview-root > section {
         display: grid !important;
@@ -15,7 +32,7 @@
         row-gap: 0 !important;
         position: relative !important;
         align-items: stretch !important;
-        margin-bottom: 2.5rem !important;
+        margin-bottom: 1rem !important;
         padding: 0 !important;
         border: 0 !important;
         background: transparent !important;
