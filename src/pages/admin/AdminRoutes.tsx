@@ -16,7 +16,6 @@ import CalendarAdmin from "./CalendarAdmin"
 import SlideshowAdmin from "./SlideshowAdmin"
 import ServicesAdmin from "./ServicesAdmin"
 import PricingAdmin from "./PricingAdmin"
-import GalleryVideosAdmin from "./GalleryVideosAdmin"
 import AdminDashboardCalendarPreview from "../../components/admin/AdminDashboardCalendarPreview"
 import AdminVideoUploadPortal from "../../components/admin/AdminVideoUploadPortal"
 
@@ -39,7 +38,6 @@ export default function AdminRoutes() {
                     <Route path="slideshow" element={<SlideshowAdmin />} />
                     <Route path="services" element={<ServicesAdmin />} />
                     <Route path="pricing" element={<PricingAdmin />} />
-                    <Route path="gallery-videos" element={<GalleryVideosAdmin />} />
 
                     <Route path="client-galleries/new" element={<ClientGalleryEditAdmin />} />
                     <Route path="client-galleries/edit" element={<ClientGalleryEditAdmin />} />
