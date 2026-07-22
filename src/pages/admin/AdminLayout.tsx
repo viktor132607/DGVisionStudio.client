@@ -23,6 +23,8 @@ function AdminLayoutContent() {
 
     const closeMobileMenu = () => setMobileMenuOpen(false)
     const isDashboard = location.pathname === "/admin" || location.pathname === "/admin/"
+    const isCalendar = location.pathname === "/admin/calendar" || location.pathname === "/admin/calendar/"
+    const hidePageHeader = isDashboard || isCalendar
 
     const isActive = (path: string) => {
         if (path === "/admin") return location.pathname === "/admin"
@@ -94,7 +96,7 @@ function AdminLayoutContent() {
 
             <main
                 className={`min-h-screen w-full px-0 py-4 sm:py-6 lg:py-8 ${
-                    isDashboard ? "[&>div>div:first-child]:hidden" : ""
+                    hidePageHeader ? "[&>div>div:first-child]:hidden" : ""
                 }`}
             >
                 <Outlet />
