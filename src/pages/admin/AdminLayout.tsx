@@ -81,7 +81,42 @@ function AdminLayoutContent() {
                 </nav>
             </aside>
 
+            <style>{`
+                main[data-calendar-layout="true"] > div > div.grid {
+                    grid-template-columns: minmax(0, 1fr) !important;
+                }
+
+                main[data-calendar-layout="true"] > div > div.grid > aside {
+                    display: contents;
+                }
+
+                main[data-calendar-layout="true"] > div > div.grid > section:first-child {
+                    grid-column: 1 / -1;
+                    order: 3;
+                }
+
+                main[data-calendar-layout="true"] > div > div.grid > aside > section:nth-child(1) {
+                    order: 1;
+                }
+
+                main[data-calendar-layout="true"] > div > div.grid > aside > section:nth-child(2) {
+                    order: 2;
+                }
+
+                main[data-calendar-layout="true"] > div > div.grid > aside > section:nth-child(3) {
+                    grid-column: 1 / -1;
+                    order: 4;
+                }
+
+                @media (min-width: 1024px) {
+                    main[data-calendar-layout="true"] > div > div.grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    }
+                }
+            `}</style>
+
             <main
+                data-calendar-layout={isCalendar ? "true" : undefined}
                 className={`min-h-screen w-full px-0 py-4 sm:py-6 lg:py-8 ${
                     hidePageHeader ? "[&>div>div:first-child]:hidden" : ""
                 }`}
