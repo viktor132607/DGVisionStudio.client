@@ -4,7 +4,7 @@ import AdminToastProvider from "../../components/admin/AdminToastProvider"
 
 const navItems = [
     { to: "/admin", label: "Начало" },
-    { to: "/admin/contact-requests", label: "Контакти" },
+    { to: "/admin/contact-requests", label: "Запитвания" },
     { to: "/admin/users", label: "Потребители" },
     { to: "/admin/print-requests", label: "Заявки за принтиране" },
     { to: "/admin/calendar", label: "Календар" },
