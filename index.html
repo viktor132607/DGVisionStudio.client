@@ -36,6 +36,64 @@
     />
     <meta name="twitter:image" content="https://dgvisionstudio.com/og-cover.jpg" />
 
+    <script>
+      (() => {
+        const platform = navigator.userAgentData?.platform ?? navigator.platform ?? ""
+        const isAppleDevice = /Mac|iPhone|iPad|iPod/i.test(`${platform} ${navigator.userAgent}`)
+
+        if (isAppleDevice) {
+          document.documentElement.classList.add("apple-device")
+        }
+      })()
+    </script>
+
+    <style>
+      html.apple-device header.fixed > div:first-child > div.flex {
+        height: 58px !important;
+      }
+
+      html.apple-device header.fixed > div[class*="max-h-"] {
+        max-height: calc(100vh - 58px) !important;
+      }
+
+      @media (min-width: 768px) {
+        html.apple-device header.fixed > div:first-child > div.flex {
+          height: 61px !important;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1279px) {
+        html.apple-device header.fixed > div:nth-of-type(2) > div {
+          padding-top: 10px !important;
+          padding-bottom: 10px !important;
+        }
+
+        html.apple-device header.fixed > div:nth-of-type(2) [class*="min-h-"] {
+          min-height: 34px !important;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        html.apple-device header.fixed > div:first-child > div.flex {
+          height: 67px !important;
+        }
+
+        html.apple-device header.fixed nav a::after {
+          bottom: -19px !important;
+        }
+      }
+
+      @media (min-width: 1536px) {
+        html.apple-device header.fixed > div:first-child > div.flex {
+          height: 70px !important;
+        }
+
+        html.apple-device header.fixed nav a::after {
+          bottom: -18px !important;
+        }
+      }
+    </style>
+
     <title>DG Vision Studio</title>
   </head>
   <body>
