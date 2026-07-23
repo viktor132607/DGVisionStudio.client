@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Link, Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
 import Navbar from "./components/Navbar"
+import MobileProfileShortcut from "./components/MobileProfileShortcut"
 import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
 import GlobalPageLoader from "./components/GlobalPageLoader"
@@ -45,6 +46,8 @@ function AppContent() {
     location.pathname === "/portfolio" || location.pathname.startsWith("/portfolio/")
   const isAdminPage = location.pathname.startsWith("/admin")
   const isContactPage = location.pathname === "/contact"
+  const isProfilePage = location.pathname === "/identity/profile"
+  const isGalleryDetailsPage = location.pathname.startsWith("/identity/galleries/")
   const showContactBubble = !isAdminPage && !isContactPage
   const [isPageLoading, setIsPageLoading] = useState(true)
 
@@ -63,12 +66,72 @@ function AppContent() {
   }, [])
 
   return (
-    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white">
+    <div
+      className={`flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white ${
+        isProfilePage ? "dg-profile-page" : ""
+      } ${isGalleryDetailsPage ? "dg-gallery-details-page" : ""}`}
+    >
       {isPageLoading ? <GlobalPageLoader /> : null}
 
       <ScrollToTop />
       <Navbar />
+      <MobileProfileShortcut />
       <AdminServiceAddShortcut />
+
+      <style>{`
+        @media (max-width: 767px) {
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.35rem !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] {
+            min-width: 0 !important;
+            border-radius: 0.85rem !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > button > [class~="relative"][class~="overflow-hidden"] {
+            aspect-ratio: 4 / 5 !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] img,
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > [class~="absolute"][class~="bottom-0"] {
+            opacity: 1 !important;
+            padding: 0.45rem !important;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0)) !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > [class~="absolute"][class~="bottom-0"] > div {
+            gap: 0.3rem !important;
+          }
+
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > [class~="absolute"][class~="bottom-0"] button,
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > [class~="absolute"][class~="bottom-0"] a {
+            min-width: 0 !important;
+            height: 2rem !important;
+            padding: 0 0.55rem !important;
+            font-size: 0.68rem !important;
+            line-height: 1 !important;
+          }
+
+          .dg-gallery-details-page main > div {
+            max-width: none !important;
+          }
+        }
+
+        @media (hover: none) {
+          .dg-profile-page [class~="space-y-4"][class~="scroll-mt-24"] > [class~="group"][class~="relative"] > [class~="absolute"][class~="bottom-0"] {
+            opacity: 1 !important;
+          }
+        }
+      `}</style>
 
       <div
         className={
