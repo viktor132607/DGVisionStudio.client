@@ -5,17 +5,13 @@ import { useAdminToast } from "../../hooks/useAdminToast"
 const API_PATH = "/admin/calendar"
 const monthNames = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"]
 const weekdayNames = ["Пон", "Вто", "Сря", "Чет", "Пет", "Съб", "Нед"]
-
-const fallbackEventTypes: CalendarEventType[] = [
-    { code: "Photoshoot", name: "Фотосесия", color: "#2563eb", isSystem: true },
-    { code: "Print", name: "Принт на снимки", color: "#f97316", isSystem: true },
-]
+const defaultColor = "#64748b"
 
 type CalendarEventType = {
     code: string
     name: string
     color: string
-    isSystem: boolean
+    isSystem?: boolean
 }
 
 type CalendarEvent = {
@@ -30,6 +26,7 @@ type CalendarEvent = {
     location?: string | null
     description?: string | null
     color?: string | null
+    price?: number | null
     remindersEnabled?: boolean
     startAtUtc: string
     endAtUtc: string
@@ -55,6 +52,7 @@ type CalendarForm = {
     location: string
     description: string
     color: string
+    price: string
     remindersEnabled: boolean
     startDate: string
     startTime: string
@@ -130,10 +128,15 @@ function formatDateTime(value: string) {
     }).format(new Date(value))
 }
 
-function makeDefaultForm(date: Date, eventType: CalendarEventType): CalendarForm {
+function formatPrice(value?: number | null) {
+    if (value === null || value === undefined) return ""
+    return `${new Intl.NumberFormat("bg-BG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} лв.`
+}
+
+function makeDefaultForm(date: Date, eventType?: CalendarEventType): CalendarForm {
     return {
         title: "",
-        eventType: eventType.code,
+        eventType: eventType?.code || "",
         assignedTo: "",
         clientName: "",
         clientPhone: "",
@@ -141,7 +144,8 @@ function makeDefaultForm(date: Date, eventType: CalendarEventType): CalendarForm
         contactRequestId: "",
         location: "",
         description: "",
-        color: eventType.color,
+        color: eventType?.color || defaultColor,
+        price: "",
         remindersEnabled: true,
         startDate: toDateInputValue(date),
         startTime: "10:00",
@@ -156,11 +160,11 @@ export default function CalendarAdmin() {
     const { showToast } = useAdminToast()
 
     const [events, setEvents] = useState<CalendarEvent[]>([])
-    const [eventTypes, setEventTypes] = useState<CalendarEventType[]>(fallbackEventTypes)
+    const [eventTypes, setEventTypes] = useState<CalendarEventType[]>([])
     const [contactRequests, setContactRequests] = useState<ContactRequest[]>([])
     const [viewDate, setViewDate] = useState(() => initialDate)
     const [selectedDate, setSelectedDate] = useState(() => initialDate)
-    const [form, setForm] = useState<CalendarForm>(() => makeDefaultForm(initialDate, fallbackEventTypes[0]))
+    const [form, setForm] = useState<CalendarForm>(() => makeDefaultForm(initialDate))
     const [editingId, setEditingId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -188,21 +192,14 @@ export default function CalendarAdmin() {
     const findEventType = (code?: string | null) =>
         eventTypes.find((type) => type.code.toLowerCase() === (code || "").toLowerCase())
 
-    const getEventTypeLabel = (code?: string | null) => {
-        const found = findEventType(code)
-        if (found) return found.name
-        if (code === "Print") return "Принт на снимки"
-        if (code === "Photoshoot" || !code) return "Фотосесия"
-        return code
-    }
-
-    const getEventColor = (event: CalendarEvent) =>
-        findEventType(event.eventType)?.color || event.color || "#2563eb"
+    const getEventTypeLabel = (code?: string | null) => findEventType(code)?.name || code || "Без тип"
+    const getEventColor = (event: CalendarEvent) => findEventType(event.eventType)?.color || event.color || defaultColor
 
     const getHoverDetails = (event: CalendarEvent) => [
         event.title,
         isPastEvent(event) ? "Статус: Минало" : "Статус: Предстоящо",
         `Тип: ${getEventTypeLabel(event.eventType)}`,
+        event.price !== null && event.price !== undefined ? `Цена: ${formatPrice(event.price)}` : "",
         `Начало: ${formatDateTime(event.startAtUtc)}`,
         `Край: ${formatDateTime(event.endAtUtc)}`,
         event.clientName ? `Клиент: ${event.clientName}` : "",
@@ -230,7 +227,7 @@ export default function CalendarAdmin() {
         const response = await apiFetch(`${API_PATH}/event-types`, { method: "GET", skipJsonContentType: true })
         if (!response.ok) throw new Error("Грешка при зареждане на типовете.")
         const data: unknown = await response.json().catch(() => [])
-        const items = Array.isArray(data) && data.length ? data as CalendarEventType[] : fallbackEventTypes
+        const items = Array.isArray(data) ? data as CalendarEventType[] : []
         setEventTypes(items)
         setTypeDrafts(Object.fromEntries(items.map((type) => [type.code, { name: type.name, color: type.color }])))
         return items
@@ -252,7 +249,9 @@ export default function CalendarAdmin() {
             const [, types, requests] = await Promise.all([loadEvents(), loadEventTypes(), loadContactRequests()])
             setForm((current) => {
                 const selectedType = types.find((type) => type.code === current.eventType) || types[0]
-                return selectedType ? { ...current, eventType: selectedType.code, color: selectedType.color } : current
+                return selectedType
+                    ? { ...current, eventType: selectedType.code, color: selectedType.color }
+                    : { ...current, eventType: "", color: defaultColor }
             })
             return requests
         } catch (err) {
@@ -277,13 +276,13 @@ export default function CalendarAdmin() {
     }, [])
 
     const applyContactRequestToForm = (request: ContactRequest) => {
-        const photoshootType = eventTypes.find((type) => type.code === "Photoshoot") || eventTypes[0]
+        const selectedType = eventTypes[0]
         setEditingId(null)
         setForm((current) => ({
             ...current,
-            title: request.subject?.trim() || `Фотосесия - ${request.name}`,
-            eventType: photoshootType?.code || "Photoshoot",
-            color: photoshootType?.color || "#2563eb",
+            title: request.subject?.trim() || request.name,
+            eventType: selectedType?.code || current.eventType,
+            color: selectedType?.color || current.color,
             clientName: request.name || "",
             clientPhone: request.phone || "",
             clientEmail: request.email || "",
@@ -296,7 +295,7 @@ export default function CalendarAdmin() {
 
     const resetForm = (date = selectedDate) => {
         setEditingId(null)
-        setForm(makeDefaultForm(date, eventTypes[0] || fallbackEventTypes[0]))
+        setForm(makeDefaultForm(date, eventTypes[0]))
     }
 
     const startNewEvent = (date = selectedDate) => {
@@ -321,7 +320,7 @@ export default function CalendarAdmin() {
         setViewDate(new Date(start.getFullYear(), start.getMonth(), 1))
         setForm({
             title: event.title || "",
-            eventType: event.eventType || eventTypes[0]?.code || "Photoshoot",
+            eventType: event.eventType || eventTypes[0]?.code || "",
             assignedTo: event.assignedTo || "",
             clientName: event.clientName || "",
             clientPhone: event.clientPhone || "",
@@ -329,7 +328,8 @@ export default function CalendarAdmin() {
             contactRequestId: event.contactRequestId || "",
             location: event.location || "",
             description: event.description || "",
-            color: type?.color || event.color || "#2563eb",
+            color: type?.color || event.color || defaultColor,
+            price: event.price === null || event.price === undefined ? "" : String(event.price),
             remindersEnabled: event.remindersEnabled ?? true,
             startDate: toDateInputValue(start),
             startTime: toTimeInputValue(start),
@@ -348,8 +348,14 @@ export default function CalendarAdmin() {
         setError("")
         try {
             if (!form.title.trim()) throw new Error("Заглавието е задължително.")
-            if (form.remindersEnabled && form.eventType === "Photoshoot" && !form.clientEmail.trim()) {
+            if (!form.eventType) throw new Error("Създай и избери тип на събитието.")
+            if (form.remindersEnabled && !form.clientEmail.trim()) {
                 throw new Error("За email напомняния е нужен имейл на клиента.")
+            }
+
+            const parsedPrice = form.price.trim() === "" ? null : Number(form.price.replace(",", "."))
+            if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) {
+                throw new Error("Цената трябва да е валидно положително число.")
             }
 
             const selectedType = findEventType(form.eventType)
@@ -364,11 +370,13 @@ export default function CalendarAdmin() {
                 location: form.location.trim() || null,
                 description: form.description.trim() || null,
                 color: selectedType?.color || form.color,
+                price: parsedPrice,
                 remindersEnabled: form.remindersEnabled,
                 startAtUtc: combineLocalDateTime(form.startDate, form.startTime),
                 endAtUtc: combineLocalDateTime(form.endDate, form.endTime),
             }
 
+            const wasEditing = editingId !== null
             const response = await apiFetch(editingId ? `${API_PATH}/${editingId}` : API_PATH, {
                 method: editingId ? "PUT" : "POST",
                 body: JSON.stringify(payload),
@@ -380,7 +388,7 @@ export default function CalendarAdmin() {
 
             await loadEvents()
             resetForm()
-            showToast({ type: "success", title: "Готово", message: editingId ? "Събитието беше обновено." : "Събитието беше добавено." })
+            showToast({ type: "success", title: "Готово", message: wasEditing ? "Събитието беше обновено." : "Събитието беше добавено." })
         } catch (err) {
             const message = err instanceof Error ? err.message : "Записът беше неуспешен."
             setError(message)
@@ -410,7 +418,7 @@ export default function CalendarAdmin() {
         try {
             const response = await apiFetch(`${API_PATH}/event-types`, {
                 method: "POST",
-                body: JSON.stringify({ name: newTypeName, color: newTypeColor }),
+                body: JSON.stringify({ name: newTypeName.trim(), color: newTypeColor }),
             })
             if (!response.ok) {
                 const data = await response.json().catch(() => null)
@@ -436,7 +444,7 @@ export default function CalendarAdmin() {
         try {
             const response = await apiFetch(`${API_PATH}/event-types/${encodeURIComponent(type.code)}`, {
                 method: "PUT",
-                body: JSON.stringify(draft),
+                body: JSON.stringify({ name: draft.name.trim(), color: draft.color }),
             })
             if (!response.ok) {
                 const data = await response.json().catch(() => null)
@@ -465,8 +473,9 @@ export default function CalendarAdmin() {
                 throw new Error(data?.message || "Типът не беше изтрит.")
             }
             const types = await loadEventTypes()
-            if (form.eventType === type.code && types[0]) {
-                setForm((current) => ({ ...current, eventType: types[0].code, color: types[0].color }))
+            await loadEvents()
+            if (form.eventType === type.code) {
+                setForm((current) => ({ ...current, eventType: types[0]?.code || "", color: types[0]?.color || defaultColor }))
             }
             showToast({ type: "success", title: "Готово", message: "Типът беше изтрит." })
         } catch (err) {
@@ -477,12 +486,37 @@ export default function CalendarAdmin() {
         }
     }
 
+    const renderTypeManager = () => (
+        <div className="space-y-3">
+            {eventTypes.length ? eventTypes.map((type) => {
+                const draft = typeDrafts[type.code] || { name: type.name, color: type.color }
+                return (
+                    <div key={type.code} className="rounded-xl border border-gray-200 p-3 dark:border-zinc-700">
+                        <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto_auto]">
+                            <input value={draft.name} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, name: event.target.value } }))} className="h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950" />
+                            <input type="color" value={draft.color} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, color: event.target.value } }))} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
+                            <button type="button" onClick={() => void updateEventType(type)} disabled={typeBusy === type.code || !draft.name.trim()} className="rounded-lg bg-gray-900 px-3 text-xs font-bold text-white disabled:opacity-50 dark:bg-white dark:text-black">Редактирай</button>
+                            <button type="button" onClick={() => void deleteEventType(type)} disabled={typeBusy === type.code} className="rounded-lg border border-red-300 px-3 text-xs font-bold text-red-600 disabled:opacity-50">Изтрий</button>
+                        </div>
+                    </div>
+                )
+            }) : <div className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500">Няма създадени типове.</div>}
+            <div className="rounded-xl border border-dashed border-gray-300 p-3">
+                <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto]">
+                    <input value={newTypeName} onChange={(event) => setNewTypeName(event.target.value)} placeholder="Нов тип" maxLength={40} className="h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950" />
+                    <input type="color" value={newTypeColor} onChange={(event) => setNewTypeColor(event.target.value)} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
+                    <button type="button" onClick={() => void createEventType()} disabled={typeBusy === "new" || !newTypeName.trim()} className="rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white disabled:opacity-50">Добави тип</button>
+                </div>
+            </div>
+        </div>
+    )
+
     return (
         <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Календар</h1>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">Управление на събития, типове и цветове.</p>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">Управление на събития, типове, цени и цветове.</p>
                 </div>
                 <button type="button" onClick={() => void loadAll()} className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700">Обнови</button>
             </div>
@@ -538,28 +572,7 @@ export default function CalendarAdmin() {
 
                     <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
                         <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Типове събития</h2>
-                        <div className="space-y-3">
-                            {eventTypes.map((type) => {
-                                const draft = typeDrafts[type.code] || { name: type.name, color: type.color }
-                                return (
-                                    <div key={type.code} className="rounded-xl border border-gray-200 p-3">
-                                        <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto]">
-                                            <input value={draft.name} disabled={type.isSystem} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, name: event.target.value } }))} className="h-10 rounded-lg border border-gray-300 px-3 text-sm disabled:bg-gray-100" />
-                                            <input type="color" value={draft.color} onChange={(event) => setTypeDrafts((current) => ({ ...current, [type.code]: { ...draft, color: event.target.value } }))} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
-                                            <button type="button" onClick={() => void updateEventType(type)} disabled={typeBusy === type.code} className="rounded-lg bg-gray-900 px-3 text-xs font-bold text-white disabled:opacity-50">Запази</button>
-                                        </div>
-                                        {!type.isSystem ? <button type="button" onClick={() => void deleteEventType(type)} disabled={typeBusy === type.code} className="mt-2 text-xs font-bold text-red-600 disabled:opacity-50">Изтрий типа</button> : null}
-                                    </div>
-                                )
-                            })}
-                            <div className="rounded-xl border border-dashed border-gray-300 p-3">
-                                <div className="grid gap-2 sm:grid-cols-[1fr_54px_auto]">
-                                    <input value={newTypeName} onChange={(event) => setNewTypeName(event.target.value)} placeholder="Нов тип" maxLength={40} className="h-10 rounded-lg border border-gray-300 px-3 text-sm" />
-                                    <input type="color" value={newTypeColor} onChange={(event) => setNewTypeColor(event.target.value)} className="h-10 w-full rounded-lg border border-gray-300 p-1" />
-                                    <button type="button" onClick={() => void createEventType()} disabled={typeBusy === "new" || !newTypeName.trim()} className="rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white disabled:opacity-50">Добави</button>
-                                </div>
-                            </div>
-                        </div>
+                        {renderTypeManager()}
                     </section>
 
                     <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
@@ -568,17 +581,17 @@ export default function CalendarAdmin() {
                             <label className="block"><span className="mb-1 block text-sm font-semibold">Импорт от заявка</span><select value={form.contactRequestId} onChange={(event) => { const request = contactRequests.find((item) => item.id === event.target.value); if (request) applyContactRequestToForm(request); else setStringField("contactRequestId", "") }} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">— Без свързана заявка —</option>{contactRequests.map((request) => <option key={request.id} value={request.id}>{request.name} · {request.email} · {request.subject || "Без тема"}</option>)}</select></label>
                             <label className="block"><span className="mb-1 block text-sm font-semibold">Заглавие</span><input value={form.title} onChange={(event) => setStringField("title", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <label className="block"><span className="mb-1 block text-sm font-semibold">Тип</span><select value={form.eventType} onChange={(event) => changeEventType(event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm">{eventTypes.map((type) => <option key={type.code} value={type.code}>{type.name}</option>)}</select><span className="mt-2 flex items-center gap-2 text-xs text-gray-500"><span className="h-3 w-3 rounded-full" style={{ backgroundColor: findEventType(form.eventType)?.color || form.color }} /> Цветът се задава от типа</span></label>
+                                <label className="block"><span className="mb-1 block text-sm font-semibold">Тип</span><select value={form.eventType} disabled={!eventTypes.length} onChange={(event) => changeEventType(event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">{eventTypes.length ? "— Избери тип —" : "Няма създадени типове"}</option>{eventTypes.map((type) => <option key={type.code} value={type.code}>{type.name}</option>)}</select><span className="mt-2 flex items-center gap-2 text-xs text-gray-500"><span className="h-3 w-3 rounded-full" style={{ backgroundColor: findEventType(form.eventType)?.color || form.color }} /> Цветът се задава от типа</span><button id="dg-calendar-event-types-button" type="button" className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-3 text-xs font-bold text-gray-800">Добави / редактирай / изтрий типове</button></label>
                                 <label className="block"><span className="mb-1 block text-sm font-semibold">Ангажимент към</span><select value={form.assignedTo} onChange={(event) => setStringField("assignedTo", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"><option value="">—</option><option value="Десислав">Десислав</option><option value="Теодор">Теодор</option><option value="Десислав и Теодор">Десислав и Теодор</option></select></label>
                             </div>
-                            <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Клиент</span><input value={form.clientName} onChange={(event) => setStringField("clientName", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Телефон</span><input value={form.clientPhone} onChange={(event) => setStringField("clientPhone", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
+                            <div className="grid gap-4 sm:grid-cols-3"><label><span className="mb-1 block text-sm font-semibold">Клиент</span><input value={form.clientName} onChange={(event) => setStringField("clientName", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Телефон</span><input value={form.clientPhone} onChange={(event) => setStringField("clientPhone", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Цена (лв.)</span><input type="number" min="0" step="0.01" value={form.price} onChange={(event) => setStringField("price", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <label className="block"><span className="mb-1 block text-sm font-semibold">Email за напомняне</span><input type="email" value={form.clientEmail} onChange={(event) => setStringField("clientEmail", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-semibold"><input type="checkbox" checked={form.remindersEnabled} onChange={(event) => setForm((current) => ({ ...current, remindersEnabled: event.target.checked }))} className="h-4 w-4" /> Прати напомняния</label>
                             <label className="block"><span className="mb-1 block text-sm font-semibold">Локация</span><input value={form.location} onChange={(event) => setStringField("location", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label>
                             <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Начало дата</span><input type="date" value={form.startDate} onChange={(event) => setStringField("startDate", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Начало час</span><input type="time" value={form.startTime} onChange={(event) => setStringField("startTime", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <div className="grid gap-4 sm:grid-cols-2"><label><span className="mb-1 block text-sm font-semibold">Край дата</span><input type="date" value={form.endDate} onChange={(event) => setStringField("endDate", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label><label><span className="mb-1 block text-sm font-semibold">Край час</span><input type="time" value={form.endTime} onChange={(event) => setStringField("endTime", event.target.value)} className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm" /></label></div>
                             <label className="block"><span className="mb-1 block text-sm font-semibold">Бележки</span><textarea value={form.description} onChange={(event) => setStringField("description", event.target.value)} rows={4} className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" /></label>
-                            <button type="button" onClick={() => void saveEvent()} disabled={saving} className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Записване..." : editingId ? "Запази промените" : "Добави събитие"}</button>
+                            <button type="button" onClick={() => void saveEvent()} disabled={saving || !eventTypes.length} className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 px-5 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Записване..." : editingId ? "Запази промените" : "Добави събитие"}</button>
                         </div>
                     </section>
 
@@ -587,7 +600,7 @@ export default function CalendarAdmin() {
                         {loading ? <div className="text-sm text-gray-500">Зареждане...</div> : null}
                         {!loading && !selectedDateEvents.length ? <div className="text-sm text-gray-500">Няма събития за тази дата.</div> : null}
                         <div className="space-y-3">
-                            {selectedDateEvents.map((event) => <div key={event.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4" title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className="font-bold text-gray-900">{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p></div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: isPastEvent(event) ? "#9ca3af" : getEventColor(event) }} /></div>{event.assignedTo ? <p className="text-sm">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.location ? <p className="mt-1 text-sm">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>)}
+                            {selectedDateEvents.map((event) => <div key={event.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4" title={getHoverDetails(event)}><div className="mb-2 flex items-start justify-between gap-3"><div><h3 className="font-bold text-gray-900">{event.title}</h3><p className="text-xs text-gray-500">{getEventTypeLabel(event.eventType)} • {formatDateTime(event.startAtUtc)} - {formatDateTime(event.endAtUtc)}</p>{event.price !== null && event.price !== undefined ? <p className="mt-1 text-sm font-bold text-gray-900">Цена: {formatPrice(event.price)}</p> : null}</div><span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: isPastEvent(event) ? "#9ca3af" : getEventColor(event) }} /></div>{event.assignedTo ? <p className="text-sm">Ангажимент към: {event.assignedTo}</p> : null}{event.clientName || event.clientPhone ? <p className="text-sm">{event.clientName} {event.clientPhone ? `• ${event.clientPhone}` : ""}</p> : null}{event.location ? <p className="mt-1 text-sm">{event.location}</p> : null}{event.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{event.description}</p> : null}<div className="mt-4 flex gap-2"><button type="button" onClick={() => editEvent(event)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold">Редактирай</button><button type="button" onClick={() => void deleteEvent(event.id)} disabled={deletingId === event.id} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60">{deletingId === event.id ? "Трие..." : "Изтрий"}</button></div></div>)}
                         </div>
                     </section>
                 </aside>
