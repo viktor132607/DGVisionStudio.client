@@ -18,6 +18,7 @@ import ServicesAdmin from "./ServicesAdmin"
 import PricingAdmin from "./PricingAdmin"
 import AdminDashboardCalendarPreview from "../../components/admin/AdminDashboardCalendarPreview"
 import AdminVideoUploadPortal from "../../components/admin/AdminVideoUploadPortal"
+import EmptyAlbumSubmitBridge from "../../components/admin/EmptyAlbumSubmitBridge"
 
 export default function AdminRoutes() {
     return (
@@ -39,7 +40,15 @@ export default function AdminRoutes() {
                     <Route path="services" element={<ServicesAdmin />} />
                     <Route path="pricing" element={<PricingAdmin />} />
 
-                    <Route path="client-galleries/new" element={<ClientGalleryEditAdmin />} />
+                    <Route
+                        path="client-galleries/new"
+                        element={
+                            <>
+                                <ClientGalleryEditAdmin />
+                                <EmptyAlbumSubmitBridge />
+                            </>
+                        }
+                    />
                     <Route path="client-galleries/edit" element={<ClientGalleryEditAdmin />} />
                     <Route path="client-galleries/access" element={<ClientGalleryAccessAdmin />} />
 
