@@ -139,20 +139,20 @@ export default function EmptyAlbumSubmitBridge() {
                     const visibilityRadio = form.querySelector<HTMLInputElement>(
                         'input[name="album-visibility"]:checked'
                     )
+                    const visibilitySection = visibilityRadio?.closest("section")
                     const visibilityText = normalizeText(visibilityRadio?.closest("label")?.textContent)
                     const isPublic = visibilityText.includes("публичен") || visibilityText.includes("public")
-                    const categorySelect = findControl<HTMLSelectElement>(
-                        form,
-                        ["Категория", "Category"],
-                        "select"
-                    )
-                    const categoryId = categorySelect?.value ? Number(categorySelect.value) : null
-                    const publishedLabel = findLabel(form, [
-                        "Активен в портфолиото веднага",
-                        "Active in portfolio immediately",
-                    ])
+                    const categorySelect =
+                        visibilitySection?.querySelector<HTMLSelectElement>("select") ||
+                        findControl<HTMLSelectElement>(form, ["Категория", "Category"], "select")
+                    const categoryValue = categorySelect?.value?.trim() || ""
+                    const parsedCategoryId = Number(categoryValue)
+                    const categoryId =
+                        categoryValue && Number.isFinite(parsedCategoryId) && parsedCategoryId > 0
+                            ? parsedCategoryId
+                            : null
                     const isPublished = Boolean(
-                        publishedLabel?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked
+                        visibilitySection?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked
                     )
 
                     if (!title) {
