@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation } from "react-router-dom"
 import AdminToastProvider from "../../components/admin/AdminToastProvider"
 
@@ -22,16 +22,39 @@ function AdminLayoutContent() {
     const isCalendar = location.pathname === "/admin/calendar" || location.pathname === "/admin/calendar/"
     const hidePageHeader = isDashboard || isCalendar
 
+    useEffect(() => {
+        setMobileMenuOpen(false)
+    }, [location.pathname])
+
+    useEffect(() => {
+        if (!mobileMenuOpen) return
+
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+
+        return () => {
+            document.body.style.overflow = previousOverflow
+        }
+    }, [mobileMenuOpen])
+
     const isActive = (path: string) => {
         if (path === "/admin") return location.pathname === "/admin"
         return location.pathname.startsWith(path)
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 text-slate-900 dark:bg-zinc-950 dark:text-white lg:pl-72">
-            <div className="sticky top-0 z-40 flex justify-end border-b border-slate-200 bg-white px-4 pb-4 pt-5 shadow-sm dark:border-white/10 dark:bg-black lg:hidden">
+        <div
+            data-admin-shell="true"
+            className="min-h-screen bg-gray-100 text-slate-900 dark:bg-zinc-950 dark:text-white lg:pl-72"
+        >
+            <div
+                data-admin-mobile-bar="true"
+                className="sticky top-0 z-40 flex justify-end border-b border-slate-200 bg-white px-4 pb-4 pt-5 shadow-sm dark:border-white/10 dark:bg-black lg:hidden"
+            >
                 <button
                     type="button"
+                    aria-expanded={mobileMenuOpen}
+                    aria-controls="admin-mobile-sidebar"
                     onClick={() => setMobileMenuOpen(true)}
                     className="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-black text-white dark:bg-white dark:text-black"
                 >
@@ -49,6 +72,9 @@ function AdminLayoutContent() {
             )}
 
             <aside
+                id="admin-mobile-sidebar"
+                data-admin-sidebar="true"
+                aria-hidden={!mobileMenuOpen ? true : undefined}
                 className={`fixed bottom-0 left-0 top-0 z-50 flex w-[min(18rem,86vw)] flex-col bg-gray-950 px-5 py-6 text-white shadow-2xl transition-transform duration-200 dark:bg-black lg:top-20 lg:z-30 lg:w-72 lg:translate-x-0 ${
                     mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
                 }`}
@@ -56,6 +82,7 @@ function AdminLayoutContent() {
                 <div className="mb-2 flex justify-end lg:hidden">
                     <button
                         type="button"
+                        aria-label="Затвори менюто"
                         onClick={closeMobileMenu}
                         className="rounded-xl bg-white/10 px-3 py-2 text-sm font-black text-white"
                     >
@@ -120,6 +147,7 @@ function AdminLayoutContent() {
             `}</style>
 
             <main
+                data-admin-main="true"
                 data-calendar-layout={isCalendar ? "true" : undefined}
                 className={`min-h-screen w-full px-0 ${
                     isCalendar ? "py-0" : "py-4 sm:py-6 lg:py-8"
