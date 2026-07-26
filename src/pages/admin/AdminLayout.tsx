@@ -74,7 +74,6 @@ function AdminLayoutContent() {
             <aside
                 id="admin-mobile-sidebar"
                 data-admin-sidebar="true"
-                aria-hidden={!mobileMenuOpen ? true : undefined}
                 className={`fixed bottom-0 left-0 top-0 z-50 flex w-[min(18rem,86vw)] flex-col bg-gray-950 px-5 py-6 text-white shadow-2xl transition-transform duration-200 dark:bg-black lg:top-20 lg:z-30 lg:w-72 lg:translate-x-0 ${
                     mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
                 }`}
