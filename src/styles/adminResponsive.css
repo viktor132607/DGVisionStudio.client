@@ -1,0 +1,316 @@
+/*
+ * Shared responsive rules for every admin route.
+ * The selectors are scoped to AdminLayout so the public website is unaffected.
+ */
+[data-admin-shell="true"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: clip;
+}
+
+[data-admin-shell="true"],
+[data-admin-shell="true"] *,
+[data-admin-shell="true"] *::before,
+[data-admin-shell="true"] *::after {
+    box-sizing: border-box;
+}
+
+[data-admin-main="true"],
+[data-admin-main="true"] > *,
+[data-admin-main="true"] form,
+[data-admin-main="true"] section,
+[data-admin-main="true"] article,
+[data-admin-main="true"] fieldset {
+    min-width: 0;
+    max-width: 100%;
+}
+
+[data-admin-main="true"] img,
+[data-admin-main="true"] video,
+[data-admin-main="true"] canvas,
+[data-admin-main="true"] iframe,
+[data-admin-main="true"] svg {
+    max-width: 100%;
+}
+
+[data-admin-main="true"] input,
+[data-admin-main="true"] select,
+[data-admin-main="true"] textarea,
+[data-admin-main="true"] button {
+    max-width: 100%;
+}
+
+[data-admin-main="true"] input:not([type="checkbox"]):not([type="radio"]),
+[data-admin-main="true"] select,
+[data-admin-main="true"] textarea {
+    width: 100%;
+    min-width: 0;
+}
+
+[data-admin-main="true"] textarea {
+    resize: vertical;
+}
+
+[data-admin-main="true"] button,
+[data-admin-main="true"] a,
+[data-admin-main="true"] input,
+[data-admin-main="true"] select,
+[data-admin-main="true"] textarea,
+[data-admin-sidebar="true"] button,
+[data-admin-sidebar="true"] a {
+    touch-action: manipulation;
+}
+
+[data-admin-main="true"] h1,
+[data-admin-main="true"] h2,
+[data-admin-main="true"] h3,
+[data-admin-main="true"] p,
+[data-admin-main="true"] label,
+[data-admin-main="true"] span,
+[data-admin-main="true"] td,
+[data-admin-main="true"] th {
+    overflow-wrap: anywhere;
+}
+
+[data-admin-main="true"] [class*="overflow-x-auto"],
+[data-admin-main="true"] [class*="overflow-auto"] {
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+[data-admin-main="true"] table {
+    width: 100%;
+}
+
+@supports selector(div:has(> table)) {
+    [data-admin-main="true"] div:has(> table) {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+[data-admin-main="true"] [role="dialog"],
+[data-admin-main="true"] [aria-modal="true"] {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Calendar keeps seven usable columns and scrolls inside its own section on narrow devices. */
+@media (max-width: 899px) {
+    [data-admin-main="true"][data-calendar-layout="true"] [class*="grid-cols-7"] {
+        min-width: 620px;
+    }
+
+    @supports selector(section:has([class*="grid-cols-7"])) {
+        [data-admin-main="true"][data-calendar-layout="true"] section:has([class*="grid-cols-7"]) {
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+}
+
+@media (max-width: 899px) {
+    [data-admin-mobile-bar="true"] {
+        min-height: calc(58px + env(safe-area-inset-top));
+        padding-top: max(12px, env(safe-area-inset-top)) !important;
+        padding-right: max(12px, env(safe-area-inset-right)) !important;
+        padding-bottom: 10px !important;
+        padding-left: max(12px, env(safe-area-inset-left)) !important;
+    }
+
+    [data-admin-sidebar="true"] {
+        width: min(19rem, calc(100vw - 28px)) !important;
+        padding-top: max(18px, env(safe-area-inset-top)) !important;
+        padding-right: 14px !important;
+        padding-bottom: max(18px, env(safe-area-inset-bottom)) !important;
+        padding-left: max(14px, env(safe-area-inset-left)) !important;
+    }
+
+    [data-admin-sidebar="true"] nav {
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    [data-admin-main="true"] {
+        width: 100%;
+        padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+        overflow-x: hidden;
+    }
+
+    [data-admin-main="true"]:not([data-calendar-layout="true"]) > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-right: max(12px, env(safe-area-inset-right)) !important;
+        padding-left: max(12px, env(safe-area-inset-left)) !important;
+    }
+
+    [data-admin-main="true"] section,
+    [data-admin-main="true"] article {
+        max-width: 100%;
+    }
+
+    [data-admin-main="true"] section[class*="p-6"],
+    [data-admin-main="true"] article[class*="p-6"],
+    [data-admin-main="true"] div[class*="p-6"][class*="rounded-"] {
+        padding: 16px !important;
+    }
+
+    [data-admin-main="true"] h1 {
+        font-size: clamp(1.5rem, 7vw, 2rem) !important;
+        line-height: 1.12 !important;
+    }
+
+    [data-admin-main="true"] h2 {
+        line-height: 1.18 !important;
+    }
+
+    /* 16px prevents Safari from zooming the page when a field receives focus. */
+    [data-admin-main="true"] input:not([type="checkbox"]):not([type="radio"]),
+    [data-admin-main="true"] select,
+    [data-admin-main="true"] textarea {
+        min-height: 44px;
+        font-size: 16px !important;
+    }
+
+    [data-admin-main="true"] input[type="date"],
+    [data-admin-main="true"] input[type="datetime-local"],
+    [data-admin-main="true"] input[type="time"],
+    [data-admin-main="true"] input[type="month"] {
+        display: block;
+        min-width: 0;
+        min-height: 44px;
+    }
+
+    [data-admin-main="true"] input[type="file"] {
+        min-height: 44px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    [data-admin-main="true"] input[type="file"]::file-selector-button {
+        min-height: 40px;
+        margin-right: 10px;
+        padding: 8px 12px;
+    }
+
+    [data-admin-main="true"] button,
+    [data-admin-main="true"] a[class*="inline-flex"],
+    [data-admin-main="true"] a[class*="rounded-"] {
+        min-height: 44px;
+    }
+
+    [data-admin-main="true"] button {
+        white-space: normal;
+    }
+
+    [data-admin-main="true"] [class*="flex-nowrap"] {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    [data-admin-main="true"] [class*="whitespace-nowrap"] {
+        max-width: 100%;
+    }
+
+    [data-admin-main="true"] table {
+        min-width: 720px;
+    }
+
+    [data-admin-main="true"] th,
+    [data-admin-main="true"] td {
+        padding: 10px !important;
+        vertical-align: top;
+    }
+
+    [data-admin-main="true"] .fixed.inset-0 {
+        padding-top: max(12px, env(safe-area-inset-top)) !important;
+        padding-right: max(12px, env(safe-area-inset-right)) !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        padding-left: max(12px, env(safe-area-inset-left)) !important;
+    }
+
+    [data-admin-main="true"] .fixed.inset-0 > div:not(.absolute),
+    [data-admin-main="true"] .fixed.inset-0 > section,
+    [data-admin-main="true"] .fixed.inset-0 > form {
+        width: 100% !important;
+        max-width: min(100%, 36rem) !important;
+        max-height: calc(100dvh - max(24px, env(safe-area-inset-top) + env(safe-area-inset-bottom))) !important;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    [data-admin-main="true"] [class*="fixed"][class*="bottom-"] {
+        margin-bottom: env(safe-area-inset-bottom);
+    }
+
+    #dg-album-sort-wrap,
+    #dg-album-sort-select {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* Very narrow folded screens and older compact iPhones. */
+@media (max-width: 359px) {
+    [data-admin-main="true"]:not([data-calendar-layout="true"]) > div {
+        padding-right: 8px !important;
+        padding-left: 8px !important;
+    }
+
+    [data-admin-main="true"] .grid.grid-cols-2 {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    [data-admin-main="true"] [class*="px-6"] {
+        padding-right: 12px !important;
+        padding-left: 12px !important;
+    }
+
+    [data-admin-main="true"] [class*="gap-4"] {
+        gap: 12px !important;
+    }
+}
+
+/* Fold inner screens: use the extra width but keep controls finger-friendly. */
+@media (min-width: 600px) and (max-width: 899px) {
+    [data-admin-main="true"]:not([data-calendar-layout="true"]) > div {
+        padding-right: max(20px, env(safe-area-inset-right)) !important;
+        padding-left: max(20px, env(safe-area-inset-left)) !important;
+    }
+
+    [data-admin-sidebar="true"] {
+        width: min(20rem, 46vw) !important;
+    }
+}
+
+/* Landscape phones: dialogs and headers must not consume the whole short viewport. */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+    [data-admin-mobile-bar="true"] {
+        min-height: 48px;
+        padding-top: max(6px, env(safe-area-inset-top)) !important;
+        padding-bottom: 6px !important;
+    }
+
+    [data-admin-sidebar="true"] {
+        padding-top: max(8px, env(safe-area-inset-top)) !important;
+        padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    }
+
+    [data-admin-main="true"] .fixed.inset-0 > div:not(.absolute),
+    [data-admin-main="true"] .fixed.inset-0 > section,
+    [data-admin-main="true"] .fixed.inset-0 > form {
+        max-height: calc(100dvh - 16px) !important;
+    }
+}
