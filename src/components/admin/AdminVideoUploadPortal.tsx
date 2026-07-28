@@ -1,13 +1,21 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import type { ChangeEvent } from "react"
 import { createPortal } from "react-dom"
 import { useLocation } from "react-router-dom"
 import { apiFetch } from "../../services/api"
 
-const MAX_VIDEO_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024
-const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"])
+const MAX_VIDEO_UPLOAD_SIZE_BYTES = 500 * 1024 * 1024
+const ALLOWED_VIDEO_TYPES = new Set([
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
+    "video/x-m4v",
+    "application/quicktime",
+    "application/octet-stream",
+])
 const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"]
 const VIDEO_EXTENSION_PATTERN = /\.(mp4|mov|webm|m4v)(\?|#|$)/i
+const VIDEO_INPUT_ID = "admin-gallery-video-upload-input"
 
 type GalleryMedia = {
     id: number
@@ -27,7 +35,8 @@ function getGalleryId(search: string) {
 function isAllowedVideo(file: File) {
     const name = file.name.toLowerCase()
     const hasAllowedExtension = ALLOWED_VIDEO_EXTENSIONS.some((extension) => name.endsWith(extension))
-    const hasAllowedType = !file.type || ALLOWED_VIDEO_TYPES.has(file.type) || file.type.startsWith("video/")
+    const hasAllowedType =
+        !file.type || ALLOWED_VIDEO_TYPES.has(file.type) || file.type.startsWith("video/")
 
     return hasAllowedExtension && hasAllowedType
 }
@@ -142,7 +151,6 @@ function patchVideoCards(media: GalleryMedia[], galleryId: number | null) {
 
 export default function AdminVideoUploadPortal() {
     const location = useLocation()
-    const inputRef = useRef<HTMLInputElement | null>(null)
     const [portalRoot, setPortalRoot] = useState<HTMLSpanElement | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [media, setMedia] = useState<GalleryMedia[]>([])
@@ -224,7 +232,8 @@ export default function AdminVideoUploadPortal() {
         }
 
         if (file.size > MAX_VIDEO_UPLOAD_SIZE_BYTES) {
-            alert("Видеото е над 100 MB.")
+            const sizeInMb = Math.ceil(file.size / 1024 / 1024)
+            alert(`Видеото е ${sizeInMb} MB. Максимумът е 500 MB.`)
             return
         }
 
@@ -255,19 +264,22 @@ export default function AdminVideoUploadPortal() {
 
     return createPortal(
         <>
-            <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                disabled={isUploading}
-                className="ml-2 inline-flex cursor-pointer items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+            <label
+                htmlFor={VIDEO_INPUT_ID}
+                aria-disabled={isUploading}
+                onClick={(event) => {
+                    if (isUploading) event.preventDefault()
+                }}
+                className="ml-2 inline-flex cursor-pointer items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
             >
                 {isUploading ? "Качване..." : "Качи видео"}
-            </button>
+            </label>
             <input
-                ref={inputRef}
+                id={VIDEO_INPUT_ID}
                 type="file"
                 accept="video/*,.mp4,.mov,.webm,.m4v"
-                className="hidden"
+                className="sr-only"
+                disabled={isUploading}
                 onChange={uploadVideo}
             />
         </>,
