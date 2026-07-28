@@ -25,20 +25,7 @@ jobs:
         run: npm ci
 
       - name: Run lint
-        id: lint
-        continue-on-error: true
-        run: npm run lint 2>&1 | tee lint.log
-
-      - name: Upload lint log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-log
-          path: lint.log
-
-      - name: Fail on lint errors
-        if: steps.lint.outcome == 'failure'
-        run: exit 1
+        run: npm run lint
 
       - name: Build
         run: npm run build
