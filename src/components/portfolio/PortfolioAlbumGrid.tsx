@@ -51,7 +51,7 @@ function AlbumCover({ item, eager }: { item: PortfolioAlbumCard; eager: boolean 
         setFallbackTried(false)
     }, [item.coverSrc])
 
-    const useFallback = async () => {
+    const tryFallback = async () => {
         if (fallbackTried) {
             setFailed(true)
             return
@@ -94,7 +94,7 @@ function AlbumCover({ item, eager }: { item: PortfolioAlbumCard; eager: boolean 
             alt={item.title}
             loading={eager ? "eager" : "lazy"}
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-            onError={() => void useFallback()}
+            onError={() => void tryFallback()}
         />
     )
 }
