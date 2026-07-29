@@ -18,6 +18,7 @@ import ServicesAdmin from "./ServicesAdmin"
 import PricingAdmin from "./PricingAdmin"
 import AdminDashboardCalendarPreview from "../../components/admin/AdminDashboardCalendarPreview"
 import AdminVideoUploadPortal from "../../components/admin/AdminVideoUploadPortal"
+import AlbumPublishSchedulePortal from "../../components/admin/AlbumPublishSchedulePortal"
 import EmptyAlbumSubmitBridge from "../../components/admin/EmptyAlbumSubmitBridge"
 
 export default function AdminRoutes() {
@@ -25,6 +26,7 @@ export default function AdminRoutes() {
         <>
             <AdminDashboardCalendarPreview />
             <AdminVideoUploadPortal />
+            <AlbumPublishSchedulePortal />
 
             <Routes>
                 <Route element={<AdminLayout />}>
