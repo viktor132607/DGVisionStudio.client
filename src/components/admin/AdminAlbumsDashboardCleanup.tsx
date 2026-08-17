@@ -47,8 +47,11 @@ function markAppleDashboardMetrics() {
   }
 }
 
-function markAppleAlbumActions() {
-  if (!document.documentElement.classList.contains("apple-device")) return
+function markPlatformAlbumActions() {
+  const root = document.documentElement
+  const isApple = root.classList.contains("apple-device")
+  const isAndroid = root.classList.contains("android-device")
+  if (!isApple && !isAndroid) return
 
   const albumsSection = document.querySelector<HTMLElement>("#albums")
   if (!albumsSection) return
@@ -84,9 +87,9 @@ function markAppleAlbumActions() {
   }
 }
 
-function applyAppleDashboardMarkers() {
+function applyPlatformDashboardMarkers() {
   markAppleDashboardMetrics()
-  markAppleAlbumActions()
+  markPlatformAlbumActions()
 }
 
 export default function AdminAlbumsDashboardCleanup() {
@@ -100,7 +103,7 @@ export default function AdminAlbumsDashboardCleanup() {
 
     const apply = () => {
       hideAlbumDashboardExtras(hiddenElements)
-      applyAppleDashboardMarkers()
+      applyPlatformDashboardMarkers()
     }
 
     const scheduleApply = () => {
