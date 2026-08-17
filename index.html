@@ -39,10 +39,14 @@
     <script>
       (() => {
         const platform = navigator.userAgentData?.platform ?? navigator.platform ?? ""
-        const isAppleDevice = /Mac|iPhone|iPad|iPod/i.test(`${platform} ${navigator.userAgent}`)
+        const agent = `${platform} ${navigator.userAgent}`
+        const isAppleDevice = /Mac|iPhone|iPad|iPod/i.test(agent)
+        const isAndroidDevice = /Android/i.test(agent)
 
         if (isAppleDevice) {
           document.documentElement.classList.add("apple-device")
+        } else if (isAndroidDevice) {
+          document.documentElement.classList.add("android-device")
         }
       })()
     </script>
