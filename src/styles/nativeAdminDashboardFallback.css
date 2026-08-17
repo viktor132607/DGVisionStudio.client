@@ -1,0 +1,246 @@
+/* Direct platform selectors for the admin dashboard. This intentionally does not depend on runtime data markers. */
+
+/* ---------- Apple / iPhone / iPad / Mac ---------- */
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 28px !important;
+}
+
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a {
+    min-width: 0 !important;
+    min-height: 104px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+    border-color: rgba(60, 60, 67, 0.12) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.055) !important;
+    transform: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a:active {
+    transform: scale(0.975) !important;
+    background: #f2f2f7 !important;
+}
+
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a h3 {
+    min-height: 26px !important;
+    margin: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    font-weight: 600 !important;
+    color: #636366 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+}
+
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:first-of-type {
+    margin: 3px 0 2px !important;
+    font-size: 26px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:last-of-type {
+    margin: 0 !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    color: #6b7280 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+}
+
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: #1c1c1e !important;
+    box-shadow: none !important;
+}
+
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a h3,
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:last-of-type {
+    color: #aeaeb2 !important;
+}
+
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:first-of-type {
+    color: #fff !important;
+}
+
+/* Album action bar: direct selectors so icon mode works even if MutationObserver markers fail. */
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    overflow: visible !important;
+}
+
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a,
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #f2f2f7 !important;
+    color: #007aff !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    box-shadow: inset 0 0 0 0.5px rgba(60, 60, 67, 0.12) !important;
+}
+
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a::before,
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+html.apple-device #albums a[href*="/admin/client-galleries/edit?id="]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20h4.2L19 9.2 14.8 5 4 15.8V20zm12.1-16.1 4 4 1.1-1.1a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0l-1.1 1.1z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20h4.2L19 9.2 14.8 5 4 15.8V20zm12.1-16.1 4 4 1.1-1.1a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0l-1.1 1.1z'/%3E%3C/svg%3E");
+}
+
+html.apple-device #albums a[href*="/admin/client-galleries/access?id="]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V8a5 5 0 0 1 10 0v2h1.5A1.5 1.5 0 0 1 20 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5v-8A1.5 1.5 0 0 1 5.5 10H7zm2 0h6V8a3 3 0 0 0-6 0v2z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V8a5 5 0 0 1 10 0v2h1.5A1.5 1.5 0 0 1 20 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5v-8A1.5 1.5 0 0 1 5.5 10H7zm2 0h6V8a3 3 0 0 0-6 0v2z'/%3E%3C/svg%3E");
+}
+
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    background: rgba(255, 59, 48, 0.1) !important;
+    color: #ff3b30 !important;
+}
+
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4h8l1 2h4v2H3V6h4l1-2zm-1 6h10l-1 10H8L7 10zm3 2v6h2v-6h-2zm4 0v6h2v-6h-2z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4h8l1 2h4v2H3V6h4l1-2zm-1 6h10l-1 10H8L7 10zm3 2v6h2v-6h-2zm4 0v6h2v-6h-2z'/%3E%3C/svg%3E");
+}
+
+html.dark.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a {
+    background: #1c1c1e !important;
+    color: #0a84ff !important;
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    background: rgba(255, 69, 58, 0.16) !important;
+    color: #ff453a !important;
+}
+
+/* ---------- Android / Material ---------- */
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+}
+
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a,
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 48px !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    background: #e8def8 !important;
+    color: #4f378b !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a::before,
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 22px;
+    background: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+}
+
+html.android-device #albums a[href*="/admin/client-galleries/edit?id="]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.04a.996.996 0 0 0 0-1.41l-2.51-2.51a.996.996 0 0 0-1.41 0l-1.96 1.96 3.75 3.75 2.13-1.79z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.04a.996.996 0 0 0 0-1.41l-2.51-2.51a.996.996 0 0 0-1.41 0l-1.96 1.96 3.75 3.75 2.13-1.79z'/%3E%3C/svg%3E");
+}
+
+html.android-device #albums a[href*="/admin/client-galleries/access?id="]::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-9-2a3 3 0 0 1 6 0v2H9V6zm9 14H6V10h12v10z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-9-2a3 3 0 0 1 6 0v2H9V6zm9 14H6V10h12v10z'/%3E%3C/svg%3E");
+}
+
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    background: #ffdad6 !important;
+    color: #ba1a1a !important;
+}
+
+html.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm3.46-7.12 1.41-1.41L12 11.59l1.12-1.12 1.41 1.41L13.41 13l1.12 1.12-1.41 1.41L12 14.41l-1.12 1.12-1.41-1.41L10.59 13l-1.13-1.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm3.46-7.12 1.41-1.41L12 11.59l1.12-1.12 1.41 1.41L13.41 13l1.12 1.12-1.41 1.41L12 14.41l-1.12 1.12-1.41-1.41L10.59 13l-1.13-1.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E");
+}
+
+html.dark.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > a {
+    background: #4a4458 !important;
+    color: #e8def8 !important;
+}
+
+html.dark.android-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button {
+    background: #93000a !important;
+    color: #ffdad6 !important;
+}
+
+@media (max-width: 430px) {
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) {
+        gap: 6px !important;
+    }
+
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a {
+        min-height: 96px !important;
+        padding: 9px 8px !important;
+        border-radius: 16px !important;
+    }
+
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a h3 {
+        font-size: 10px !important;
+    }
+
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:first-of-type {
+        font-size: 24px !important;
+    }
+
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:last-of-type {
+        font-size: 9px !important;
+    }
+}
