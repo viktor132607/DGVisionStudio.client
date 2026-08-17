@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react"
 import { useLocation } from "react-router-dom"
 import { apiFetch } from "../../services/api"
 
@@ -19,6 +19,7 @@ const monthNames = [
     "Ноември",
     "Декември",
 ]
+const shortMonthNames = ["Яну", "Фев", "Мар", "Апр", "Май", "Юни", "Юли", "Авг", "Сеп", "Окт", "Ное", "Дек"]
 const weekdayNames = ["П", "В", "С", "Ч", "П", "С", "Н"]
 
 type CalendarEventType = {
@@ -64,6 +65,20 @@ function getMonthGrid(viewDate: Date) {
     })
 }
 
+function getNextMonthPreview(viewDate: Date) {
+    const nextMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1)
+    const startOffset = (nextMonth.getDay() + 6) % 7
+
+    return {
+        month: nextMonth,
+        cells: Array.from({ length: 7 }, (_, index) => {
+            const day = index - startOffset + 1
+            if (day < 1) return null
+            return new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day)
+        }),
+    }
+}
+
 function isSameDay(a: Date, b: Date) {
     return a.getFullYear() === b.getFullYear()
         && a.getMonth() === b.getMonth()
@@ -86,6 +101,7 @@ function toLongDate(date: Date) {
         weekday: "long",
         day: "numeric",
         month: "long",
+        year: "numeric",
     }).format(date)
 }
 
@@ -176,10 +192,10 @@ function exportToAppleCalendar(event: CalendarEvent) {
 }
 
 function useIsMobile() {
-    const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches)
+    const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 900px)").matches)
 
     useEffect(() => {
-        const query = window.matchMedia("(max-width: 767px)")
+        const query = window.matchMedia("(max-width: 900px)")
         const update = () => setIsMobile(query.matches)
         update()
         query.addEventListener("change", update)
@@ -213,6 +229,42 @@ function getDesktopDayCells() {
         .filter((element): element is HTMLElement => element instanceof HTMLElement && element.getAttribute("role") === "button")
 }
 
+function IconList() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M7 6h12M7 12h12M7 18h12" />
+            <path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" strokeWidth="3" />
+        </svg>
+    )
+}
+
+function IconSearch() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m15.5 15.5 5 5" />
+        </svg>
+    )
+}
+
+function IconPlus() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M12 4v16M4 12h16" />
+        </svg>
+    )
+}
+
+function IconCalendar() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M8 3v4M16 3v4M3 10h18" />
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" strokeWidth="3" />
+        </svg>
+    )
+}
+
 export default function MobileAdminCalendar() {
     const location = useLocation()
     const isMobile = useIsMobile()
@@ -225,6 +277,9 @@ export default function MobileAdminCalendar() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [agendaOpen, setAgendaOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
     const touchStartX = useRef<number | null>(null)
 
     const loadData = useCallback(async () => {
@@ -304,48 +359,84 @@ export default function MobileAdminCalendar() {
         typeColors.get((event.eventType || "").toLowerCase()) || event.color || defaultColor
 
     const monthGrid = useMemo(() => getMonthGrid(viewDate), [viewDate])
+    const nextMonthPreview = useMemo(() => getNextMonthPreview(viewDate), [viewDate])
     const selectedEvents = useMemo(
         () => events
             .filter((event) => isSameDay(new Date(event.startAtUtc), selectedDate))
             .sort((a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime()),
         [events, selectedDate],
     )
+    const searchResults = useMemo(() => {
+        const query = searchQuery.trim().toLocaleLowerCase("bg-BG")
+        if (!query) return [] as CalendarEvent[]
 
-    const syncSelectedDay = (date: Date) => {
+        return events
+            .filter((event) => [
+                event.title,
+                event.clientName,
+                event.clientPhone,
+                event.clientEmail,
+                event.location,
+                event.eventType,
+                event.description,
+            ].some((value) => (value || "").toLocaleLowerCase("bg-BG").includes(query)))
+            .sort((a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime())
+            .slice(0, 40)
+    }, [events, searchQuery])
+
+    const syncDesktopMonth = (delta: number) => {
+        if (delta === 0) return
+        const label = delta < 0 ? "Назад" : "Напред"
+        const count = Math.abs(delta)
+
+        for (let index = 0; index < count; index += 1) {
+            const section = getDesktopCalendarSection()
+            const navigationButton = section
+                ? Array.from(section.querySelectorAll<HTMLButtonElement>("button"))
+                    .find((button) => normalizeText(button.textContent) === label)
+                : null
+            navigationButton?.click()
+        }
+    }
+
+    const syncSelectedDay = (date: Date, grid = monthGrid) => {
         const cells = getDesktopDayCells()
-        const index = monthGrid.findIndex((item) => isSameDay(item, date))
+        const index = grid.findIndex((item) => isSameDay(item, date))
         cells[index]?.click()
     }
 
     const selectDay = (date: Date) => {
         setSelectedDate(date)
         syncSelectedDay(date)
+        setAgendaOpen(true)
     }
 
     const moveMonth = (delta: number) => {
-        const section = getDesktopCalendarSection()
-        const label = delta < 0 ? "Назад" : "Напред"
-        const navigationButton = section
-            ? Array.from(section.querySelectorAll<HTMLButtonElement>("button"))
-                .find((button) => normalizeText(button.textContent) === label)
-            : null
-
-        navigationButton?.click()
+        syncDesktopMonth(delta)
 
         setViewDate((current) => {
             const next = new Date(current.getFullYear(), current.getMonth() + delta, 1)
             const nextSelected = new Date(next.getFullYear(), next.getMonth(), 1)
             setSelectedDate(nextSelected)
 
-            window.setTimeout(() => {
-                const nextGrid = getMonthGrid(next)
-                const cells = getDesktopDayCells()
-                const index = nextGrid.findIndex((date) => isSameDay(date, nextSelected))
-                cells[index]?.click()
-            }, 0)
-
+            window.setTimeout(() => syncSelectedDay(nextSelected, getMonthGrid(next)), 0)
             return next
         })
+    }
+
+    const jumpToDate = (date: Date, openAgenda = true) => {
+        const delta = (date.getFullYear() - viewDate.getFullYear()) * 12 + date.getMonth() - viewDate.getMonth()
+        syncDesktopMonth(delta)
+        const nextViewDate = new Date(date.getFullYear(), date.getMonth(), 1)
+        setViewDate(nextViewDate)
+        setSelectedDate(date)
+        window.setTimeout(() => syncSelectedDay(date, getMonthGrid(nextViewDate)), 0)
+        if (openAgenda) setAgendaOpen(true)
+    }
+
+    const goToday = () => {
+        const now = new Date()
+        jumpToDate(now, false)
     }
 
     const openAddEvent = () => {
@@ -365,27 +456,42 @@ export default function MobileAdminCalendar() {
             return
         }
 
+        setAgendaOpen(false)
         addButton.click()
     }
 
     const openEditEvent = (calendarEvent: CalendarEvent) => {
         const eventDate = new Date(calendarEvent.startAtUtc)
-        const cells = getDesktopDayCells()
-        const index = monthGrid.findIndex((date) => isSameDay(date, eventDate))
-        const cell = cells[index]
-        const expectedText = `${toTime(calendarEvent.startAtUtc)} ${calendarEvent.title}`
+        const eventMonth = new Date(eventDate.getFullYear(), eventDate.getMonth(), 1)
+        const delta = (eventMonth.getFullYear() - viewDate.getFullYear()) * 12 + eventMonth.getMonth() - viewDate.getMonth()
 
-        const eventButton = cell
-            ? Array.from(cell.querySelectorAll<HTMLButtonElement>("button"))
-                .find((button) => normalizeText(button.textContent) === normalizeText(expectedText))
-            : null
-
-        if (!eventButton) {
-            setError("Събитието не можа да се отвори за редакция. Обнови календара и опитай пак.")
-            return
+        if (delta !== 0) {
+            syncDesktopMonth(delta)
+            setViewDate(eventMonth)
+            setSelectedDate(eventDate)
         }
 
-        eventButton.click()
+        window.setTimeout(() => {
+            const grid = getMonthGrid(eventMonth)
+            const cells = getDesktopDayCells()
+            const index = grid.findIndex((date) => isSameDay(date, eventDate))
+            const cell = cells[index]
+            const expectedText = `${toTime(calendarEvent.startAtUtc)} ${calendarEvent.title}`
+
+            const eventButton = cell
+                ? Array.from(cell.querySelectorAll<HTMLButtonElement>("button"))
+                    .find((button) => normalizeText(button.textContent) === normalizeText(expectedText))
+                : null
+
+            if (!eventButton) {
+                setError("Събитието не можа да се отвори за редакция. Обнови календара и опитай пак.")
+                return
+            }
+
+            setAgendaOpen(false)
+            setSearchOpen(false)
+            eventButton.click()
+        }, delta === 0 ? 0 : 80)
     }
 
     const deleteEvent = async (calendarEvent: CalendarEvent) => {
@@ -403,11 +509,11 @@ export default function MobileAdminCalendar() {
         }
     }
 
-    const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
         touchStartX.current = event.touches[0]?.clientX ?? null
     }
 
-    const onTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const onTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
         if (touchStartX.current === null) return
         const endX = event.changedTouches[0]?.clientX ?? touchStartX.current
         const distance = endX - touchStartX.current
@@ -423,205 +529,288 @@ export default function MobileAdminCalendar() {
 
     return (
         <div
-            className="fixed inset-x-0 bottom-0 top-[73px] z-30 overflow-y-auto bg-[#f2f2f7] text-[#1c1c1e] dark:bg-black dark:text-white md:hidden"
+            className="fixed inset-x-0 bottom-0 top-[73px] z-[60] overflow-y-auto bg-white text-black md:hidden"
             style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}
         >
-            <div className="mx-auto min-h-full w-full max-w-lg bg-[#f2f2f7] pb-[calc(2rem+env(safe-area-inset-bottom))] dark:bg-black">
-                <header className="sticky top-0 z-10 border-b border-black/5 bg-[#f2f2f7]/95 px-4 pb-2 pt-3 backdrop-blur-xl dark:border-white/10 dark:bg-black/90">
+            <div className="mx-auto min-h-full w-full max-w-[520px] bg-white pb-28">
+                <header className="sticky top-0 z-20 bg-white/95 px-4 pb-2 pt-3 backdrop-blur-2xl">
                     <div className="flex items-center justify-between">
-                        <button
-                            type="button"
-                            onClick={() => moveMonth(-1)}
-                            aria-label="Предишен месец"
-                            className="flex h-11 w-11 items-center justify-start text-[34px] font-light leading-none"
-                            style={{ color: appleRed }}
-                        >
-                            ‹
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const now = new Date()
-                                const monthDelta = (now.getFullYear() - viewDate.getFullYear()) * 12 + now.getMonth() - viewDate.getMonth()
-                                if (monthDelta !== 0) moveMonth(monthDelta)
-                                setSelectedDate(now)
-                            }}
-                            className="rounded-full px-3 py-2 text-sm font-semibold"
-                            style={{ color: appleRed }}
-                        >
-                            Днес
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => moveMonth(1)}
-                            aria-label="Следващ месец"
-                            className="flex h-11 w-11 items-center justify-end text-[34px] font-light leading-none"
-                            style={{ color: appleRed }}
-                        >
-                            ›
-                        </button>
+                        <div className="inline-flex h-11 items-center gap-1 rounded-[22px] border border-black/5 bg-[#f7f7f7] px-3 text-[18px] font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+                            <span className="text-[32px] font-light leading-none">‹</span>
+                            <span>{viewDate.getFullYear()}</span>
+                        </div>
+
+                        <div className="flex h-11 items-center rounded-[22px] border border-black/5 bg-[#f7f7f7] px-1 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+                            <button
+                                type="button"
+                                onClick={() => setAgendaOpen(true)}
+                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
+                                aria-label="Събития за избрания ден"
+                            >
+                                <IconList />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSearchOpen(true)}
+                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
+                                aria-label="Търси в календара"
+                            >
+                                <IconSearch />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openAddEvent}
+                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
+                                aria-label="Добави събитие"
+                            >
+                                <IconPlus />
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex items-end justify-between gap-4 px-1">
-                        <h1 className="text-[30px] font-bold tracking-tight">
-                            {monthNames[viewDate.getMonth()]} <span className="font-normal text-black/45 dark:text-white/45">{viewDate.getFullYear()}</span>
-                        </h1>
-                        <button
-                            type="button"
-                            onClick={openAddEvent}
-                            className="mb-1 flex h-9 w-9 items-center justify-center rounded-full text-[28px] font-light leading-none"
-                            style={{ color: appleRed, backgroundColor: "rgba(255,59,48,0.10)" }}
-                            aria-label="Добави събитие"
-                        >
-                            +
-                        </button>
-                    </div>
+
+                    <h1 className="mt-7 px-1 text-[38px] font-bold leading-none tracking-[-0.035em]">
+                        {monthNames[viewDate.getMonth()]}
+                    </h1>
                 </header>
 
                 {error ? (
-                    <div className="mx-4 mt-3 rounded-2xl bg-red-100 px-4 py-3 text-sm font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300">
+                    <div className="mx-4 mb-2 mt-1 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                         {error}
                     </div>
                 ) : null}
 
-                <section className="bg-white px-3 pb-3 pt-2 dark:bg-[#1c1c1e]" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-                    <div className="grid grid-cols-7 text-center text-[11px] font-semibold uppercase text-black/35 dark:text-white/35">
-                        {weekdayNames.map((name, index) => <div key={`${name}-${index}`} className="py-2">{name}</div>)}
+                <section onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+                    <div className="grid grid-cols-7 border-b border-[#dedede] px-2 pb-1 pt-2 text-center text-[12px] font-semibold">
+                        {weekdayNames.map((name, index) => (
+                            <div key={`${name}-${index}`} className={index >= 5 ? "py-1 text-[#8e8e93]" : "py-1"}>
+                                {name}
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-y-1">
-                        {monthGrid.map((date) => {
-                            const dayEvents = events.filter((calendarEvent) => isSameDay(new Date(calendarEvent.startAtUtc), date))
+                    <div className="grid grid-cols-7 px-0">
+                        {monthGrid.map((date, index) => {
                             const isCurrentMonth = date.getMonth() === viewDate.getMonth()
-                            const isSelected = isSameDay(date, selectedDate)
-                            const isToday = isSameDay(date, today)
+                            const dayEvents = isCurrentMonth
+                                ? events.filter((calendarEvent) => isSameDay(new Date(calendarEvent.startAtUtc), date))
+                                : []
+                            const isToday = isCurrentMonth && isSameDay(date, today)
+                            const isSelected = isCurrentMonth && isSameDay(date, selectedDate)
+                            const isWeekend = index % 7 >= 5
 
                             return (
                                 <button
                                     key={date.toISOString()}
                                     type="button"
+                                    disabled={!isCurrentMonth}
                                     onClick={() => selectDay(date)}
-                                    className={`relative flex min-h-[58px] flex-col items-center rounded-xl py-1 transition active:bg-black/5 dark:active:bg-white/10 ${!isCurrentMonth ? "opacity-25" : ""}`}
-                                    aria-label={date.toLocaleDateString("bg-BG")}
+                                    className="relative h-[86px] border-b border-[#e5e5ea] bg-white text-center active:bg-[#f7f7f7] disabled:cursor-default disabled:bg-white"
+                                    aria-label={isCurrentMonth ? date.toLocaleDateString("bg-BG") : undefined}
                                 >
-                                    <span
-                                        className="flex h-8 min-w-8 items-center justify-center rounded-full px-1 text-[17px] font-medium"
-                                        style={isSelected
-                                            ? { backgroundColor: appleRed, color: "white" }
-                                            : isToday
-                                                ? { color: appleRed, fontWeight: 700 }
-                                                : undefined}
-                                    >
-                                        {date.getDate()}
-                                    </span>
-                                    <span className="mt-1 flex min-h-2 items-center justify-center gap-[3px]">
-                                        {dayEvents.slice(0, 3).map((calendarEvent) => (
+                                    {isCurrentMonth ? (
+                                        <>
                                             <span
-                                                key={calendarEvent.id}
-                                                className="h-[5px] w-[5px] rounded-full"
-                                                style={{ backgroundColor: getEventColor(calendarEvent) }}
-                                            />
-                                        ))}
-                                        {dayEvents.length > 3 ? <span className="text-[8px] font-bold text-black/35 dark:text-white/35">+</span> : null}
-                                    </span>
+                                                className={`mx-auto mt-3 flex h-[35px] w-[35px] items-center justify-center rounded-full text-[18px] font-semibold ${isWeekend && !isToday ? "text-[#8e8e93]" : "text-black"} ${isSelected && !isToday ? "ring-1 ring-[#ff3b30]/35" : ""}`}
+                                                style={isToday ? { backgroundColor: appleRed, color: "white" } : undefined}
+                                            >
+                                                {date.getDate()}
+                                            </span>
+
+                                            {dayEvents.length ? (
+                                                <span className="absolute inset-x-1 bottom-2 flex flex-col items-center gap-[3px]">
+                                                    {dayEvents.slice(0, 2).map((calendarEvent) => (
+                                                        <span
+                                                            key={calendarEvent.id}
+                                                            className="h-[4px] w-[30px] max-w-[82%] rounded-full"
+                                                            style={{ backgroundColor: getEventColor(calendarEvent) }}
+                                                        />
+                                                    ))}
+                                                    {dayEvents.length > 2 ? (
+                                                        <span className="h-[3px] w-[18px] rounded-full bg-[#c7c7cc]" />
+                                                    ) : null}
+                                                </span>
+                                            ) : null}
+                                        </>
+                                    ) : null}
                                 </button>
                             )
                         })}
                     </div>
+
+                    <div className="px-4 pt-7">
+                        <h2 className="text-[28px] font-bold tracking-[-0.025em]">
+                            {shortMonthNames[nextMonthPreview.month.getMonth()]}
+                        </h2>
+                    </div>
+                    <div className="mt-1 grid grid-cols-7 border-y border-[#e5e5ea]">
+                        {nextMonthPreview.cells.map((date, index) => (
+                            <div key={index} className="relative h-[82px] bg-white text-center">
+                                {date ? (
+                                    <span className={`mt-3 inline-flex h-9 w-9 items-center justify-center text-[18px] font-semibold ${index >= 5 ? "text-[#8e8e93]" : "text-black"}`}>
+                                        {date.getDate()}
+                                    </span>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
                 </section>
 
-                <section className="mt-3 px-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                        <div>
-                            <p className="text-[13px] font-semibold uppercase tracking-wide text-black/35 dark:text-white/35">Програма</p>
-                            <h2 className="text-xl font-bold capitalize">{toLongDate(selectedDate)}</h2>
+                {loading ? (
+                    <div className="px-4 py-6 text-center text-sm text-[#8e8e93]">Зареждане...</div>
+                ) : null}
+            </div>
+
+            <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-[86px] max-w-[520px] items-center justify-between border-t border-black/5 bg-white/88 px-5 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl">
+                <button
+                    type="button"
+                    onClick={goToday}
+                    className="rounded-[24px] border border-black/5 bg-[#f7f7f7] px-5 py-3 text-[16px] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
+                >
+                    Днес
+                </button>
+
+                <div className="flex items-center rounded-[25px] border border-black/5 bg-[#f7f7f7] p-1 shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
+                    <button
+                        type="button"
+                        onClick={() => setAgendaOpen(true)}
+                        className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5"
+                        aria-label="Календар"
+                    >
+                        <IconCalendar />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setAgendaOpen(true)}
+                        className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5"
+                        aria-label="Списък със събития"
+                    >
+                        <IconList />
+                    </button>
+                </div>
+            </div>
+
+            {agendaOpen ? (
+                <div className="fixed inset-0 z-[80] flex items-end bg-black/20" onClick={() => setAgendaOpen(false)}>
+                    <section
+                        className="max-h-[76dvh] w-full overflow-y-auto rounded-t-[28px] bg-[#f2f2f7] pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-20px_60px_rgba(0,0,0,0.16)]"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="sticky top-0 z-10 bg-[#f2f2f7]/95 px-4 pb-3 pt-2 backdrop-blur-xl">
+                            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-black/15" />
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-[13px] font-semibold uppercase tracking-wide text-[#8e8e93]">Избран ден</p>
+                                    <h2 className="mt-0.5 text-[21px] font-bold capitalize">{toLongDate(selectedDate)}</h2>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={openAddEvent}
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#ff3b30] shadow-sm"
+                                    aria-label="Добави събитие"
+                                >
+                                    <IconPlus />
+                                </button>
+                            </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => void loadData()}
-                            className="rounded-full bg-white px-3 py-2 text-xs font-semibold shadow-sm dark:bg-[#1c1c1e]"
-                            style={{ color: appleRed }}
-                        >
-                            Обнови
-                        </button>
-                    </div>
 
-                    {loading ? (
-                        <div className="rounded-3xl bg-white px-4 py-6 text-center text-sm text-black/40 dark:bg-[#1c1c1e] dark:text-white/40">
-                            Зареждане...
-                        </div>
-                    ) : null}
+                        <div className="space-y-3 px-4">
+                            {!loading && selectedEvents.length === 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={openAddEvent}
+                                    className="w-full rounded-2xl bg-white px-4 py-7 text-center"
+                                >
+                                    <span className="block text-sm text-[#8e8e93]">Няма събития за този ден</span>
+                                    <span className="mt-2 block text-sm font-semibold text-[#ff3b30]">Добави събитие</span>
+                                </button>
+                            ) : null}
 
-                    {!loading && selectedEvents.length === 0 ? (
-                        <button
-                            type="button"
-                            onClick={openAddEvent}
-                            className="w-full rounded-3xl bg-white px-5 py-8 text-center shadow-sm dark:bg-[#1c1c1e]"
-                        >
-                            <span className="block text-sm text-black/40 dark:text-white/40">Няма събития за този ден</span>
-                            <span className="mt-2 block text-sm font-semibold" style={{ color: appleRed }}>Добави събитие</span>
-                        </button>
-                    ) : null}
-
-                    <div className="space-y-3">
-                        {selectedEvents.map((calendarEvent) => {
-                            const color = getEventColor(calendarEvent)
-                            return (
-                                <article key={calendarEvent.id} className="overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-[#1c1c1e]">
+                            {selectedEvents.map((calendarEvent) => (
+                                <article key={calendarEvent.id} className="overflow-hidden rounded-2xl bg-white">
                                     <button
                                         type="button"
                                         onClick={() => openEditEvent(calendarEvent)}
-                                        className="flex w-full gap-3 px-4 pb-3 pt-4 text-left active:bg-black/5 dark:active:bg-white/5"
+                                        className="flex w-full gap-3 px-4 py-4 text-left active:bg-black/5"
                                     >
-                                        <span className="mt-1 h-12 w-1 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                                        <span className="mt-1 h-12 w-1 shrink-0 rounded-full" style={{ backgroundColor: getEventColor(calendarEvent) }} />
                                         <span className="min-w-0 flex-1">
-                                            <span className="flex items-baseline justify-between gap-3">
-                                                <strong className="truncate text-[17px] font-semibold">{calendarEvent.title}</strong>
-                                                <span className="shrink-0 text-[13px] font-semibold" style={{ color: appleRed }}>
-                                                    {toTime(calendarEvent.startAtUtc)}
-                                                </span>
-                                            </span>
-                                            <span className="mt-1 block text-[13px] text-black/45 dark:text-white/45">
+                                            <strong className="block truncate text-[17px] font-semibold">{calendarEvent.title}</strong>
+                                            <span className="mt-1 block text-[13px] text-[#8e8e93]">
                                                 {toTime(calendarEvent.startAtUtc)} – {toTime(calendarEvent.endAtUtc)}
                                                 {calendarEvent.eventType ? ` · ${calendarEvent.eventType}` : ""}
                                             </span>
                                             {calendarEvent.clientName ? <span className="mt-2 block text-sm">{calendarEvent.clientName}</span> : null}
-                                            {calendarEvent.location ? <span className="mt-1 block text-sm text-black/55 dark:text-white/55">{calendarEvent.location}</span> : null}
+                                            {calendarEvent.location ? <span className="mt-1 block text-sm text-[#636366]">{calendarEvent.location}</span> : null}
                                             {calendarEvent.price !== null && calendarEvent.price !== undefined ? <span className="mt-1 block text-sm font-semibold">{formatPrice(calendarEvent.price)}</span> : null}
                                         </span>
                                     </button>
-
-                                    <div className="grid grid-cols-3 border-t border-black/5 dark:border-white/10">
-                                        <button
-                                            type="button"
-                                            onClick={() => openEditEvent(calendarEvent)}
-                                            className="min-h-12 border-r border-black/5 px-2 text-xs font-semibold dark:border-white/10"
-                                            style={{ color: appleRed }}
-                                        >
+                                    <div className="grid grid-cols-3 border-t border-[#e5e5ea]">
+                                        <button type="button" onClick={() => openEditEvent(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">
                                             Редактирай
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => exportToAppleCalendar(calendarEvent)}
-                                            className="min-h-12 border-r border-black/5 px-2 text-xs font-semibold dark:border-white/10"
-                                            style={{ color: appleRed }}
-                                        >
+                                        <button type="button" onClick={() => exportToAppleCalendar(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">
                                             Apple Calendar
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => void deleteEvent(calendarEvent)}
-                                            disabled={deletingId === calendarEvent.id}
-                                            className="min-h-12 px-2 text-xs font-semibold text-red-600 disabled:opacity-40"
-                                        >
+                                        <button type="button" onClick={() => void deleteEvent(calendarEvent)} disabled={deletingId === calendarEvent.id} className="min-h-12 px-2 text-xs font-semibold text-[#ff3b30] disabled:opacity-40">
                                             {deletingId === calendarEvent.id ? "Триене..." : "Изтрий"}
                                         </button>
                                     </div>
                                 </article>
-                            )
-                        })}
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            ) : null}
+
+            {searchOpen ? (
+                <div className="fixed inset-0 z-[90] bg-white">
+                    <div className="sticky top-0 border-b border-[#e5e5ea] bg-white px-4 pb-3 pt-[calc(0.8rem+env(safe-area-inset-top))]">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-11 flex-1 items-center gap-2 rounded-xl bg-[#f2f2f7] px-3">
+                                <IconSearch />
+                                <input
+                                    autoFocus
+                                    value={searchQuery}
+                                    onChange={(event) => setSearchQuery(event.target.value)}
+                                    placeholder="Търси"
+                                    className="min-w-0 flex-1 bg-transparent text-[17px] outline-none placeholder:text-[#8e8e93]"
+                                />
+                            </div>
+                            <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery("") }} className="text-[16px] font-medium text-[#007aff]">
+                                Отказ
+                            </button>
+                        </div>
                     </div>
-                </section>
-            </div>
+
+                    <div className="divide-y divide-[#e5e5ea] px-4">
+                        {searchQuery.trim() && !searchResults.length ? (
+                            <div className="py-10 text-center text-sm text-[#8e8e93]">Няма намерени събития</div>
+                        ) : null}
+                        {searchResults.map((calendarEvent) => (
+                            <button
+                                key={calendarEvent.id}
+                                type="button"
+                                onClick={() => {
+                                    const date = new Date(calendarEvent.startAtUtc)
+                                    setSearchOpen(false)
+                                    setSearchQuery("")
+                                    jumpToDate(date, true)
+                                }}
+                                className="flex w-full items-start gap-3 py-4 text-left"
+                            >
+                                <span className="mt-1 h-10 w-1 shrink-0 rounded-full" style={{ backgroundColor: getEventColor(calendarEvent) }} />
+                                <span className="min-w-0 flex-1">
+                                    <strong className="block truncate text-[16px]">{calendarEvent.title}</strong>
+                                    <span className="mt-1 block text-[13px] text-[#8e8e93]">
+                                        {new Date(calendarEvent.startAtUtc).toLocaleDateString("bg-BG")} · {toTime(calendarEvent.startAtUtc)}
+                                    </span>
+                                    {calendarEvent.clientName ? <span className="mt-1 block truncate text-sm text-[#636366]">{calendarEvent.clientName}</span> : null}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
         </div>
     )
 }
