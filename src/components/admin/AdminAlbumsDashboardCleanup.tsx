@@ -12,7 +12,7 @@ function hideElement(element: HTMLElement | null, hiddenElements: HTMLElement[])
 function ensureNativePlatformClass() {
   const root = document.documentElement
   const userAgent = navigator.userAgent || ""
-  const platform = navigator.userAgentData?.platform ?? navigator.platform ?? ""
+  const platform = navigator.platform || ""
   const touchPoints = navigator.maxTouchPoints || 0
 
   const isAndroid = /Android/i.test(`${platform} ${userAgent}`)
