@@ -14,6 +14,7 @@ import App from "./App"
 import EuroCurrencyGuard from "./components/EuroCurrencyGuard"
 import HomeSlideshowAlbumLightbox from "./components/HomeSlideshowAlbumLightbox"
 import HomeFoldRecentAlbums from "./components/HomeFoldRecentAlbums"
+import AdminAlbumsDashboardCleanup from "./components/admin/AdminAlbumsDashboardCleanup"
 import MobileAdminCalendar from "./components/admin/MobileAdminCalendar"
 import { AuthProvider } from "./context/AuthContext"
 
@@ -138,6 +139,7 @@ createRoot(document.getElementById("root")!).render(
         <AuthProvider>
           <App />
           <EuroCurrencyGuard />
+          <AdminAlbumsDashboardCleanup />
           <MobileAdminCalendar />
           <HomeSlideshowAlbumLightbox />
           <HomeFoldRecentAlbums />
