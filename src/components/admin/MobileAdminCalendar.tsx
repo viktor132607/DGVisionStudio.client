@@ -5,6 +5,7 @@ import { apiFetch } from "../../services/api"
 const API_PATH = "/admin/calendar"
 const defaultColor = "#64748b"
 const appleRed = "#ff3b30"
+const appleBlue = "#007aff"
 const monthNames = [
     "Януари",
     "Февруари",
@@ -131,25 +132,21 @@ function safeFileName(value: string) {
         .normalize("NFKD")
         .replace(/[^\p{L}\p{N}._-]+/gu, "-")
         .replace(/^-+|-+$/g, "")
-    return normalized || "dg-vision-event"
+    return normalized || "dg-vision-calendar"
 }
 
-function buildIcs(event: CalendarEvent) {
+function buildEventLines(event: CalendarEvent) {
     const details = [
         event.clientName ? `Клиент: ${event.clientName}` : "",
         event.clientPhone ? `Телефон: ${event.clientPhone}` : "",
         event.clientEmail ? `Email: ${event.clientEmail}` : "",
         event.assignedTo ? `Ангажимент към: ${event.assignedTo}` : "",
+        event.eventType ? `Тип: ${event.eventType}` : "",
         event.price !== null && event.price !== undefined ? `Цена: ${formatPrice(event.price)}` : "",
         event.description || "",
     ].filter(Boolean).join("\n")
 
     return [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//DG Vision Studio//Admin Calendar//BG",
-        "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
         "BEGIN:VEVENT",
         `UID:dgvisionstudio-${event.id}@dgvisionstudio.com`,
         `DTSTAMP:${toIcsUtc(new Date())}`,
@@ -158,32 +155,66 @@ function buildIcs(event: CalendarEvent) {
         `SUMMARY:${escapeIcs(event.title)}`,
         event.location ? `LOCATION:${escapeIcs(event.location)}` : "",
         details ? `DESCRIPTION:${escapeIcs(details)}` : "",
+        "STATUS:CONFIRMED",
         "BEGIN:VALARM",
         "TRIGGER:-PT1H",
         "ACTION:DISPLAY",
         `DESCRIPTION:${escapeIcs(`Напомняне: ${event.title}`)}`,
         "END:VALARM",
         "END:VEVENT",
-        "END:VCALENDAR",
-        "",
-    ].filter((line) => line !== "").join("\r\n")
+    ].filter(Boolean)
 }
 
-function exportToAppleCalendar(event: CalendarEvent) {
-    const blob = new Blob([buildIcs(event)], { type: "text/calendar;charset=utf-8" })
-    const url = URL.createObjectURL(blob)
+function buildCalendarIcs(calendarEvents: CalendarEvent[]) {
+    const sortedEvents = [...calendarEvents].sort(
+        (a, b) => new Date(a.startAtUtc).getTime() - new Date(b.startAtUtc).getTime(),
+    )
+
+    return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//DG Vision Studio//Admin Calendar//BG",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "X-WR-CALNAME:DG Vision Studio",
+        "X-WR-TIMEZONE:Europe/Sofia",
+        ...sortedEvents.flatMap(buildEventLines),
+        "END:VCALENDAR",
+        "",
+    ].join("\r\n")
+}
+
+async function shareOrDownloadCalendar(calendarEvents: CalendarEvent[], fileName: string) {
+    if (!calendarEvents.length) throw new Error("Няма събития за експортиране.")
+
+    const ics = buildCalendarIcs(calendarEvents)
+    const file = new File([ics], `${safeFileName(fileName)}.ics`, {
+        type: "text/calendar;charset=utf-8",
+    })
+
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: "DG Vision Studio Calendar",
+                text: "Импортирай събитията в Apple Calendar.",
+            })
+            return
+        } catch (error) {
+            if (error instanceof DOMException && error.name === "AbortError") return
+        }
+    }
+
+    const url = URL.createObjectURL(file)
     const link = document.createElement("a")
     const isAppleMobile = /iPad|iPhone|iPod/i.test(navigator.userAgent)
 
     link.href = url
     link.rel = "noopener"
     link.style.display = "none"
+    link.download = file.name
 
-    if (isAppleMobile) {
-        link.target = "_blank"
-    } else {
-        link.download = `${safeFileName(event.title)}.ics`
-    }
+    if (isAppleMobile) link.target = "_blank"
 
     document.body.appendChild(link)
     link.click()
@@ -265,6 +296,16 @@ function IconCalendar() {
     )
 }
 
+function IconShare() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 16V3" />
+            <path d="m7.5 7.5 4.5-4.5 4.5 4.5" />
+            <path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8" />
+        </svg>
+    )
+}
+
 export default function MobileAdminCalendar() {
     const location = useLocation()
     const isMobile = useIsMobile()
@@ -277,6 +318,7 @@ export default function MobileAdminCalendar() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [exporting, setExporting] = useState(false)
     const [agendaOpen, setAgendaOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
@@ -387,9 +429,8 @@ export default function MobileAdminCalendar() {
     const syncDesktopMonth = (delta: number) => {
         if (delta === 0) return
         const label = delta < 0 ? "Назад" : "Напред"
-        const count = Math.abs(delta)
 
-        for (let index = 0; index < count; index += 1) {
+        for (let index = 0; index < Math.abs(delta); index += 1) {
             const section = getDesktopCalendarSection()
             const navigationButton = section
                 ? Array.from(section.querySelectorAll<HTMLButtonElement>("button"))
@@ -413,12 +454,10 @@ export default function MobileAdminCalendar() {
 
     const moveMonth = (delta: number) => {
         syncDesktopMonth(delta)
-
         setViewDate((current) => {
             const next = new Date(current.getFullYear(), current.getMonth() + delta, 1)
             const nextSelected = new Date(next.getFullYear(), next.getMonth(), 1)
             setSelectedDate(nextSelected)
-
             window.setTimeout(() => syncSelectedDay(nextSelected, getMonthGrid(next)), 0)
             return next
         })
@@ -434,9 +473,27 @@ export default function MobileAdminCalendar() {
         if (openAgenda) setAgendaOpen(true)
     }
 
-    const goToday = () => {
-        const now = new Date()
-        jumpToDate(now, false)
+    const goToday = () => jumpToDate(new Date(), false)
+
+    const exportWholeCalendar = async () => {
+        setExporting(true)
+        setError("")
+        try {
+            await shareOrDownloadCalendar(events, "DG-Vision-Studio-Calendar")
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Експортът беше неуспешен.")
+        } finally {
+            setExporting(false)
+        }
+    }
+
+    const exportSingleEvent = async (calendarEvent: CalendarEvent) => {
+        setError("")
+        try {
+            await shareOrDownloadCalendar([calendarEvent], calendarEvent.title)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Експортът беше неуспешен.")
+        }
     }
 
     const openAddEvent = () => {
@@ -477,7 +534,6 @@ export default function MobileAdminCalendar() {
             const index = grid.findIndex((date) => isSameDay(date, eventDate))
             const cell = cells[index]
             const expectedText = `${toTime(calendarEvent.startAtUtc)} ${calendarEvent.title}`
-
             const eventButton = cell
                 ? Array.from(cell.querySelectorAll<HTMLButtonElement>("button"))
                     .find((button) => normalizeText(button.textContent) === normalizeText(expectedText))
@@ -509,16 +565,15 @@ export default function MobileAdminCalendar() {
         }
     }
 
-    const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const onTouchStart = (event: TouchEvent<HTMLElement>) => {
         touchStartX.current = event.touches[0]?.clientX ?? null
     }
 
-    const onTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const onTouchEnd = (event: TouchEvent<HTMLElement>) => {
         if (touchStartX.current === null) return
         const endX = event.changedTouches[0]?.clientX ?? touchStartX.current
         const distance = endX - touchStartX.current
         touchStartX.current = null
-
         if (Math.abs(distance) < 55) return
         moveMonth(distance > 0 ? -1 : 1)
     }
@@ -541,28 +596,13 @@ export default function MobileAdminCalendar() {
                         </div>
 
                         <div className="flex h-11 items-center rounded-[22px] border border-black/5 bg-[#f7f7f7] px-1 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
-                            <button
-                                type="button"
-                                onClick={() => setAgendaOpen(true)}
-                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
-                                aria-label="Събития за избрания ден"
-                            >
+                            <button type="button" onClick={() => setAgendaOpen(true)} className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5" aria-label="Събития за избрания ден">
                                 <IconList />
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setSearchOpen(true)}
-                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
-                                aria-label="Търси в календара"
-                            >
+                            <button type="button" onClick={() => setSearchOpen(true)} className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5" aria-label="Търси в календара">
                                 <IconSearch />
                             </button>
-                            <button
-                                type="button"
-                                onClick={openAddEvent}
-                                className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5"
-                                aria-label="Добави събитие"
-                            >
+                            <button type="button" onClick={openAddEvent} className="flex h-10 w-11 items-center justify-center rounded-full active:bg-black/5" aria-label="Добави събитие">
                                 <IconPlus />
                             </button>
                         </div>
@@ -579,6 +619,26 @@ export default function MobileAdminCalendar() {
                     </div>
                 ) : null}
 
+                <div className="px-4 pb-3 pt-2">
+                    <button
+                        type="button"
+                        onClick={() => void exportWholeCalendar()}
+                        disabled={loading || exporting || events.length === 0}
+                        className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-[#f2f2f7] px-4 text-left active:bg-[#e5e5ea] disabled:opacity-45"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm" style={{ color: appleBlue }}>
+                                <IconShare />
+                            </span>
+                            <span>
+                                <strong className="block text-[15px] font-semibold">{exporting ? "Експортиране..." : "Експортирай към Apple Calendar"}</strong>
+                                <span className="block text-[12px] text-[#8e8e93]">Всички {events.length} събития · напомняне 1 час по-рано</span>
+                            </span>
+                        </span>
+                        <span className="text-[25px] font-light text-[#c7c7cc]">›</span>
+                    </button>
+                </div>
+
                 <section onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
                     <div className="grid grid-cols-7 border-b border-[#dedede] px-2 pb-1 pt-2 text-center text-[12px] font-semibold">
                         {weekdayNames.map((name, index) => (
@@ -588,7 +648,7 @@ export default function MobileAdminCalendar() {
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-7 px-0">
+                    <div className="grid grid-cols-7">
                         {monthGrid.map((date, index) => {
                             const isCurrentMonth = date.getMonth() === viewDate.getMonth()
                             const dayEvents = isCurrentMonth
@@ -604,7 +664,7 @@ export default function MobileAdminCalendar() {
                                     type="button"
                                     disabled={!isCurrentMonth}
                                     onClick={() => selectDay(date)}
-                                    className="relative h-[86px] border-b border-[#e5e5ea] bg-white text-center active:bg-[#f7f7f7] disabled:cursor-default disabled:bg-white"
+                                    className="relative h-[86px] border-b border-[#e5e5ea] bg-white text-center active:bg-[#f7f7f7] disabled:cursor-default"
                                     aria-label={isCurrentMonth ? date.toLocaleDateString("bg-BG") : undefined}
                                 >
                                     {isCurrentMonth ? (
@@ -619,15 +679,9 @@ export default function MobileAdminCalendar() {
                                             {dayEvents.length ? (
                                                 <span className="absolute inset-x-1 bottom-2 flex flex-col items-center gap-[3px]">
                                                     {dayEvents.slice(0, 2).map((calendarEvent) => (
-                                                        <span
-                                                            key={calendarEvent.id}
-                                                            className="h-[4px] w-[30px] max-w-[82%] rounded-full"
-                                                            style={{ backgroundColor: getEventColor(calendarEvent) }}
-                                                        />
+                                                        <span key={calendarEvent.id} className="h-[4px] w-[30px] max-w-[82%] rounded-full" style={{ backgroundColor: getEventColor(calendarEvent) }} />
                                                     ))}
-                                                    {dayEvents.length > 2 ? (
-                                                        <span className="h-[3px] w-[18px] rounded-full bg-[#c7c7cc]" />
-                                                    ) : null}
+                                                    {dayEvents.length > 2 ? <span className="h-[3px] w-[18px] rounded-full bg-[#c7c7cc]" /> : null}
                                                 </span>
                                             ) : null}
                                         </>
@@ -638,9 +692,7 @@ export default function MobileAdminCalendar() {
                     </div>
 
                     <div className="px-4 pt-7">
-                        <h2 className="text-[28px] font-bold tracking-[-0.025em]">
-                            {shortMonthNames[nextMonthPreview.month.getMonth()]}
-                        </h2>
+                        <h2 className="text-[28px] font-bold tracking-[-0.025em]">{shortMonthNames[nextMonthPreview.month.getMonth()]}</h2>
                     </div>
                     <div className="mt-1 grid grid-cols-7 border-y border-[#e5e5ea]">
                         {nextMonthPreview.cells.map((date, index) => (
@@ -655,35 +707,18 @@ export default function MobileAdminCalendar() {
                     </div>
                 </section>
 
-                {loading ? (
-                    <div className="px-4 py-6 text-center text-sm text-[#8e8e93]">Зареждане...</div>
-                ) : null}
+                {loading ? <div className="px-4 py-6 text-center text-sm text-[#8e8e93]">Зареждане...</div> : null}
             </div>
 
             <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-[86px] max-w-[520px] items-center justify-between border-t border-black/5 bg-white/88 px-5 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl">
-                <button
-                    type="button"
-                    onClick={goToday}
-                    className="rounded-[24px] border border-black/5 bg-[#f7f7f7] px-5 py-3 text-[16px] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
-                >
+                <button type="button" onClick={goToday} className="rounded-[24px] border border-black/5 bg-[#f7f7f7] px-5 py-3 text-[16px] font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
                     Днес
                 </button>
-
                 <div className="flex items-center rounded-[25px] border border-black/5 bg-[#f7f7f7] p-1 shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
-                    <button
-                        type="button"
-                        onClick={() => setAgendaOpen(true)}
-                        className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5"
-                        aria-label="Календар"
-                    >
+                    <button type="button" onClick={() => setAgendaOpen(true)} className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5" aria-label="Календар">
                         <IconCalendar />
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => setAgendaOpen(true)}
-                        className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5"
-                        aria-label="Списък със събития"
-                    >
+                    <button type="button" onClick={() => setAgendaOpen(true)} className="flex h-11 w-14 items-center justify-center rounded-[22px] active:bg-black/5" aria-label="Списък със събития">
                         <IconList />
                     </button>
                 </div>
@@ -691,10 +726,7 @@ export default function MobileAdminCalendar() {
 
             {agendaOpen ? (
                 <div className="fixed inset-0 z-[80] flex items-end bg-black/20" onClick={() => setAgendaOpen(false)}>
-                    <section
-                        className="max-h-[76dvh] w-full overflow-y-auto rounded-t-[28px] bg-[#f2f2f7] pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-20px_60px_rgba(0,0,0,0.16)]"
-                        onClick={(event) => event.stopPropagation()}
-                    >
+                    <section className="max-h-[76dvh] w-full overflow-y-auto rounded-t-[28px] bg-[#f2f2f7] pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-20px_60px_rgba(0,0,0,0.16)]" onClick={(event) => event.stopPropagation()}>
                         <div className="sticky top-0 z-10 bg-[#f2f2f7]/95 px-4 pb-3 pt-2 backdrop-blur-xl">
                             <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-black/15" />
                             <div className="flex items-center justify-between gap-3">
@@ -702,12 +734,7 @@ export default function MobileAdminCalendar() {
                                     <p className="text-[13px] font-semibold uppercase tracking-wide text-[#8e8e93]">Избран ден</p>
                                     <h2 className="mt-0.5 text-[21px] font-bold capitalize">{toLongDate(selectedDate)}</h2>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={openAddEvent}
-                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#ff3b30] shadow-sm"
-                                    aria-label="Добави събитие"
-                                >
+                                <button type="button" onClick={openAddEvent} className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#ff3b30] shadow-sm" aria-label="Добави събитие">
                                     <IconPlus />
                                 </button>
                             </div>
@@ -715,11 +742,7 @@ export default function MobileAdminCalendar() {
 
                         <div className="space-y-3 px-4">
                             {!loading && selectedEvents.length === 0 ? (
-                                <button
-                                    type="button"
-                                    onClick={openAddEvent}
-                                    className="w-full rounded-2xl bg-white px-4 py-7 text-center"
-                                >
+                                <button type="button" onClick={openAddEvent} className="w-full rounded-2xl bg-white px-4 py-7 text-center">
                                     <span className="block text-sm text-[#8e8e93]">Няма събития за този ден</span>
                                     <span className="mt-2 block text-sm font-semibold text-[#ff3b30]">Добави събитие</span>
                                 </button>
@@ -727,11 +750,7 @@ export default function MobileAdminCalendar() {
 
                             {selectedEvents.map((calendarEvent) => (
                                 <article key={calendarEvent.id} className="overflow-hidden rounded-2xl bg-white">
-                                    <button
-                                        type="button"
-                                        onClick={() => openEditEvent(calendarEvent)}
-                                        className="flex w-full gap-3 px-4 py-4 text-left active:bg-black/5"
-                                    >
+                                    <button type="button" onClick={() => openEditEvent(calendarEvent)} className="flex w-full gap-3 px-4 py-4 text-left active:bg-black/5">
                                         <span className="mt-1 h-12 w-1 shrink-0 rounded-full" style={{ backgroundColor: getEventColor(calendarEvent) }} />
                                         <span className="min-w-0 flex-1">
                                             <strong className="block truncate text-[17px] font-semibold">{calendarEvent.title}</strong>
@@ -745,12 +764,8 @@ export default function MobileAdminCalendar() {
                                         </span>
                                     </button>
                                     <div className="grid grid-cols-3 border-t border-[#e5e5ea]">
-                                        <button type="button" onClick={() => openEditEvent(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">
-                                            Редактирай
-                                        </button>
-                                        <button type="button" onClick={() => exportToAppleCalendar(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">
-                                            Apple Calendar
-                                        </button>
+                                        <button type="button" onClick={() => openEditEvent(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">Редактирай</button>
+                                        <button type="button" onClick={() => void exportSingleEvent(calendarEvent)} className="min-h-12 border-r border-[#e5e5ea] px-2 text-xs font-semibold text-[#007aff]">Apple Calendar</button>
                                         <button type="button" onClick={() => void deleteEvent(calendarEvent)} disabled={deletingId === calendarEvent.id} className="min-h-12 px-2 text-xs font-semibold text-[#ff3b30] disabled:opacity-40">
                                             {deletingId === calendarEvent.id ? "Триене..." : "Изтрий"}
                                         </button>
@@ -768,24 +783,14 @@ export default function MobileAdminCalendar() {
                         <div className="flex items-center gap-3">
                             <div className="flex h-11 flex-1 items-center gap-2 rounded-xl bg-[#f2f2f7] px-3">
                                 <IconSearch />
-                                <input
-                                    autoFocus
-                                    value={searchQuery}
-                                    onChange={(event) => setSearchQuery(event.target.value)}
-                                    placeholder="Търси"
-                                    className="min-w-0 flex-1 bg-transparent text-[17px] outline-none placeholder:text-[#8e8e93]"
-                                />
+                                <input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Търси" className="min-w-0 flex-1 bg-transparent text-[17px] outline-none placeholder:text-[#8e8e93]" />
                             </div>
-                            <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery("") }} className="text-[16px] font-medium text-[#007aff]">
-                                Отказ
-                            </button>
+                            <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery("") }} className="text-[16px] font-medium text-[#007aff]">Отказ</button>
                         </div>
                     </div>
 
                     <div className="divide-y divide-[#e5e5ea] px-4">
-                        {searchQuery.trim() && !searchResults.length ? (
-                            <div className="py-10 text-center text-sm text-[#8e8e93]">Няма намерени събития</div>
-                        ) : null}
+                        {searchQuery.trim() && !searchResults.length ? <div className="py-10 text-center text-sm text-[#8e8e93]">Няма намерени събития</div> : null}
                         {searchResults.map((calendarEvent) => (
                             <button
                                 key={calendarEvent.id}
