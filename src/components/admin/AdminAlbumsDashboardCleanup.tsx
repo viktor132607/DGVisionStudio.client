@@ -96,6 +96,9 @@ function markPlatformAlbumActions(platform: "apple" | "android" | "other") {
 
     actionBar.dataset.appleAlbumActions = "true"
     actionBar.dataset.nativePlatform = platform
+    actionBar.style.setProperty("width", "100%", "important")
+    actionBar.style.setProperty("justify-content", "center", "important")
+    actionBar.style.setProperty("margin-inline", "auto", "important")
 
     editLink.dataset.appleAlbumAction = "edit"
     editLink.setAttribute("aria-label", "Редакция")
