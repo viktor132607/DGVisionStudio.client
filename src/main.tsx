@@ -12,6 +12,7 @@ import "./i18n/i18n"
 import App from "./App"
 import HomeSlideshowAlbumLightbox from "./components/HomeSlideshowAlbumLightbox"
 import HomeFoldRecentAlbums from "./components/HomeFoldRecentAlbums"
+import MobileAdminCalendar from "./components/admin/MobileAdminCalendar"
 import { AuthProvider } from "./context/AuthContext"
 
 const pendingRecentAlbumKey = "dgvisionstudio:pending-recent-album"
@@ -134,6 +135,7 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <AuthProvider>
           <App />
+          <MobileAdminCalendar />
           <HomeSlideshowAlbumLightbox />
           <HomeFoldRecentAlbums />
         </AuthProvider>
