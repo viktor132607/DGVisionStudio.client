@@ -9,6 +9,32 @@ function hideElement(element: HTMLElement | null, hiddenElements: HTMLElement[])
   hiddenElements.push(element)
 }
 
+function ensureNativePlatformClass() {
+  const root = document.documentElement
+  const userAgent = navigator.userAgent || ""
+  const platform = navigator.platform || ""
+  const touchPoints = navigator.maxTouchPoints || 0
+
+  const isAndroid = /Android/i.test(`${platform} ${userAgent}`)
+  const isIPhoneOrIPad = /iPhone|iPad|iPod/i.test(userAgent)
+  const isIPadDesktopMode = /Mac/i.test(platform) && touchPoints > 1
+  const isMac = /Mac/i.test(platform) && !isAndroid
+
+  if (isAndroid) {
+    root.classList.add("android-device")
+    root.classList.remove("apple-device")
+    return "android" as const
+  }
+
+  if (isIPhoneOrIPad || isIPadDesktopMode || isMac) {
+    root.classList.add("apple-device")
+    root.classList.remove("android-device")
+    return "apple" as const
+  }
+
+  return "other" as const
+}
+
 function hideAlbumDashboardExtras(hiddenElements: HTMLElement[]) {
   const albumsSection = document.querySelector<HTMLElement>("#albums")
   if (!albumsSection) return
@@ -34,8 +60,8 @@ function hideAlbumDashboardExtras(hiddenElements: HTMLElement[]) {
   }
 }
 
-function markAppleDashboardMetrics() {
-  if (!document.documentElement.classList.contains("apple-device")) return
+function markAppleDashboardMetrics(platform: "apple" | "android" | "other") {
+  if (platform !== "apple") return
 
   const users = document.querySelector<HTMLAnchorElement>('a[href="/admin/users"]')
   const contacts = document.querySelector<HTMLAnchorElement>('a[href="/admin/contact-requests"]')
@@ -47,11 +73,8 @@ function markAppleDashboardMetrics() {
   }
 }
 
-function markPlatformAlbumActions() {
-  const root = document.documentElement
-  const isApple = root.classList.contains("apple-device")
-  const isAndroid = root.classList.contains("android-device")
-  if (!isApple && !isAndroid) return
+function markPlatformAlbumActions(platform: "apple" | "android" | "other") {
+  if (platform === "other") return
 
   const albumsSection = document.querySelector<HTMLElement>("#albums")
   if (!albumsSection) return
@@ -72,6 +95,7 @@ function markPlatformAlbumActions() {
     if (!accessLink || !deleteButton) continue
 
     actionBar.dataset.appleAlbumActions = "true"
+    actionBar.dataset.nativePlatform = platform
 
     editLink.dataset.appleAlbumAction = "edit"
     editLink.setAttribute("aria-label", "Редакция")
@@ -88,8 +112,9 @@ function markPlatformAlbumActions() {
 }
 
 function applyPlatformDashboardMarkers() {
-  markAppleDashboardMetrics()
-  markPlatformAlbumActions()
+  const platform = ensureNativePlatformClass()
+  markAppleDashboardMetrics(platform)
+  markPlatformAlbumActions(platform)
 }
 
 export default function AdminAlbumsDashboardCleanup() {
@@ -119,8 +144,13 @@ export default function AdminAlbumsDashboardCleanup() {
       subtree: true,
     })
 
+    window.addEventListener("pageshow", scheduleApply)
+    window.addEventListener("orientationchange", scheduleApply)
+
     return () => {
       observer.disconnect()
+      window.removeEventListener("pageshow", scheduleApply)
+      window.removeEventListener("orientationchange", scheduleApply)
       window.cancelAnimationFrame(animationFrame)
       for (const element of hiddenElements) element.style.removeProperty("display")
     }
