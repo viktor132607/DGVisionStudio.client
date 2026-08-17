@@ -1,84 +1,97 @@
 /* Apple-only admin dashboard refinements. Public pages and non-Apple devices are untouched. */
 
+/* Dashboard metrics: target the real three links directly so this never depends on JS markers. */
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]),
 html.apple-device [data-apple-dashboard-metrics="true"] {
-    width: min(100%, 760px) !important;
+    width: 100% !important;
     max-width: 760px !important;
+    display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-    margin-bottom: 28px !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a,
 html.apple-device [data-apple-dashboard-metrics="true"] > a {
-    min-height: 112px !important;
-    padding: 12px !important;
-    border-radius: 20px !important;
-    border-color: rgba(60, 60, 67, 0.12) !important;
-    background: rgba(255, 255, 255, 0.92) !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.055) !important;
+    min-width: 0 !important;
+    min-height: 104px !important;
+    padding: 11px 10px !important;
+    border-radius: 18px !important;
+    border-color: rgba(60, 60, 67, 0.14) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.055) !important;
     transform: none !important;
+    overflow: hidden !important;
     -webkit-tap-highlight-color: transparent;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a:active,
 html.apple-device [data-apple-dashboard-metrics="true"] > a:active {
     transform: scale(0.975) !important;
     background: #f2f2f7 !important;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a h3,
 html.apple-device [data-apple-dashboard-metrics="true"] > a h3 {
-    min-height: 28px;
+    min-height: 28px !important;
     margin: 0 !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
     font-weight: 600 !important;
-    line-height: 1.18 !important;
+    line-height: 1.15 !important;
     color: #636366 !important;
     overflow-wrap: normal !important;
     word-break: normal !important;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:first-of-type,
 html.apple-device [data-apple-dashboard-metrics="true"] > a > p:first-of-type {
-    margin: 4px 0 2px !important;
-    font-size: 28px !important;
+    margin: 4px 0 3px !important;
+    font-size: 27px !important;
     font-weight: 700 !important;
     line-height: 1 !important;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.02em !important;
     color: #111827 !important;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:last-of-type,
 html.apple-device [data-apple-dashboard-metrics="true"] > a > p:last-of-type {
     margin: 0 !important;
-    font-size: 11px !important;
-    line-height: 1.18 !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
     color: #6b7280 !important;
     overflow-wrap: normal !important;
     word-break: normal !important;
 }
 
+html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > span[class*="absolute"],
 html.apple-device [data-apple-dashboard-metrics="true"] > a > span[class*="absolute"] {
-    top: 10px !important;
-    right: 10px !important;
-    width: 8px !important;
-    height: 8px !important;
+    top: 9px !important;
+    right: 9px !important;
+    width: 7px !important;
+    height: 7px !important;
 }
 
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a,
 html.dark.apple-device [data-apple-dashboard-metrics="true"] > a {
     border-color: rgba(255, 255, 255, 0.1) !important;
     background: #1c1c1e !important;
     box-shadow: none !important;
 }
 
-html.dark.apple-device [data-apple-dashboard-metrics="true"] > a:active {
-    background: #2c2c2e !important;
-}
-
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a h3,
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:last-of-type,
 html.dark.apple-device [data-apple-dashboard-metrics="true"] > a h3,
 html.dark.apple-device [data-apple-dashboard-metrics="true"] > a > p:last-of-type {
     color: #aeaeb2 !important;
 }
 
+html.dark.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a > p:first-of-type,
 html.dark.apple-device [data-apple-dashboard-metrics="true"] > a > p:first-of-type {
     color: #ffffff !important;
 }
 
+/* Album action bar: direct selectors + old data selectors for backwards compatibility. */
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]),
 html.apple-device [data-apple-album-actions="true"] {
     display: flex !important;
     flex-direction: row !important;
@@ -86,20 +99,23 @@ html.apple-device [data-apple-album-actions="true"] {
     align-items: center !important;
     justify-content: flex-start !important;
     gap: 10px !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
     overflow: visible !important;
 }
 
+html.apple-device #albums a[href*="/admin/client-galleries/edit?id="],
+html.apple-device #albums a[href*="/admin/client-galleries/access?id="],
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button,
 html.apple-device [data-apple-album-action] {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex: 0 0 44px !important;
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
+    flex: 0 0 48px !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 999px !important;
@@ -107,89 +123,90 @@ html.apple-device [data-apple-album-action] {
     color: #007aff !important;
     font-size: 0 !important;
     line-height: 0 !important;
-    box-shadow: inset 0 0 0 0.5px rgba(60, 60, 67, 0.12) !important;
+    box-shadow: inset 0 0 0 0.75px rgba(60, 60, 67, 0.16) !important;
     transition: transform 120ms ease, background-color 120ms ease !important;
     -webkit-tap-highlight-color: transparent;
 }
 
+html.apple-device #albums a[href*="/admin/client-galleries/edit?id="]:active,
+html.apple-device #albums a[href*="/admin/client-galleries/access?id="]:active,
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button:active,
 html.apple-device [data-apple-album-action]:active {
     transform: scale(0.9) !important;
     background: #e5e5ea !important;
 }
 
+html.apple-device #albums a[href*="/admin/client-galleries/edit?id="]::before,
+html.apple-device #albums a[href*="/admin/client-galleries/access?id="]::before,
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before,
 html.apple-device [data-apple-album-action]::before {
-    content: "";
-    display: block;
-    width: 20px;
-    height: 20px;
-    background: currentColor;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    -webkit-mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-    mask-size: contain;
+    content: "" !important;
+    display: block !important;
+    width: 25px !important;
+    height: 25px !important;
+    flex: 0 0 25px !important;
+    background: currentColor !important;
+    -webkit-mask-repeat: no-repeat !important;
+    -webkit-mask-position: center !important;
+    -webkit-mask-size: contain !important;
+    mask-repeat: no-repeat !important;
+    mask-position: center !important;
+    mask-size: contain !important;
 }
 
+html.apple-device #albums a[href*="/admin/client-galleries/edit?id="]::before,
 html.apple-device [data-apple-album-action="edit"]::before {
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20h4.2L19 9.2 14.8 5 4 15.8V20zm12.1-16.1 4 4 1.1-1.1a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0l-1.1 1.1z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20h4.2L19 9.2 14.8 5 4 15.8V20zm12.1-16.1 4 4 1.1-1.1a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0l-1.1 1.1z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 17.25V20h2.75L17.81 8.94l-2.75-2.75L4 17.25zm15.71-10.04a1.003 1.003 0 0 0 0-1.42l-1.5-1.5a1.003 1.003 0 0 0-1.42 0l-1.18 1.18 2.75 2.75 1.35-1.01z'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 17.25V20h2.75L17.81 8.94l-2.75-2.75L4 17.25zm15.71-10.04a1.003 1.003 0 0 0 0-1.42l-1.5-1.5a1.003 1.003 0 0 0-1.42 0l-1.18 1.18 2.75 2.75 1.35-1.01z'/%3E%3C/svg%3E") !important;
 }
 
+html.apple-device #albums a[href*="/admin/client-galleries/access?id="]::before,
 html.apple-device [data-apple-album-action="access"]::before {
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V8a5 5 0 0 1 10 0v2h1.5A1.5 1.5 0 0 1 20 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5v-8A1.5 1.5 0 0 1 5.5 10H7zm2 0h6V8a3 3 0 0 0-6 0v2z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V8a5 5 0 0 1 10 0v2h1.5A1.5 1.5 0 0 1 20 11.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5v-8A1.5 1.5 0 0 1 5.5 10H7zm2 0h6V8a3 3 0 0 0-6 0v2z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V7zm2 10.2a1.7 1.7 0 1 1 0-3.4 1.7 1.7 0 0 1 0 3.4z'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V7zm2 10.2a1.7 1.7 0 1 1 0-3.4 1.7 1.7 0 0 1 0 3.4z'/%3E%3C/svg%3E") !important;
 }
 
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button,
 html.apple-device [data-apple-album-action="delete"] {
-    background: rgba(255, 59, 48, 0.1) !important;
+    background: rgba(255, 59, 48, 0.11) !important;
     color: #ff3b30 !important;
 }
 
+html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button::before,
 html.apple-device [data-apple-album-action="delete"]::before {
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4h8l1 2h4v2H3V6h4l1-2zm-1 6h10l-1 10H8L7 10zm3 2v6h2v-6h-2zm4 0v6h2v-6h-2z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4h8l1 2h4v2H3V6h4l1-2zm-1 6h10l-1 10H8L7 10zm3 2v6h2v-6h-2zm4 0v6h2v-6h-2z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-.8 11H7.8L7 9zm3 2v7h1.5v-7H10zm2.5 0v7H14v-7h-1.5z'/%3E%3C/svg%3E") !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-.8 11H7.8L7 9zm3 2v7h1.5v-7H10zm2.5 0v7H14v-7h-1.5z'/%3E%3C/svg%3E") !important;
 }
 
+html.dark.apple-device #albums a[href*="/admin/client-galleries/edit?id="],
+html.dark.apple-device #albums a[href*="/admin/client-galleries/access?id="],
+html.dark.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button,
 html.dark.apple-device [data-apple-album-action] {
     background: #1c1c1e !important;
     color: #0a84ff !important;
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12) !important;
+    box-shadow: inset 0 0 0 0.75px rgba(255, 255, 255, 0.12) !important;
 }
 
-html.dark.apple-device [data-apple-album-action]:active {
-    background: #2c2c2e !important;
-}
-
+html.dark.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]) > button,
 html.dark.apple-device [data-apple-album-action="delete"] {
     background: rgba(255, 69, 58, 0.16) !important;
     color: #ff453a !important;
 }
 
 @media (max-width: 520px) {
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]),
     html.apple-device [data-apple-dashboard-metrics="true"] {
         gap: 6px !important;
     }
 
+    html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a,
     html.apple-device [data-apple-dashboard-metrics="true"] > a {
-        min-height: 102px !important;
-        padding: 10px 9px !important;
-        border-radius: 18px !important;
+        min-height: 98px !important;
+        padding: 9px 8px !important;
+        border-radius: 17px !important;
     }
 
-    html.apple-device [data-apple-dashboard-metrics="true"] > a h3 {
-        min-height: 26px;
-        font-size: 11px !important;
-    }
-
-    html.apple-device [data-apple-dashboard-metrics="true"] > a > p:first-of-type {
-        font-size: 26px !important;
-    }
-
-    html.apple-device [data-apple-dashboard-metrics="true"] > a > p:last-of-type {
-        font-size: 10px !important;
-    }
-
+    html.apple-device #albums div:has(> a[href*="/admin/client-galleries/edit?id="]):has(> a[href*="/admin/client-galleries/access?id="]),
     html.apple-device [data-apple-album-actions="true"] {
         gap: 8px !important;
     }
