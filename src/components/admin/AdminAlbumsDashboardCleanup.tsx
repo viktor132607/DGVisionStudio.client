@@ -9,11 +9,9 @@ function hideElement(element: HTMLElement | null, hiddenElements: HTMLElement[])
   hiddenElements.push(element)
 }
 
-function hideAlbumDashboardExtras() {
+function hideAlbumDashboardExtras(hiddenElements: HTMLElement[]) {
   const albumsSection = document.querySelector<HTMLElement>("#albums")
-  if (!albumsSection) return [] as HTMLElement[]
-
-  const hiddenElements: HTMLElement[] = []
+  if (!albumsSection) return
 
   const refreshButton = Array.from(albumsSection.querySelectorAll<HTMLButtonElement>("button"))
     .find((button) => normalizeText(button.textContent) === "Обнови албумите")
@@ -34,8 +32,61 @@ function hideAlbumDashboardExtras() {
 
     if (isStatsGrid || isFilterPanel) hideElement(child, hiddenElements)
   }
+}
 
-  return hiddenElements
+function markAppleDashboardMetrics() {
+  if (!document.documentElement.classList.contains("apple-device")) return
+
+  const users = document.querySelector<HTMLAnchorElement>('a[href="/admin/users"]')
+  const contacts = document.querySelector<HTMLAnchorElement>('a[href="/admin/contact-requests"]')
+  const printRequests = document.querySelector<HTMLAnchorElement>('a[href="/admin/print-requests"]')
+  const parent = users?.parentElement
+
+  if (parent && contacts?.parentElement === parent && printRequests?.parentElement === parent) {
+    parent.dataset.appleDashboardMetrics = "true"
+  }
+}
+
+function markAppleAlbumActions() {
+  if (!document.documentElement.classList.contains("apple-device")) return
+
+  const albumsSection = document.querySelector<HTMLElement>("#albums")
+  if (!albumsSection) return
+
+  const editLinks = albumsSection.querySelectorAll<HTMLAnchorElement>('a[href*="/admin/client-galleries/edit?id="]')
+
+  for (const editLink of editLinks) {
+    const actionBar = editLink.parentElement
+    if (!actionBar) continue
+
+    const accessLink = actionBar.querySelector<HTMLAnchorElement>('a[href*="/admin/client-galleries/access?id="]')
+    const deleteButton = Array.from(actionBar.querySelectorAll<HTMLButtonElement>("button"))
+      .find((button) => {
+        const text = normalizeText(button.textContent)
+        return text === "Изтрий" || text === "Зареждане..."
+      })
+
+    if (!accessLink || !deleteButton) continue
+
+    actionBar.dataset.appleAlbumActions = "true"
+
+    editLink.dataset.appleAlbumAction = "edit"
+    editLink.setAttribute("aria-label", "Редакция")
+    editLink.setAttribute("title", "Редакция")
+
+    accessLink.dataset.appleAlbumAction = "access"
+    accessLink.setAttribute("aria-label", "Достъп")
+    accessLink.setAttribute("title", "Достъп")
+
+    deleteButton.dataset.appleAlbumAction = "delete"
+    deleteButton.setAttribute("aria-label", "Изтрий")
+    deleteButton.setAttribute("title", "Изтрий")
+  }
+}
+
+function applyAppleDashboardMarkers() {
+  markAppleDashboardMetrics()
+  markAppleAlbumActions()
 }
 
 export default function AdminAlbumsDashboardCleanup() {
@@ -44,22 +95,30 @@ export default function AdminAlbumsDashboardCleanup() {
   useEffect(() => {
     if (location.pathname !== "/admin") return
 
-    let hiddenElements: HTMLElement[] = []
-    let attempts = 0
-    let timeoutId = 0
+    const hiddenElements: HTMLElement[] = []
+    let animationFrame = 0
 
     const apply = () => {
-      hiddenElements = hideAlbumDashboardExtras()
-      attempts += 1
-      if (!hiddenElements.length && attempts < 10) {
-        timeoutId = window.setTimeout(apply, 100)
-      }
+      hideAlbumDashboardExtras(hiddenElements)
+      applyAppleDashboardMarkers()
+    }
+
+    const scheduleApply = () => {
+      window.cancelAnimationFrame(animationFrame)
+      animationFrame = window.requestAnimationFrame(apply)
     }
 
     apply()
 
+    const observer = new MutationObserver(scheduleApply)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+
     return () => {
-      window.clearTimeout(timeoutId)
+      observer.disconnect()
+      window.cancelAnimationFrame(animationFrame)
       for (const element of hiddenElements) element.style.removeProperty("display")
     }
   }, [location.pathname])
