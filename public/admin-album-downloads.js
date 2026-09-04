@@ -38,76 +38,20 @@
     return cleaned || fallback || "album"
   }
 
-  const getResponseFileName = (response, fallback) => {
-    const disposition = response.headers.get("content-disposition") || ""
-    const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i)
-    if (utfMatch?.[1]) {
-      try {
-        return decodeURIComponent(utfMatch[1].replace(/^"|"$/g, ""))
-      } catch {
-        // Fall back to the regular filename or the supplied name.
-      }
-    }
-
-    const plainMatch = disposition.match(/filename="?([^";]+)"?/i)
-    return plainMatch?.[1] || fallback
-  }
-
-  const triggerBlobDownload = (blob, fileName) => {
-    const objectUrl = URL.createObjectURL(blob)
+  // Do not fetch ZIP files into JavaScript. Large archives can fail because of
+  // CORS/network buffering and turn into "Failed to fetch". The normal profile
+  // gallery download already works as a direct browser download, so admin uses
+  // the same mechanism and lets the browser stream the response to disk.
+  const downloadArchive = (path, fallbackFileName) => {
+    const separator = path.includes("?") ? "&" : "?"
     const link = document.createElement("a")
-    link.href = objectUrl
-    link.download = fileName
+    link.href = apiUrl(`${path}${separator}_=${Date.now()}`)
+    link.download = fallbackFileName
+    link.rel = "noopener"
     link.style.display = "none"
     document.body.appendChild(link)
     link.click()
     link.remove()
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
-  }
-
-  const readErrorMessage = async (response) => {
-    try {
-      const type = response.headers.get("content-type") || ""
-      if (type.includes("application/json")) {
-        const data = await response.json()
-        return data?.message || data?.title || data?.error || "Изтеглянето беше неуспешно."
-      }
-      const text = await response.text()
-      return text || "Изтеглянето беше неуспешно."
-    } catch {
-      return "Изтеглянето беше неуспешно."
-    }
-  }
-
-  const downloadArchive = async (path, fallbackFileName) => {
-    const separator = path.includes("?") ? "&" : "?"
-    const response = await previousFetch(
-      apiUrl(`${path}${separator}_=${Date.now()}`),
-      {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          Accept: "application/zip",
-        },
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(await readErrorMessage(response))
-    }
-
-    const blob = await response.blob()
-    if (!blob.size) throw new Error("Полученият архив е празен.")
-
-    triggerBlobDownload(blob, getResponseFileName(response, fallbackFileName))
-  }
-
-  const setButtonBusy = (button, busy, idleText) => {
-    button.disabled = busy
-    button.textContent = busy ? "Изтегляне..." : idleText
-    button.style.opacity = busy ? "0.65" : ""
-    button.style.cursor = busy ? "wait" : ""
   }
 
   const makeDownloadButton = (text, className) => {
@@ -127,25 +71,16 @@
 
     const button = makeDownloadButton(
       "Изтегли всички",
-      "inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+      "inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
     )
     button.dataset.dgDownloadAllAlbums = "true"
     button.title = "Изтегли всички актуални албуми"
 
-    button.addEventListener("click", async () => {
-      if (button.disabled) return
-      setButtonBusy(button, true, "Изтегли всички")
-
-      try {
-        await downloadArchive(
-          "/admin/client-galleries/download-all",
-          "dgvisionstudio-all-albums.zip"
-        )
-      } catch (error) {
-        window.alert(error instanceof Error ? error.message : "Изтеглянето беше неуспешно.")
-      } finally {
-        setButtonBusy(button, false, "Изтегли всички")
-      }
+    button.addEventListener("click", () => {
+      downloadArchive(
+        "/admin/client-galleries/download-all",
+        "dgvisionstudio-all-albums.zip"
+      )
     })
 
     actions.insertBefore(button, createLink)
@@ -182,20 +117,11 @@
       button.title = "Изтегли албума като ZIP"
       button.setAttribute("aria-label", `Изтегли албум ${title}`)
 
-      button.addEventListener("click", async () => {
-        if (button.disabled) return
-        setButtonBusy(button, true, "Изтегли албум")
-
-        try {
-          await downloadArchive(
-            `/admin/portfolio/albums/${albumId}/download`,
-            `${safeFileName(title, `album-${albumId}`)}.zip`
-          )
-        } catch (error) {
-          window.alert(error instanceof Error ? error.message : "Изтеглянето беше неуспешно.")
-        } finally {
-          setButtonBusy(button, false, "Изтегли албум")
-        }
+      button.addEventListener("click", () => {
+        downloadArchive(
+          `/admin/portfolio/albums/${albumId}/download`,
+          `${safeFileName(title, `album-${albumId}`)}.zip`
+        )
       })
 
       accessLink.insertAdjacentElement("afterend", button)
