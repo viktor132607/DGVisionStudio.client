@@ -138,7 +138,7 @@
 
       try {
         await downloadArchive(
-          "/admin/client-galleries/download-all-stream",
+          "/admin/client-galleries/download-all",
           "dgvisionstudio-all-albums.zip"
         )
       } catch (error) {
