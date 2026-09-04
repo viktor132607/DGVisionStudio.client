@@ -111,11 +111,11 @@
 
       const card = editLink.closest("[class*='overflow-hidden']") || editLink.closest("div")
       const title = card?.querySelector("h3")?.textContent?.trim() || `album-${albumId}`
-      const button = makeDownloadButton("Изтегли албум", accessLink.className)
+      const button = makeDownloadButton("Изтегли архив", accessLink.className)
       button.dataset.dgDownloadAlbum = "true"
       button.dataset.albumId = String(albumId)
-      button.title = "Изтегли албума като ZIP"
-      button.setAttribute("aria-label", `Изтегли албум ${title}`)
+      button.title = "Изтегли архива на албума като ZIP"
+      button.setAttribute("aria-label", `Изтегли архив ${title}`)
 
       button.addEventListener("click", () => {
         downloadArchive(
