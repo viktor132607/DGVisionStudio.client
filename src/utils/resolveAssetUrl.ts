@@ -1,4 +1,4 @@
-const API_ROOT = (import.meta.env.VITE_API_URL || "http://localhost:10000").replace(/\/+$/, "")
+const API_ROOT = (import.meta.env.VITE_API_URL || "https://api.dgvisionstudio.com").replace(/\/+$/, "")
 
 export function resolveAssetUrl(url?: string | null): string {
     if (!url) return ""
