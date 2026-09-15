@@ -38,7 +38,7 @@ try {
     let html = stripManagedHead(template).replace("</head>", `${head}\n</head>`)
     const body = isPhotographyPage
       ? renderToStaticMarkup(createElement(Content, { language: "bg", service }))
-      : page.path === "/" ? renderToStaticMarkup(createElement(PhotographyIntro, { language: "bg", standalone: true })) : ""
+      : page.path === "/" ? renderToStaticMarkup(createElement(PhotographyIntro, { language: "bg", standalone: true, collapsible: true })) : ""
     if (body) html = html.replace('<div id="root"></div>', `<div id="root"><main>${body}</main></div>`)
     const directory = resolve("dist", `.${page.path}`)
     await mkdir(directory, { recursive: true })

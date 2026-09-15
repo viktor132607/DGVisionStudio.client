@@ -459,7 +459,7 @@ export default function Home() {
                 </section>
             </div>
 
-            <PhotographyIntro language={isBg ? "bg" : "en"} />
+            <PhotographyIntro language={isBg ? "bg" : "en"} collapsible />
 
             {selectedSlideshowItem ? (
                 <PortfolioLightbox
