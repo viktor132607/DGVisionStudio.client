@@ -688,95 +688,97 @@ export default function AdminPanel() {
                     </div>
                 </div>
 
-                <p className="mb-4 text-sm text-gray-600 dark:text-zinc-300">
-                    „Изтегли всички“ включва албумите от активните категории. Структура: Archive(дата) / Категория / Албум / Снимки.
-                </p>
-                <div className="mb-4 grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2 xl:grid-cols-4">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                        Търсене
-                        <input type="text" value={albumSearch} onChange={e => setAlbumSearch(e.target.value)}
-                            placeholder="Търси албум..." className={`${selectClass} mt-2`} />
-                    </label>
-                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                        Категория
-                        <select value={albumCategoryFilter} onChange={e => setAlbumCategoryFilter(e.target.value)} className={`${selectClass} mt-2`}>
-                            <option value="all">Всички категории</option>
-                            {categories.map(category => <option key={category.id} value={category.id}>{category.name}{category.isActive ? "" : " (неактивна)"}</option>)}
-                        </select>
-                    </label>
-                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                        Статус
-                        <select value={albumStatusFilter} onChange={e => setAlbumStatusFilter(e.target.value)} className={`${selectClass} mt-2`}>
-                            <option value="all">Всички албуми</option><option value="active">Активни</option><option value="inactive">Неактивни</option>
-                        </select>
-                    </label>
-                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                        Подреждане
-                        <select value={albumSort} className={`${selectClass} mt-2`} onChange={e => {
-                            setAlbumSort(e.target.value)
-                            try { localStorage.setItem("dgvisionstudio.admin.albumSort", e.target.value) } catch { /* Session-only sorting. */ }
-                        }}>
-                            <option value="activity_desc">Последно добавени / редактирани</option>
-                            <option value="created_desc">Най-ново създадени</option><option value="created_asc">Най-старо създадени</option>
-                            <option value="title_asc">Име: А–Я</option><option value="title_desc">Име: Я–А</option>
-                            <option value="category_asc">Категория</option><option value="active_first">Активни първо</option><option value="manual">Ръчен ред</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div className="mb-5 space-y-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30" aria-label="Групови действия за албуми">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white">
-                            <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={allVisibleSelected}
-                                ref={element => { if (element) element.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected }}
-                                disabled={albumManagementBusy || visibleIds.length === 0}
-                                onChange={() => setSelectedAlbumIds(current => toggleVisibleSelection(current, visibleIds))} />
-                            Маркирай показаните ({visibleIds.length})
+                <div className="mb-5 space-y-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900" role="region" aria-label="Управление на албуми">
+                    <p className="text-sm text-gray-600 dark:text-zinc-300">
+                        „Изтегли всички“ включва албумите от активните категории. Структура: Archive(дата) / Категория / Албум / Снимки.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                            Търсене
+                            <input type="text" value={albumSearch} onChange={e => setAlbumSearch(e.target.value)}
+                                placeholder="Търси албум..." className={`${selectClass} mt-2`} />
                         </label>
-                        <span className="text-sm text-gray-700 dark:text-zinc-200" role="status">
-                            Маркирани: {selectedAlbumIds.size}{selectedAlbumIds.size > selectedVisibleCount ? ` (${selectedAlbumIds.size - selectedVisibleCount} извън филтъра)` : ""}
-                        </span>
-                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
-                            onClick={() => setSelectedAlbumIds(new Set())}>Изчисти избора</button>
-                    </div>
-                    <div className="flex flex-wrap items-end gap-2">
-                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
-                            onClick={() => void archive.start([...selectedAlbumIds])}>Изтегли маркираните ({selectedAlbumIds.size})</button>
-                        <label className="min-w-0 flex-1 text-sm font-medium text-gray-700 dark:text-zinc-200 sm:min-w-52 sm:max-w-xs">
-                            Премести в категория
-                            <select className={`${selectClass} mt-1`} value={targetCategoryId} disabled={albumManagementBusy || categoriesLoading}
-                                onChange={e => setTargetCategoryId(e.target.value)}>
-                                <option value="">Избери активна категория</option>
-                                {activeCategories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+                        <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                            Категория
+                            <select value={albumCategoryFilter} onChange={e => setAlbumCategoryFilter(e.target.value)} className={`${selectClass} mt-2`}>
+                                <option value="all">Всички категории</option>
+                                {categories.map(category => <option key={category.id} value={category.id}>{category.name}{category.isActive ? "" : " (неактивна)"}</option>)}
                             </select>
                         </label>
-                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size || !targetCategoryId}
-                            onClick={() => void runBulkAction([...selectedAlbumIds], Number(targetCategoryId))}>Премести маркираните</button>
-                        <button type="button" className={`${actionClass} !border-red-300 !text-red-600 dark:!text-red-300`}
-                            disabled={albumManagementBusy || !selectedAlbumIds.size}
-                            onClick={() => setBulkDeleteIds([...selectedAlbumIds])}>Изтрий маркираните</button>
+                        <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                            Статус
+                            <select value={albumStatusFilter} onChange={e => setAlbumStatusFilter(e.target.value)} className={`${selectClass} mt-2`}>
+                                <option value="all">Всички албуми</option><option value="active">Активни</option><option value="inactive">Неактивни</option>
+                            </select>
+                        </label>
+                        <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                            Подреждане
+                            <select value={albumSort} className={`${selectClass} mt-2`} onChange={e => {
+                                setAlbumSort(e.target.value)
+                                try { localStorage.setItem("dgvisionstudio.admin.albumSort", e.target.value) } catch { /* Session-only sorting. */ }
+                            }}>
+                                <option value="activity_desc">Последно добавени / редактирани</option>
+                                <option value="created_desc">Най-ново създадени</option><option value="created_asc">Най-старо създадени</option>
+                                <option value="title_asc">Име: А–Я</option><option value="title_desc">Име: Я–А</option>
+                                <option value="category_asc">Категория</option><option value="active_first">Активни първо</option><option value="manual">Ръчен ред</option>
+                            </select>
+                        </label>
                     </div>
-                    {bulkBusy && <p role="status" className="text-sm dark:text-white">Запазване на промените...</p>}
-                    {bulkError && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{bulkError}</p>}
-                </div>
 
-                {(archive.busy || archive.job || archive.error) && (
-                    <div className="mb-5 space-y-3 rounded-2xl border border-gray-200 p-4 dark:border-zinc-700 dark:text-white">
-                        <p role="status" className="text-sm font-semibold">
-                            {archive.busy ? archive.job?.status === "verifying" ? "Проверка на готовия архив..."
-                                : archive.job?.status === "writing" ? `Добавени снимки: ${archive.job.completedFiles} / ${archive.job.totalFiles}`
-                                : "Подготовка на архива..." : archive.downloadUrl ? "Архивът е готов. Изтеглянето е стартирано." : "Подготовката е прекъсната."}
-                        </p>
-                        {archive.busy && archive.job && archive.job.totalFiles > 0 &&
-                            <progress className="w-full accent-sky-600" aria-label="Подготовка на архив" max={archive.job.totalFiles} value={archive.job.completedFiles} />}
-                        {archive.error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{archive.error}</p>}
-                        {archive.downloadUrl && <p className="text-sm">Ако изтеглянето не започне, <a href={archive.downloadUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-700 underline dark:text-sky-300">изтегли {archive.job?.fileName}</a>. Линкът е валиден 1 час.</p>}
-                        {!archive.busy && <div className="flex flex-wrap gap-2">
-                            {archive.error && <button type="button" className={actionClass} onClick={() => void archive.resume()}>Провери отново</button>}
-                            <button type="button" className={actionClass} onClick={() => void archive.close()}>Затвори</button>
-                        </div>}
+                    <div className="space-y-3 border-t border-gray-200 pt-4 dark:border-zinc-800" aria-label="Групови действия за албуми">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white">
+                                <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={allVisibleSelected}
+                                    ref={element => { if (element) element.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected }}
+                                    disabled={albumManagementBusy || visibleIds.length === 0}
+                                    onChange={() => setSelectedAlbumIds(current => toggleVisibleSelection(current, visibleIds))} />
+                                Маркирай показаните ({visibleIds.length})
+                            </label>
+                            <span className="text-sm text-gray-700 dark:text-zinc-200" role="status">
+                                Маркирани: {selectedAlbumIds.size}{selectedAlbumIds.size > selectedVisibleCount ? ` (${selectedAlbumIds.size - selectedVisibleCount} извън филтъра)` : ""}
+                            </span>
+                            <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
+                                onClick={() => setSelectedAlbumIds(new Set())}>Изчисти избора</button>
+                        </div>
+                        <div className="flex flex-wrap items-end gap-2">
+                            <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
+                                onClick={() => void archive.start([...selectedAlbumIds])}>Изтегли маркираните ({selectedAlbumIds.size})</button>
+                            <label className="min-w-0 flex-1 text-sm font-medium text-gray-700 dark:text-zinc-200 sm:min-w-52 sm:max-w-xs">
+                                Премести в категория
+                                <select className={`${selectClass} mt-1`} value={targetCategoryId} disabled={albumManagementBusy || categoriesLoading}
+                                    onChange={e => setTargetCategoryId(e.target.value)}>
+                                    <option value="">Избери активна категория</option>
+                                    {activeCategories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+                                </select>
+                            </label>
+                            <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size || !targetCategoryId}
+                                onClick={() => void runBulkAction([...selectedAlbumIds], Number(targetCategoryId))}>Премести маркираните</button>
+                            <button type="button" className={`${actionClass} !border-red-300 !text-red-600 dark:!text-red-300`}
+                                disabled={albumManagementBusy || !selectedAlbumIds.size}
+                                onClick={() => setBulkDeleteIds([...selectedAlbumIds])}>Изтрий маркираните</button>
+                        </div>
+                        {bulkBusy && <p role="status" className="text-sm dark:text-white">Запазване на промените...</p>}
+                        {bulkError && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{bulkError}</p>}
                     </div>
-                )}
+
+                    {(archive.busy || archive.job || archive.error) && (
+                        <div className="space-y-3 border-t border-gray-200 pt-4 dark:border-zinc-800 dark:text-white">
+                            <p role="status" className="text-sm font-semibold">
+                                {archive.busy ? archive.job?.status === "verifying" ? "Проверка на готовия архив..."
+                                    : archive.job?.status === "writing" ? `Добавени снимки: ${archive.job.completedFiles} / ${archive.job.totalFiles}`
+                                    : "Подготовка на архива..." : archive.downloadUrl ? "Архивът е готов. Изтеглянето е стартирано." : "Подготовката е прекъсната."}
+                            </p>
+                            {archive.busy && archive.job && archive.job.totalFiles > 0 &&
+                                <progress className="w-full accent-sky-600" aria-label="Подготовка на архив" max={archive.job.totalFiles} value={archive.job.completedFiles} />}
+                            {archive.error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{archive.error}</p>}
+                            {archive.downloadUrl && <p className="text-sm">Ако изтеглянето не започне, <a href={archive.downloadUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-700 underline dark:text-sky-300">изтегли {archive.job?.fileName}</a>. Линкът е валиден 1 час.</p>}
+                            {!archive.busy && <div className="flex flex-wrap gap-2">
+                                {archive.error && <button type="button" className={actionClass} onClick={() => void archive.resume()}>Провери отново</button>}
+                                <button type="button" className={actionClass} onClick={() => void archive.close()}>Затвори</button>
+                            </div>}
+                        </div>
+                    )}
+                </div>
 
                 {albumsError ? (
                     <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
