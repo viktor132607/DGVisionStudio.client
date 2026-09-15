@@ -37,7 +37,9 @@ test("every HTML page has one canonical, title, description and robots directive
 test("photography content and crawlable service links exist without JavaScript", () => {
   const photographyUrls = urls.filter((url) => new URL(url).pathname.startsWith("/fotograf-ruse"))
   assert.equal(photographyUrls.length, 10)
-  for (const url of ["https://dgvisionstudio.com/", ...photographyUrls]) {
+  const home = htmlFor("https://dgvisionstudio.com/")
+  assert(home.includes('<div id="root"></div>'), "Homepage must not inject the removed photography block")
+  for (const url of photographyUrls) {
     const html = htmlFor(url)
     assert.equal([...html.matchAll(/<h1\b/g)].length, 1, url)
     assert(html.includes("Русе") && html.includes("Търговски комплекс Ялта"), url)

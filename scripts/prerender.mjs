@@ -9,7 +9,7 @@ const server = await createServer({ server: { middlewareMode: true }, appType: "
 try {
   const { staticPages } = await server.ssrLoadModule("/src/seo/staticPages.ts")
   const { SITE_URL, SITE_NAME, DEFAULT_IMAGE, photographyServices, servicePath, hubPath, photographySchema, businessSchema } = await server.ssrLoadModule("/src/seo/photography.ts")
-  const { default: Content, PhotographyIntro } = await server.ssrLoadModule("/src/components/PhotographyContent.tsx")
+  const { default: Content } = await server.ssrLoadModule("/src/components/PhotographyContent.tsx")
   const template = await readFile(resolve("dist/index.html"), "utf8")
   const escape = (value) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
   const stripManagedHead = (html) => html
@@ -38,7 +38,7 @@ try {
     let html = stripManagedHead(template).replace("</head>", `${head}\n</head>`)
     const body = isPhotographyPage
       ? renderToStaticMarkup(createElement(Content, { language: "bg", service }))
-      : page.path === "/" ? renderToStaticMarkup(createElement(PhotographyIntro, { language: "bg", standalone: true, collapsible: true })) : ""
+      : ""
     if (body) html = html.replace('<div id="root"></div>', `<div id="root"><main>${body}</main></div>`)
     const directory = resolve("dist", `.${page.path}`)
     await mkdir(directory, { recursive: true })
@@ -46,7 +46,7 @@ try {
   }
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticPages.map((page) => `  <url><loc>${SITE_URL}${page.path}</loc></url>`).join("\n")}\n</urlset>\n`
   await writeFile(resolve("dist/sitemap.xml"), sitemap)
-  console.log(`Generated ${staticPages.length} public HTML pages and sitemap; ${photographyServices.length + 2} pages include static photography content.`)
+  console.log(`Generated ${staticPages.length} public HTML pages and sitemap; ${photographyServices.length + 1} pages include static photography content.`)
 } finally {
   await server.close()
 }

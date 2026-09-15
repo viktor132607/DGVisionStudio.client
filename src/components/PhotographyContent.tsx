@@ -11,10 +11,10 @@ export function PhotographyLinks({ language }: { language: Language }) {
   </ul>
 }
 
-export function PhotographyIntro({ language, standalone = false, collapsible = false }: { language: Language; standalone?: boolean; collapsible?: boolean }) {
+export function PhotographyIntro({ language, standalone = false }: { language: Language; standalone?: boolean }) {
   const bg = language === "bg"
   const Heading = standalone ? "h1" : "h2"
-  const content = <section className="mx-auto max-w-6xl px-4 py-12 text-slate-900 dark:text-white sm:px-6 sm:py-16" aria-label={bg ? "Фотография в Русе" : "Photography in Ruse"}>
+  return <section className="mx-auto max-w-6xl px-4 py-12 text-slate-900 dark:text-white sm:px-6 sm:py-16" aria-label={bg ? "Фотография в Русе" : "Photography in Ruse"}>
     <Heading className="text-3xl font-bold sm:text-4xl">{bg ? "Фотограф в Русе — DG Vision Studio" : "Photographer in Ruse — DG Vision Studio"}</Heading>
     <p className="my-6 max-w-3xl text-base leading-8 text-slate-600 dark:text-zinc-300">{bg
       ? "Сватба, абитуриентски бал, кръщене или лична фотосесия — изберете фотографска услуга и разгледайте нашия подход. DG Vision Studio създава портрети, семейни снимки, репортажи от събития и визуално съдържание за брандове в Русе."
@@ -31,14 +31,7 @@ export function PhotographyIntro({ language, standalone = false, collapsible = f
       <a href="tel:+359988758434">+359 988 758 434</a> · <a href="mailto:dgvisionstudio@gmail.com" className="break-all">dgvisionstudio@gmail.com</a>
     </address>
   </section>
-  if (!collapsible) return content
-  return <details className="group mx-auto my-6 max-w-6xl px-4 text-slate-600 dark:text-zinc-300 sm:px-6">
-    <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 border-y border-slate-200 py-3 text-sm transition hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 dark:border-zinc-800 dark:hover:text-white [&::-webkit-details-marker]:hidden">
-      <span>{bg ? "Фотографски услуги в Русе" : "Photography services in Ruse"}</span>
-      <span aria-hidden="true" className="text-xl transition-transform group-open:rotate-45">+</span>
-    </summary>
-    {content}
-  </details>
+
 }
 
 export default function PhotographyContent({ language, service }: { language: Language; service?: PhotographyService }) {

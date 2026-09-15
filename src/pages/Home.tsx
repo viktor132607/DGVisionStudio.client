@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 import Seo from "../components/Seo"
-import { PhotographyIntro } from "../components/PhotographyContent"
 import { businessSchema, homeMetadata } from "../seo/photography"
 import PortfolioLightbox from "../components/portfolio/PortfolioLightbox"
 import { useHomeContent } from "../hooks/useHomeContent"
@@ -459,7 +458,6 @@ export default function Home() {
                 </section>
             </div>
 
-            <PhotographyIntro language={isBg ? "bg" : "en"} collapsible />
 
             {selectedSlideshowItem ? (
                 <PortfolioLightbox
