@@ -689,9 +689,6 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="mb-5 space-y-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900" role="region" aria-label="Управление на албуми">
-                    <p className="text-sm text-gray-600 dark:text-zinc-300">
-                        „Изтегли всички“ включва албумите от активните категории. Структура: Archive(дата) / Категория / Албум / Снимки.
-                    </p>
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
                             Търсене
