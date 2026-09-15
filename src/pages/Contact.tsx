@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react"
 import { Mail, MapPin, Phone } from "lucide-react"
 import Seo from "../components/Seo"
+import { businessSchema } from "../seo/photography"
 import { apiFetch } from "../services/api"
 
 type ContactFormState = {
@@ -38,9 +39,10 @@ export default function Contact() {
     const contactJsonLd = {
         "@context": "https://schema.org",
         "@type": "ContactPage",
-        name: "Contact",
+        name: "Контакти — фотограф в Русе",
         url: "https://dgvisionstudio.com/contact",
         mainEntity: {
+            ...businessSchema("bg"),
             "@type": "LocalBusiness",
             name: "DG Vision Studio",
             email: "dgvisionstudio@gmail.com",
@@ -128,11 +130,11 @@ export default function Contact() {
 
     return (
         <>
-            <Seo title="Контакти" description="DG Vision Studio контакти." canonical="/contact" image="/og-cover.jpg" type="website" jsonLd={contactJsonLd} />
+            <Seo language="bg" title="Контакти — фотограф в Русе" description="Свържете се с DG Vision Studio за фотосесия или заснемане на събитие в Русе. Търговски комплекс Ялта. Телефон: +359 988 758 434." canonical="/contact" image="/images/og-cover.jpg" type="website" jsonLd={contactJsonLd} />
             <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 xl:px-12 2xl:px-16 dark:bg-zinc-900">
                 <section className="mb-6 rounded-[24px] border border-slate-200 bg-white px-5 py-8 text-center shadow-[0_12px_35px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-800 sm:mb-8 sm:rounded-[28px] sm:px-8 sm:py-10 lg:mb-10 lg:rounded-[32px] lg:px-10 lg:py-12 xl:px-12">
                     <h1 className="mb-4 text-[32px] font-bold tracking-tight text-slate-900 dark:text-white sm:text-[42px] lg:text-[52px]">DG Vision Studio</h1>
-                    <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">Фотография и видеография. Свържете се с нас за запитвания и резервации.</p>
+                    <p className="mx-auto max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8 lg:text-[18px]">Фотография и видеография в Русе. Свържете се с нас за фотосесии, сватби, кръщенета, балове и събития.</p>
                 </section>
 
                 <section className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3 lg:items-stretch lg:gap-8">
@@ -281,3 +283,4 @@ export default function Contact() {
         </>
     )
 }
+

@@ -66,8 +66,8 @@ export default function PriceList() {
 
     const t = isBg
         ? {
-              seoTitle: "Ценоразпис | DG Vision Studio",
-              seoDescription: "Цени за фотографски услуги от DG Vision Studio.",
+              seoTitle: "Цени за фотографски услуги в Русе",
+              seoDescription: "Цени за фотосесии и фотографски услуги в Русе от DG Vision Studio. Разгледайте ценоразписа и изпратете запитване за своята дата и проект.",
               eyebrow: "УСЛУГИ И ЦЕНИ",
               title: "Ценоразпис",
               includedTitle: "Важно",
@@ -84,8 +84,8 @@ export default function PriceList() {
               addPricing: "Добави цена",
           }
         : {
-              seoTitle: "Price List | DG Vision Studio",
-              seoDescription: "Photography service prices by DG Vision Studio.",
+              seoTitle: "Photography prices in Ruse",
+              seoDescription: "Photoshoot and photography service prices in Ruse by DG Vision Studio. View the price list and enquire about your date and project.",
               eyebrow: "SERVICES & PRICING",
               title: "Price List",
               includedTitle: "Important",
@@ -226,3 +226,4 @@ export default function PriceList() {
         </>
     )
 }
+

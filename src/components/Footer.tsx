@@ -49,7 +49,7 @@ export default function Footer() {
     const t = isBg
         ? {
               description:
-                  "Професионална фотография – портрети, събития и визуално съдържание с характер и стил.",
+                  "Професионална фотография в Русе – портрети, сватби, събития и визуално съдържание с характер и стил.",
               company: "Страници",
               info: "Информация",
               home: "Начало",
@@ -64,7 +64,7 @@ export default function Footer() {
           }
         : {
               description:
-                  "Professional photography – portraits, events, and visual content with character and style.",
+                  "Professional photography in Ruse – portraits, weddings, events, and visual content with character and style.",
               company: "Pages",
               info: "Information",
               home: "Home",
@@ -153,6 +153,8 @@ export default function Footer() {
                                 <Link to="/" className={footerLinkClass}>
                                     {t.home}
                                 </Link>
+                                <Link to="/fotograf-ruse" className={footerLinkClass}>{isBg ? "Фотограф в Русе" : "Photographer in Ruse"}</Link>
+                                <Link to="/pricing" className={footerLinkClass}>{isBg ? "Услуги и цени" : "Services and pricing"}</Link>
                                 <Link to="/about" className={footerLinkClass}>
                                     {t.about}
                                 </Link>
@@ -183,6 +185,7 @@ export default function Footer() {
 
                     <div className="min-w-0 lg:justify-self-end lg:text-right">
                         <div className="flex flex-col gap-3 sm:text-[15px] lg:items-end">
+                            <Link to="/contact" className={contactLinkClass}>{isBg ? "Търговски комплекс Ялта, Русе" : "Yalta Shopping Complex, Ruse"}</Link>
                             <a href="tel:+359988758434" className={contactLinkClass}>
                                 <Phone size={16} className="mt-[2px] shrink-0" />
                                 <span className="whitespace-nowrap">+359 988 758 434</span>
@@ -227,3 +230,4 @@ export default function Footer() {
         </footer>
     )
 }
+

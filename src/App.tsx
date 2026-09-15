@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, Routes, Route, useLocation } from "react-router-dom"
 import ScrollToTop from "./components/ScrollToTop"
@@ -10,6 +10,9 @@ import GlobalPageLoader from "./components/GlobalPageLoader"
 import AdminServiceAddShortcut from "./components/AdminServiceAddShortcut"
 
 import Home from "./pages/Home"
+import Photography from "./pages/Photography"
+import NotFound from "./pages/NotFound"
+import Seo from "./components/Seo"
 import About from "./pages/About"
 import Services from "./pages/Portfolio"
 import Contact from "./pages/Contact"
@@ -34,7 +37,7 @@ import DeleteAccount from "./pages/identity/DeleteAccount"
 import RequireAuth from "./components/RequireAuth"
 import RequireAdmin from "./components/RequireAdmin"
 
-import AdminRoutes from "./pages/admin/AdminRoutes"
+const AdminRoutes = lazy(() => import("./pages/admin/AdminRoutes"))
 
 function AppContent() {
   const { i18n } = useTranslation()
@@ -74,6 +77,7 @@ function AppContent() {
       {isPageLoading ? <GlobalPageLoader /> : null}
 
       <ScrollToTop />
+      {(isAdminPage || location.pathname.startsWith("/identity/")) && <Seo title={isBg ? "Личен достъп" : "Private access"} description="DG Vision Studio" canonical={location.pathname} noindex />}
       <Navbar />
       <MobileProfileShortcut />
       <AdminServiceAddShortcut />
@@ -146,6 +150,9 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Home />} />
+            <Route path="/fotograf-ruse" element={<Photography />} />
+            <Route path="/fotograf-ruse/:serviceSlug" element={<Photography />} />
+            <Route path="*" element={<NotFound />} />
             <Route path="/portfolio" element={<Services />} />
             <Route path="/portfolio/:albumSlug" element={<Services />} />
             <Route path="/pricing" element={<PriceList />} />
@@ -203,7 +210,7 @@ function AppContent() {
               path="/admin/*"
               element={
                 <RequireAdmin>
-                  <AdminRoutes />
+                  <Suspense fallback={<div role="status" className="p-8">{isBg ? "Зареждане…" : "Loading…"}</div>}><AdminRoutes /></Suspense>
                 </RequireAdmin>
               }
             />
@@ -243,3 +250,4 @@ function AppContent() {
 export default function App() {
   return <AppContent />
 }
+

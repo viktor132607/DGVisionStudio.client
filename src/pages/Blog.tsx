@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { getPosts } from "../services/blogService"
+import Seo from "../components/Seo"
 
 type BlogPost = {
     id: number
@@ -18,9 +19,9 @@ export default function Blog() {
 
         getPosts().then((data) => {
             if (isMounted) {
-                setPosts(data)
+                setPosts(data.filter((post) => post.isPublished))
             }
-        })
+        }).catch(() => { if (isMounted) setPosts([]) })
 
         return () => {
             isMounted = false
@@ -29,6 +30,7 @@ export default function Blog() {
 
     return (
         <div className="min-h-screen bg-gray-100 py-10 px-4">
+            <Seo language="bg" title="Блог за фотография — Русе" description="Публикации за фотография, фотосесии и визуално съдържание от DG Vision Studio в Русе." canonical="/blog" />
             <div className="max-w-5xl mx-auto">
                 <h1 className="text-3xl font-bold mb-8">Blog</h1>
 

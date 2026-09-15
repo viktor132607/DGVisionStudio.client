@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 import Seo from "../components/Seo"
+import { PhotographyIntro } from "../components/PhotographyContent"
+import { businessSchema, homeMetadata } from "../seo/photography"
 import PortfolioLightbox from "../components/portfolio/PortfolioLightbox"
 import { useHomeContent } from "../hooks/useHomeContent"
 import { useHomePortfolioSlideshow } from "../hooks/useHomePortfolioSlideshow"
@@ -145,23 +147,7 @@ export default function Home() {
         })
     }
 
-    const homeJsonLd = {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        name: "DG Vision Studio",
-        url: "https://dgvisionstudio.com",
-        image: "https://dgvisionstudio.com/og-cover.jpg",
-        email: "dgvisionstudio@gmail.com",
-        telephone: "+359988758434",
-        address: {
-            "@type": "PostalAddress",
-            addressLocality: "Ruse",
-            addressCountry: "BG",
-        },
-        description: isBg
-            ? "DG Vision Studio предлага фотография и визуално съдържание за брандове, продукти, кампании, портрети и събития."
-            : "DG Vision Studio offers photography and visual content for brands, products, campaigns, portraits, and events.",
-    }
+    const homeJsonLd = { "@context": "https://schema.org", ...businessSchema(isBg ? "bg" : "en") }
 
     const slideshowEyebrow = showingIntroVideo
         ? "DG Vision Studio"
@@ -182,14 +168,14 @@ export default function Home() {
     return (
         <>
             <Seo
-                title={isBg ? "Начало" : "Home"}
+                title={homeMetadata[isBg ? "bg" : "en"].title}
                 description={
                     isBg
-                        ? "DG Vision Studio предлага фотография и визуално съдържание за брандове, продукти, кампании, портрети, сватби и лични фотосесии."
-                        : "DG Vision Studio offers photography and visual content for brands, products, campaigns, portraits, weddings, and personal photoshoots."
+                        ? "DG Vision Studio — фотограф в Русе за сватби, балове, кръщенета, портретни, семейни и продуктови фотосесии. Портфолио, цени и запитвания."
+                        : "DG Vision Studio — photographer in Ruse for weddings, proms, baptisms, portraits, family and product photoshoots. View our portfolio, pricing and contact details."
                 }
                 canonical="/"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={homeJsonLd}
             />
@@ -206,8 +192,8 @@ export default function Home() {
 
                             <h1 className="home-hero-title text-neutral-950 dark:text-white">
                                 {isBg
-                                    ? "Фотография и визуално съдържание"
-                                    : "Photography and visual content"}
+                                    ? "Фотограф в Русе — кадри с характер"
+                                    : "Photographer in Ruse — images with character"}
                             </h1>
 
                             {recentAlbums.length > 0 ? (
@@ -237,8 +223,8 @@ export default function Home() {
 
                             <p className="home-hero-description text-neutral-600 dark:text-zinc-300">
                                 {isBg
-                                    ? "Създаваме модерно визуално съдържание за брандове, продукти, кампании и лични фотосесии. Подходът ни е изчистен, силно визуален и насочен към кадри, които остават."
-                                    : "We create modern visual content for brands, products, campaigns, and personal photoshoots. Our approach is clean, visually strong, and focused on images that stay with people."}
+                                    ? "Създаваме фотография в Русе за сватби, събития, портрети, брандове и лични фотосесии. Подходът ни е изчистен, силно визуален и насочен към кадри, които остават."
+                                    : "We create photography in Ruse for weddings, events, portraits, brands and personal photoshoots. Our approach is clean, visually strong, and focused on images that stay with people."}
                             </p>
                         </div>
 
@@ -447,6 +433,8 @@ export default function Home() {
                                     <div className="relative aspect-[4/5] overflow-hidden">
                                         <img
                                             src={card.image}
+                                            loading="lazy"
+                                            decoding="async"
                                             alt={isBg ? card.titleBg : card.titleEn}
                                             className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.04]"
                                         />
@@ -471,6 +459,8 @@ export default function Home() {
                 </section>
             </div>
 
+            <PhotographyIntro language={isBg ? "bg" : "en"} />
+
             {selectedSlideshowItem ? (
                 <PortfolioLightbox
                     isBg={isBg}
@@ -486,3 +476,4 @@ export default function Home() {
         </>
     )
 }
+

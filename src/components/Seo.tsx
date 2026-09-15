@@ -1,5 +1,7 @@
 import { Helmet } from "react-helmet-async"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { SITE_NAME, SITE_URL, DEFAULT_IMAGE } from "../seo/photography"
 
 type SeoProps = {
   title: string
@@ -9,12 +11,10 @@ type SeoProps = {
   type?: "website" | "article"
   noindex?: boolean
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>
+  language?: "bg" | "en"
   children?: ReactNode
 }
 
-const SITE_NAME = "DG Vision Studio"
-const SITE_URL = "https://dgvisionstudio.com"
-const DEFAULT_IMAGE = "/og-cover.jpg"
 
 function toAbsoluteUrl(value?: string) {
   if (!value) return undefined
@@ -31,22 +31,25 @@ export default function Seo({
   noindex = false,
   jsonLd,
   children,
+  language,
 }: SeoProps) {
+  const { i18n } = useTranslation()
+  const lang = language ?? (i18n.language?.startsWith("en") ? "en" : "bg")
   const canonicalUrl = toAbsoluteUrl(canonical) ?? SITE_URL
   const imageUrl = toAbsoluteUrl(image) ?? toAbsoluteUrl(DEFAULT_IMAGE)
-  const fullTitle = `${title} | ${SITE_NAME}`
+  const fullTitle = title.endsWith(` | ${SITE_NAME}`) ? title : `${title} | ${SITE_NAME}`
 
   return (
-    <Helmet>
+    <Helmet htmlAttributes={{ lang }}>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
 
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
-      {!noindex && <meta name="robots" content="index, follow" />}
+      {noindex && <meta name="robots" content="noindex, follow" />}
+      {!noindex && <meta name="robots" content="index, follow, max-image-preview:large" />}
 
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content="bg_BG" />
+      <meta property="og:locale" content={lang === "bg" ? "bg_BG" : "en_GB"} />
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
@@ -60,7 +63,7 @@ export default function Seo({
 
       {jsonLd && (
         <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
+          {JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
         </script>
       )}
 

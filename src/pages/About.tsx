@@ -46,8 +46,8 @@ export default function About() {
     return isBg ? (
         <>
             <Seo
-                title="За нас"
-                description="Научете повече за DG Vision Studio – модerno визуално съдържание, портретна фотография, бранд визии и професионален творчески подход."
+                title="За нас — фотографско студио в Русе"
+                description="DG Vision Studio в Русе — запознайте се с екипа и нашия подход към портретната фотография, събитията и визуалното съдържание за брандове."
                 canonical="/about"
                 image="/images/JS.jpg"
                 type="website"
@@ -175,7 +175,7 @@ export default function About() {
     ) : (
         <>
             <Seo
-                title="About Us"
+                title="About our photography studio in Ruse"
                 description="Learn more about DG Vision Studio – modern visual content, portrait photography, brand visuals and a professional creative approach."
                 canonical="/about"
                 image="/images/JS.jpg"

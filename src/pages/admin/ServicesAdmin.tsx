@@ -402,7 +402,7 @@ export default function ServicesAdmin() {
                         <div className="flex flex-col gap-3">
                             {sortedServices.map((service, index) => (
                                 <div key={service.id} className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-black/30 md:grid-cols-[96px_minmax(0,1fr)_auto]">
-                                    <img src={resolveServiceAssetUrl(service.coverImageUrl || "/og-cover.jpg")} alt={service.title} className="aspect-[4/5] w-24 rounded-xl object-cover" />
+                                    <img src={resolveServiceAssetUrl(service.coverImageUrl || "/images/og-cover.jpg")} alt={service.title} className="aspect-[4/5] w-24 rounded-xl object-cover" />
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
@@ -432,3 +432,4 @@ export default function ServicesAdmin() {
         </div>
     )
 }
+

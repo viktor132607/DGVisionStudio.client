@@ -8,7 +8,7 @@ const API_STATIC_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, 
 function resolveStaticAssetUrl(value?: string | null) {
     const path = (value || "").trim()
 
-    if (!path) return "/og-cover.jpg"
+    if (!path || path === "/images/og-cover.jpg") return "/images/og-cover.jpg"
     if (/^(https?:|data:|blob:)/i.test(path)) return path
     if (path.startsWith("/images/") || path.startsWith("/uploads/")) {
         return API_STATIC_BASE_URL ? `${API_STATIC_BASE_URL}${path}` : path
@@ -118,7 +118,7 @@ function fallbackTranslation(key: string, name?: string) {
         titleEn: formatted,
         descBg: "",
         descEn: "",
-        fallbackImage: "/og-cover.jpg",
+        fallbackImage: "/images/og-cover.jpg",
     }
 }
 
@@ -222,7 +222,7 @@ export function useHomeContent() {
                 categoryImages[0]?.thumbnailUrl ||
                 categoryImages[0]?.imageUrl ||
                 translation.fallbackImage ||
-                "/og-cover.jpg"
+                "/images/og-cover.jpg"
             )
 
             return {
@@ -257,7 +257,7 @@ export function useHomeContent() {
             return {
                 id: service.id,
                 href: "/portfolio",
-                image: resolveStaticAssetUrl(service.coverImageUrl || "/og-cover.jpg"),
+                image: resolveStaticAssetUrl(service.coverImageUrl || "/images/og-cover.jpg"),
                 titleBg: title,
                 titleEn: title,
                 descBg: description,

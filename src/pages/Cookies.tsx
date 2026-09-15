@@ -49,7 +49,7 @@ export default function Cookies() {
                 title="Политика за бисквитките"
                 description="Политиката за бисквитките на DG Vision Studio относно localStorage, настройки, банера за бисквитки и външно съдържание като Google Maps."
                 canonical="/cookies"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={cookiesJsonLd}
             />
@@ -158,7 +158,7 @@ export default function Cookies() {
                 title="Cookies Policy"
                 description="The DG Vision Studio cookies policy regarding browser storage, settings, the cookie banner, and external content such as Google Maps."
                 canonical="/cookies"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={cookiesJsonLd}
             />

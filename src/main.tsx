@@ -59,35 +59,18 @@ function openPendingRecentAlbum() {
   if (!pendingAlbum) return
 
   const albumImages = Array.from(
-    document.querySelectorAll<HTMLImageElement>("main button img[alt]"),
+    document.querySelectorAll<HTMLImageElement>('main button img[alt], main a[href^="/portfolio/"] img[alt]'),
   )
 
   const matchingImage =
     albumImages.find((image) => image.alt.trim() === pendingAlbum.title) ??
     albumImages.find((image) => image.src === pendingAlbum.src)
-  const albumButton = matchingImage?.closest<HTMLButtonElement>("button")
+  const albumButton = matchingImage?.closest<HTMLElement>('button, a[href^="/portfolio/"]')
 
   if (!albumButton) return
 
   clearPendingRecentAlbum()
   albumButton.click()
-}
-
-function restoreFullHomeHeroTitle() {
-  const title = document.querySelector<HTMLElement>(".home-hero-title")
-  if (!title) return
-
-  const isBulgarian =
-    document.documentElement.lang.toLowerCase().startsWith("bg") ||
-    title.textContent?.toLowerCase().includes("фотография")
-
-  const fullTitle = isBulgarian
-    ? "Фотография и визуално съдържание с характер и присъствие"
-    : "Photography and visual content with character and presence"
-
-  if (title.textContent?.trim() !== fullTitle) {
-    title.textContent = fullTitle
-  }
 }
 
 document.addEventListener(
@@ -124,7 +107,6 @@ document.addEventListener(
 
 new MutationObserver(() => {
   openPendingRecentAlbum()
-  restoreFullHomeHeroTitle()
 }).observe(document.body, {
   childList: true,
   subtree: true,
@@ -150,3 +132,4 @@ createRoot(document.getElementById("root")!).render(
     </HelmetProvider>
   </StrictMode>,
 )
+

@@ -204,9 +204,9 @@ export default function Portfolio() {
                 mediaType: isVideo ? "Video" : image.mediaType || "Image",
                 contentType: image.contentType,
                 title:
-                    image.name?.trim() ||
                     image.altText?.trim() ||
                     image.caption?.trim() ||
+                    image.name?.trim() ||
                     `${selectedAlbum.title} ${index + 1}`,
             }
         })
@@ -219,8 +219,8 @@ export default function Portfolio() {
 
     const selectedItem = selectedIndex !== null ? selectedAlbumImages[selectedIndex] : null
     const defaultDescription = isBg
-        ? "Разгледайте портфолиото на DG Vision Studio."
-        : "Explore the DG Vision Studio portfolio."
+        ? "Фотографско портфолио на DG Vision Studio в Русе — сватби, портрети, абитуриентски балове, кръщенета и събития. Разгледайте публикуваните албуми."
+        : "Explore the DG Vision Studio photography portfolio in Ruse — weddings, portraits, proms, baptisms and events. Browse our published albums."
     const pageDescription = selectedAlbum?.description?.trim() || defaultDescription
     const canonicalPath = selectedAlbum ? albumPath(selectedAlbum.slug) : "/portfolio"
 
@@ -268,10 +268,10 @@ export default function Portfolio() {
     return (
         <>
             <Seo
-                title={selectedAlbum?.title || (isBg ? "Портфолио" : "Portfolio")}
+                title={selectedAlbum?.title || (isBg ? "Фотографско портфолио — Русе" : "Photography portfolio — Ruse")}
                 description={pageDescription}
                 canonical={canonicalPath}
-                image={selectedAlbumCard?.coverSrc || "/og-cover.jpg"}
+                image={selectedAlbumCard?.coverSrc || "/images/og-cover.jpg"}
                 type="website"
                 jsonLd={portfolioJsonLd}
             />
@@ -356,3 +356,4 @@ export default function Portfolio() {
         </>
     )
 }
+

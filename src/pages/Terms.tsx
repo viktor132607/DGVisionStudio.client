@@ -50,7 +50,7 @@ export default function Terms() {
                 title="Общи условия"
                 description="Общите условия на DG Vision Studio за използване на сайта, запитвания, резервации, съдържание и права."
                 canonical="/terms"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={termsJsonLd}
             />
@@ -208,7 +208,7 @@ export default function Terms() {
                 title="Terms and Conditions"
                 description="The DG Vision Studio terms and conditions for website use, enquiries, bookings, content, and rights."
                 canonical="/terms"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={termsJsonLd}
             />

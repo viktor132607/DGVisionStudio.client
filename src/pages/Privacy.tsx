@@ -50,7 +50,7 @@ export default function Privacy() {
                 title="Политика за поверителност"
                 description="Политиката за поверителност на DG Vision Studio относно обработването на информация, контактни данни, права и сигурност."
                 canonical="/privacy"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={privacyJsonLd}
             />
@@ -232,7 +232,7 @@ export default function Privacy() {
                 title="Privacy Policy"
                 description="The DG Vision Studio privacy policy regarding information handling, contact details, rights, and security."
                 canonical="/privacy"
-                image="/og-cover.jpg"
+                image="/images/og-cover.jpg"
                 type="website"
                 jsonLd={privacyJsonLd}
             />

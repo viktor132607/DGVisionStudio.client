@@ -107,10 +107,14 @@ export default function PortfolioAlbumGrid({
         <div className="w-full bg-neutral-300 px-1 py-[1px] dark:bg-zinc-800 sm:px-[5mm]">
             <div className="grid grid-cols-2 gap-[1px] sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {items.map((item, index) => (
-                    <button
+                    <a
                         key={item.id}
-                        type="button"
-                        onClick={() => onSelect(item.id)}
+                        href={`/portfolio/${encodeURIComponent(item.slug)}`}
+                        onClick={(event) => {
+                            if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+                            event.preventDefault()
+                            onSelect(item.id)
+                        }}
                         className="group relative block aspect-[4/5] w-full overflow-hidden bg-neutral-100 text-left dark:bg-zinc-900"
                     >
                         <AlbumCover item={item} eager={index < 4} />
@@ -130,9 +134,10 @@ export default function PortfolioAlbumGrid({
                                 {item.imageCount} снимки
                             </p>
                         </div>
-                    </button>
+                    </a>
                 ))}
             </div>
         </div>
     )
 }
+
