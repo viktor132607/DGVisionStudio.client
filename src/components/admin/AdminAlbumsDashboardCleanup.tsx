@@ -53,10 +53,7 @@ function hideAlbumDashboardExtras(hiddenElements: HTMLElement[]) {
       text.includes("Неактивни") &&
       text.includes("Изтекли")
 
-    const labels = Array.from(child.querySelectorAll("label")).map((label) => normalizeText(label.textContent))
-    const isFilterPanel = labels.includes("Търсене") && labels.includes("Статус")
-
-    if (isStatsGrid || isFilterPanel) hideElement(child, hiddenElements)
+    if (isStatsGrid) hideElement(child, hiddenElements)
   }
 }
 
@@ -161,3 +158,4 @@ export default function AdminAlbumsDashboardCleanup() {
 
   return null
 }
+

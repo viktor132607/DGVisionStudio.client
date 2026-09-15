@@ -382,7 +382,7 @@
     if (!isAdminDashboard()) return
 
     const section = findAlbumsSection()
-    if (!section) return
+    if (!section || section.dataset.reactAlbumManagement === "true") return
 
     ensureStyles()
     const select = ensureSortControl(section)
@@ -425,3 +425,4 @@
   if (document.body) startObserver()
   else window.addEventListener("DOMContentLoaded", startObserver, { once: true })
 })()
+

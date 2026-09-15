@@ -1,9 +1,19 @@
 import { Link } from "react-router-dom"
-import { useEffect, useMemo, useState } from "react"
-import { apiFetch } from "../../services/api"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { apiFetch, apiFetchJson } from "../../services/api"
 import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
 import { useAdminToast } from "../../hooks/useAdminToast"
+
+import { useAlbumArchive } from "../../hooks/useAlbumArchive"
+import { fetchEveryAlbum, toggleVisibleSelection } from "../../utils/albumSelection"
+import type { AlbumPage } from "../../utils/albumSelection"
+import "../../styles/adminAlbumManagement.css"
+
+const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+const selectClass = "h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+const readSort = () => { try { return localStorage.getItem("dgvisionstudio.admin.albumSort") || "activity_desc" } catch { return "activity_desc" } }
+const readActivity = (): Record<string, number> => { try { return JSON.parse(localStorage.getItem("dgvisionstudio.admin.albumActivity") || "{}") } catch { return {} } }
 
 type DashboardStats = {
     users: number
@@ -40,6 +50,8 @@ type PortfolioAlbumRow = {
     displayOrder: number
     columnNumber?: number | null
     isPublished: boolean
+    createdAtUtc?: string
+    updatedAtUtc?: string
     allowClientAccess?: boolean
     portfolioCategory?: PortfolioCategoryRow | null
 }
@@ -107,6 +119,17 @@ export default function AdminPanel() {
     const [albumSearch, setAlbumSearch] = useState("")
     const [albumStatusFilter, setAlbumStatusFilter] = useState("all")
     const [deleteAlbumId, setDeleteAlbumId] = useState<number | null>(null)
+    const [selectedAlbumIds, setSelectedAlbumIds] = useState<Set<number>>(() => new Set())
+    const [albumCategoryFilter, setAlbumCategoryFilter] = useState("all")
+    const [albumSort, setAlbumSort] = useState(readSort)
+    const [targetCategoryId, setTargetCategoryId] = useState("")
+    const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
+    const [bulkBusy, setBulkBusy] = useState(false)
+    const [bulkError, setBulkError] = useState("")
+    const bulkLock = useRef(false)
+    const archive = useAlbumArchive()
+    const albumManagementBusy = bulkBusy || archive.busy || busyAlbumId !== null || albumsLoading
+
 
     const [categories, setCategories] = useState<PortfolioCategoryRow[]>([])
     const [categoriesLoading, setCategoriesLoading] = useState(true)
@@ -164,17 +187,9 @@ export default function AdminPanel() {
         setAlbumsError("")
 
         try {
-            const response = await apiFetch("/admin/portfolio/albums?page=1&pageSize=500", {
-                method: "GET",
-                skipJsonContentType: true,
-            })
-
-            if (!response.ok) {
-                throw new Error("Грешка при зареждане на албумите.")
-            }
-
-            const data = await response.json().catch(() => null)
-            const items = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : []
+            const items = await fetchEveryAlbum<PortfolioAlbumRow>((page) =>
+                apiFetchJson<AlbumPage<PortfolioAlbumRow>>(`/admin/portfolio/albums?page=${page}&pageSize=100`))
+            setSelectedAlbumIds(current => new Set([...current].filter(id => items.some(album => album.id === id))))
 
             setAlbums(
                 [...items].sort(
@@ -188,6 +203,7 @@ export default function AdminPanel() {
             const message = err instanceof Error ? err.message : "Грешка при зареждане на албумите."
             setAlbumsError(message)
             setAlbums([])
+            setSelectedAlbumIds(new Set())
 
             showToast({
                 type: "error",
@@ -261,6 +277,7 @@ export default function AdminPanel() {
             }
 
             setAlbums((current) => current.filter((x) => x.id !== deleteAlbumId))
+            setSelectedAlbumIds(current => { const next = new Set(current); next.delete(deleteAlbumId); return next })
             setDeleteAlbumId(null)
             await loadStats()
 
@@ -436,22 +453,57 @@ export default function AdminPanel() {
     }
 
     const filteredAlbums = useMemo(() => {
-        const normalizedSearch = albumSearch.trim().toLowerCase()
-
+        const normalizedSearch = albumSearch.trim().toLocaleLowerCase("bg")
+        const activity = readActivity()
+        const created = (album: PortfolioAlbumRow) => Date.parse(album.createdAtUtc || "") || album.id
+        const latest = (album: PortfolioAlbumRow) => Math.max(Number(activity?.[album.id]) || 0, Date.parse(album.updatedAtUtc || "") || 0, created(album))
+        const compareText = (a: string, b: string) => a.localeCompare(b, "bg", { sensitivity: "base" })
         return albums.filter((album) => {
-            const status = getAlbumStatus(album)
-
-            const matchesStatus = albumStatusFilter === "all" ? true : status === albumStatusFilter
-            const matchesSearch =
-                !normalizedSearch ||
-                album.title.toLowerCase().includes(normalizedSearch) ||
-                album.slug.toLowerCase().includes(normalizedSearch) ||
-                album.description?.toLowerCase().includes(normalizedSearch) ||
-                getAlbumCategoryName(album).toLowerCase().includes(normalizedSearch)
-
-            return matchesStatus && matchesSearch
+            const matchesStatus = albumStatusFilter === "all" || getAlbumStatus(album) === albumStatusFilter
+            const matchesCategory = albumCategoryFilter === "all" || album.portfolioCategoryId === Number(albumCategoryFilter)
+            const text = [album.title, album.slug, album.description, getAlbumCategoryName(album)].join(" ").toLocaleLowerCase("bg")
+            return matchesStatus && matchesCategory && (!normalizedSearch || text.includes(normalizedSearch))
+        }).sort((a, b) => {
+            switch (albumSort) {
+                case "created_desc": return created(b) - created(a) || b.id - a.id
+                case "created_asc": return created(a) - created(b) || a.id - b.id
+                case "title_asc": return compareText(a.title, b.title) || a.id - b.id
+                case "title_desc": return compareText(b.title, a.title) || a.id - b.id
+                case "category_asc": return compareText(getAlbumCategoryName(a), getAlbumCategoryName(b)) || compareText(a.title, b.title)
+                case "active_first": return Number(b.isPublished) - Number(a.isPublished) || latest(b) - latest(a)
+                case "manual": return a.portfolioCategoryId - b.portfolioCategoryId || a.displayOrder - b.displayOrder || a.id - b.id
+                default: return latest(b) - latest(a) || b.id - a.id
+            }
         })
-    }, [albums, categories, albumSearch, albumStatusFilter])
+    }, [albums, categories, albumSearch, albumStatusFilter, albumCategoryFilter, albumSort])
+
+    const visibleIds = filteredAlbums.map(album => album.id)
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedAlbumIds.has(id))
+    const selectedVisibleCount = visibleIds.filter(id => selectedAlbumIds.has(id)).length
+    const activeCategories = categories.filter(category => category.isActive)
+    const runBulkAction = async (ids: number[], categoryId?: number) => {
+        if (bulkLock.current || ids.length === 0) return
+        bulkLock.current = true
+        setBulkBusy(true)
+        setBulkError("")
+        try {
+            const result = await apiFetchJson<{ count: number }>(`/admin/portfolio/albums/${categoryId === undefined ? "bulk-delete" : "bulk-move"}`, {
+                method: "POST",
+                body: JSON.stringify({ albumIds: ids, categoryId }),
+            })
+            setBulkDeleteIds(null)
+            if (categoryId === undefined) setSelectedAlbumIds(current => new Set([...current].filter(id => !ids.includes(id))))
+            await Promise.all([loadAlbums(), loadStats()])
+            showToast({ type: "success", title: "Готово", message: categoryId === undefined
+                ? `Изтрити албуми: ${result.count}.`
+                : `Преместени албуми: ${result.count} в „${categories.find(c => c.id === categoryId)?.name}“.` })
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Операцията беше неуспешна."
+            setBulkError(message)
+            setBulkDeleteIds(null)
+            showToast({ type: "error", title: "Грешка", message })
+        } finally { bulkLock.current = false; setBulkBusy(false) }
+    }
 
     const albumStats = useMemo(() => {
         const active = albums.filter((x) => getAlbumStatus(x) === "active").length
@@ -567,7 +619,7 @@ export default function AdminPanel() {
                 ))}
             </div>
 
-            <section id="albums" className="mb-10 scroll-mt-24">
+            <section id="albums" data-react-album-management="true" className="mb-10 scroll-mt-24">
                 <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
@@ -575,10 +627,15 @@ export default function AdminPanel() {
                         </h2>
                     </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <button type="button" className={actionClass} disabled={albumManagementBusy || categoriesLoading}
+                            onClick={() => void archive.start(null)}>
+                            Изтегли всички
+                        </button>
                         <button
                             type="button"
                             onClick={() => void loadAlbums()}
+                            disabled={albumManagementBusy}
                             className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
                         >
                             Обнови албумите
@@ -631,35 +688,95 @@ export default function AdminPanel() {
                     </div>
                 </div>
 
-                <div className="mb-6 grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 xl:grid-cols-12">
-                    <div className="xl:col-span-8">
-                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                            Търсене
-                        </label>
-                        <input
-                            type="text"
-                            value={albumSearch}
-                            onChange={(e) => setAlbumSearch(e.target.value)}
-                            placeholder="Търси по заглавие, описание, slug или категория..."
-                            className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:ring-sky-900/40"
-                        />
-                    </div>
-
-                    <div className="xl:col-span-4">
-                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                            Статус
-                        </label>
-                        <select
-                            value={albumStatusFilter}
-                            onChange={(e) => setAlbumStatusFilter(e.target.value)}
-                            className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:ring-sky-900/40"
-                        >
-                            <option value="all">Всички</option>
-                            <option value="active">Активни</option>
-                            <option value="inactive">Неактивни</option>
+                <p className="mb-4 text-sm text-gray-600 dark:text-zinc-300">
+                    „Изтегли всички“ включва албумите от активните категории. Структура: Archive(дата) / Категория / Албум / Снимки.
+                </p>
+                <div className="mb-4 grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:grid-cols-2 xl:grid-cols-4">
+                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                        Търсене
+                        <input type="text" value={albumSearch} onChange={e => setAlbumSearch(e.target.value)}
+                            placeholder="Търси албум..." className={`${selectClass} mt-2`} />
+                    </label>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                        Категория
+                        <select value={albumCategoryFilter} onChange={e => setAlbumCategoryFilter(e.target.value)} className={`${selectClass} mt-2`}>
+                            <option value="all">Всички категории</option>
+                            {categories.map(category => <option key={category.id} value={category.id}>{category.name}{category.isActive ? "" : " (неактивна)"}</option>)}
                         </select>
-                    </div>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                        Статус
+                        <select value={albumStatusFilter} onChange={e => setAlbumStatusFilter(e.target.value)} className={`${selectClass} mt-2`}>
+                            <option value="all">Всички албуми</option><option value="active">Активни</option><option value="inactive">Неактивни</option>
+                        </select>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                        Подреждане
+                        <select value={albumSort} className={`${selectClass} mt-2`} onChange={e => {
+                            setAlbumSort(e.target.value)
+                            try { localStorage.setItem("dgvisionstudio.admin.albumSort", e.target.value) } catch { /* Session-only sorting. */ }
+                        }}>
+                            <option value="activity_desc">Последно добавени / редактирани</option>
+                            <option value="created_desc">Най-ново създадени</option><option value="created_asc">Най-старо създадени</option>
+                            <option value="title_asc">Име: А–Я</option><option value="title_desc">Име: Я–А</option>
+                            <option value="category_asc">Категория</option><option value="active_first">Активни първо</option><option value="manual">Ръчен ред</option>
+                        </select>
+                    </label>
                 </div>
+
+                <div className="mb-5 space-y-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30" aria-label="Групови действия за албуми">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white">
+                            <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={allVisibleSelected}
+                                ref={element => { if (element) element.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected }}
+                                disabled={albumManagementBusy || visibleIds.length === 0}
+                                onChange={() => setSelectedAlbumIds(current => toggleVisibleSelection(current, visibleIds))} />
+                            Маркирай показаните ({visibleIds.length})
+                        </label>
+                        <span className="text-sm text-gray-700 dark:text-zinc-200" role="status">
+                            Маркирани: {selectedAlbumIds.size}{selectedAlbumIds.size > selectedVisibleCount ? ` (${selectedAlbumIds.size - selectedVisibleCount} извън филтъра)` : ""}
+                        </span>
+                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
+                            onClick={() => setSelectedAlbumIds(new Set())}>Изчисти избора</button>
+                    </div>
+                    <div className="flex flex-wrap items-end gap-2">
+                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
+                            onClick={() => void archive.start([...selectedAlbumIds])}>Изтегли маркираните ({selectedAlbumIds.size})</button>
+                        <label className="min-w-0 flex-1 text-sm font-medium text-gray-700 dark:text-zinc-200 sm:min-w-52 sm:max-w-xs">
+                            Премести в категория
+                            <select className={`${selectClass} mt-1`} value={targetCategoryId} disabled={albumManagementBusy || categoriesLoading}
+                                onChange={e => setTargetCategoryId(e.target.value)}>
+                                <option value="">Избери активна категория</option>
+                                {activeCategories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+                            </select>
+                        </label>
+                        <button type="button" className={actionClass} disabled={albumManagementBusy || !selectedAlbumIds.size || !targetCategoryId}
+                            onClick={() => void runBulkAction([...selectedAlbumIds], Number(targetCategoryId))}>Премести маркираните</button>
+                        <button type="button" className={`${actionClass} !border-red-300 !text-red-600 dark:!text-red-300`}
+                            disabled={albumManagementBusy || !selectedAlbumIds.size}
+                            onClick={() => setBulkDeleteIds([...selectedAlbumIds])}>Изтрий маркираните</button>
+                    </div>
+                    {bulkBusy && <p role="status" className="text-sm dark:text-white">Запазване на промените...</p>}
+                    {bulkError && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{bulkError}</p>}
+                </div>
+
+                {(archive.busy || archive.job || archive.error) && (
+                    <div className="mb-5 space-y-3 rounded-2xl border border-gray-200 p-4 dark:border-zinc-700 dark:text-white">
+                        <p role="status" className="text-sm font-semibold">
+                            {archive.busy ? archive.job?.status === "verifying" ? "Проверка на готовия архив..."
+                                : archive.job?.status === "writing" ? `Добавени снимки: ${archive.job.completedFiles} / ${archive.job.totalFiles}`
+                                : "Подготовка на архива..." : archive.downloadUrl ? "Архивът е готов. Изтеглянето е стартирано." : "Подготовката е прекъсната."}
+                        </p>
+                        {archive.busy && archive.job && archive.job.totalFiles > 0 &&
+                            <progress className="w-full accent-sky-600" aria-label="Подготовка на архив" max={archive.job.totalFiles} value={archive.job.completedFiles} />}
+                        {archive.error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{archive.error}</p>}
+                        {archive.downloadUrl && <p className="text-sm">Ако изтеглянето не започне, <a href={archive.downloadUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-700 underline dark:text-sky-300">изтегли {archive.job?.fileName}</a>. Линкът е валиден 1 час.</p>}
+                        {!archive.busy && <div className="flex flex-wrap gap-2">
+                            {archive.error && <button type="button" className={actionClass} onClick={() => void archive.resume()}>Провери отново</button>}
+                            <button type="button" className={actionClass} onClick={() => void archive.close()}>Затвори</button>
+                        </div>}
+                    </div>
+                )}
 
                 {albumsError ? (
                     <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
@@ -688,9 +805,21 @@ export default function AdminPanel() {
                             return (
                                 <div
                                     key={album.id}
-                                    className="overflow-hidden rounded-none border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+                                    data-album-id={album.id}
+                                    data-selected={selectedAlbumIds.has(album.id)}
+                                    className="album-management-card overflow-hidden rounded-none border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
                                 >
                                     <div className="relative aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-zinc-800">
+                                        <label className="absolute bottom-2 left-2 z-10 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-white/95 px-3 text-xs font-semibold text-gray-900 shadow">
+                                            <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={selectedAlbumIds.has(album.id)}
+                                                aria-label={`Маркирай албум „${album.title}“`} disabled={albumManagementBusy}
+                                                onChange={() => setSelectedAlbumIds(current => {
+                                                    const next = new Set(current)
+                                                    if (next.has(album.id)) next.delete(album.id); else next.add(album.id)
+                                                    return next
+                                                })} />
+                                            Маркирай
+                                        </label>
                                         {album.coverImageUrl ? (
                                             <img
                                                 src={resolveAssetUrl(album.coverImageUrl)}
@@ -755,7 +884,11 @@ export default function AdminPanel() {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                                        <button type="button" className={`${actionClass} mb-3 w-full`} disabled={albumManagementBusy}
+                                            aria-label={`Изтегли архив на албум „${album.title}“`} onClick={() => void archive.start([album.id])}>
+                                            Изтегли архив
+                                        </button>
+                                        <div className="album-card-actions flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                                             <Link
                                                 to={`/admin/client-galleries/edit?id=${album.id}`}
                                                 className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
@@ -773,7 +906,7 @@ export default function AdminPanel() {
                                             <button
                                                 type="button"
                                                 onClick={() => setDeleteAlbumId(album.id)}
-                                                disabled={busyAlbumId === album.id}
+                                                disabled={albumManagementBusy}
                                                 className="inline-flex h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/40 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10"
                                             >
                                                 {busyAlbumId === album.id ? "Зареждане..." : "Изтрий"}
@@ -946,6 +1079,16 @@ export default function AdminPanel() {
             </section>
 
             <ConfirmDialog
+                open={bulkDeleteIds !== null}
+                title={`Изтриване на ${bulkDeleteIds?.length || 0} албума`}
+                description={`Ще бъдат изтрити маркираните албуми и снимките в тях, включително избраните извън текущия филтър: ${albums.filter(a => bulkDeleteIds?.includes(a.id)).slice(0, 3).map(a => a.title).join(", ")}${(bulkDeleteIds?.length || 0) > 3 ? "…" : ""}. Потвърждаваш ли?`}
+                confirmText={`Изтрий ${bulkDeleteIds?.length || 0} албума`}
+                busy={bulkBusy}
+                onConfirm={() => { if (bulkDeleteIds) void runBulkAction(bulkDeleteIds) }}
+                onCancel={() => { if (!bulkBusy) setBulkDeleteIds(null) }}
+            />
+
+            <ConfirmDialog
                 open={deleteCategoryId !== null}
                 title="Изтриване на категория"
                 description="Сигурен ли си, че искаш да изтриеш тази категория?"
@@ -979,3 +1122,4 @@ export default function AdminPanel() {
         </div>
     )
 }
+

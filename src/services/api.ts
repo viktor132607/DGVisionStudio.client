@@ -1,5 +1,7 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://api.dgvisionstudio.com").replace(/\/+$/, "")
 
+export const apiUrl = (path: string) => `${API_BASE_URL}/api${path.startsWith("/") ? path : `/${path}`}`
+
 const CSRF_HEADER_NAME = "X-CSRF-TOKEN"
 
 let csrfToken: string | null = null

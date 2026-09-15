@@ -1,0 +1,15 @@
+#albums[data-react-album-management="true"] .album-management-card[data-selected="true"] {
+    border-color: #0284c7;
+    box-shadow: inset 0 0 0 3px #0284c7;
+}
+
+/* Allow the existing platform action icons to wrap on narrow album cards. */
+html #albums[data-react-album-management="true"] .album-card-actions {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+}
+
+#albums[data-react-album-management="true"] button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
