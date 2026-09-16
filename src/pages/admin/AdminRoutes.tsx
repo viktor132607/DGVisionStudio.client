@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom"
 
+import DatabaseBackupAdmin from "./DatabaseBackupAdmin"
 import AdminLayout from "./AdminLayout"
 import AdminPanel from "./AdminPanel"
 import UsersAdmin from "./usersPanel/UsersAdmin"
@@ -31,6 +32,7 @@ export default function AdminRoutes() {
             <Routes>
                 <Route element={<AdminLayout />}>
                     <Route index element={<AdminPanel />} />
+                    <Route path="database-backup" element={<DatabaseBackupAdmin />} />
                     <Route path="users" element={<UsersAdmin />} />
                     <Route path="users/:id/albums" element={<UserAlbumsAdmin />} />
                     <Route path="contact-requests" element={<ContactRequestsAdmin />} />
