@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next"
 import { useEffect, useRef, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 
+import { usePhotographyPages, pageCopy } from "../hooks/usePhotographyPages"
+import { hubPath, servicePath } from "../seo/photography"
+
 const THEME_KEY = "theme"
 
 export default function Navbar() {
@@ -71,40 +74,26 @@ export default function Navbar() {
         closeMobileMenu()
     }
 
-    const serviceItems = isBg
-        ? [
-              { to: "/portfolio#portrait", label: "Портретна фотография" },
-              { to: "/portfolio#product", label: "Продуктова фотография" },
-              { to: "/portfolio#commercial", label: "Рекламна фотография" },
-              { to: "/portfolio#corporate", label: "Корпоративна фотография" },
-              { to: "/portfolio#graduate", label: "Абитуриентска фотография" },
-              { to: "/portfolio#baptism", label: "Кръщене" },
-              { to: "/portfolio#wedding", label: "Сватбена фотография" },
-              { to: "/portfolio#family", label: "Семейна фотография" },
-              { to: "/portfolio#event", label: "Заснемане на събития" },
-          ]
-        : [
-              { to: "/portfolio#portrait", label: "Portrait Photography" },
-              { to: "/portfolio#product", label: "Product Photography" },
-              { to: "/portfolio#commercial", label: "Commercial Photography" },
-              { to: "/portfolio#corporate", label: "Corporate Photography" },
-              { to: "/portfolio#graduate", label: "Graduation Photography" },
-              { to: "/portfolio#baptism", label: "Baptism" },
-              { to: "/portfolio#wedding", label: "Wedding Photography" },
-              { to: "/portfolio#family", label: "Family Photography" },
-              { to: "/portfolio#event", label: "Event Photography" },
-          ]
+    const { pages } = usePhotographyPages()
+    const serviceItems = [
+        { to: hubPath, label: isBg ? "Всички услуги" : "All services" },
+        ...pages.filter(page => page.slug && page.isActive).map(page => ({
+            to: servicePath(page), label: pageCopy(page, isBg ? "bg" : "en").title,
+        })),
+    ]
 
     const items = isBg
         ? [
-              { to: "/", label: "Услуги", hasDropdown: true },
+              { to: "/", label: "Начало" },
+              { to: hubPath, label: "Услуги", hasDropdown: true },
               { to: "/portfolio", label: "Портфолио" },
               { to: "/pricing", label: "Ценоразпис" },
               { to: "/about", label: "За нас" },
               { to: "/contact", label: "Контакти" },
           ]
         : [
-              { to: "/", label: "Services", hasDropdown: true },
+              { to: "/", label: "Home" },
+              { to: hubPath, label: "Services", hasDropdown: true },
               { to: "/portfolio", label: "Portfolio" },
               { to: "/pricing", label: "Pricing" },
               { to: "/about", label: "About Us" },
@@ -112,7 +101,7 @@ export default function Navbar() {
           ]
 
     const isActive = (to: string, hasDropdown?: boolean) => {
-        if (hasDropdown) return location.pathname === "/"
+        if (hasDropdown) return location.pathname === hubPath || location.pathname.startsWith(`${hubPath}/`)
         if (to === "/portfolio") return location.pathname === "/portfolio"
         if (to === "/pricing") return location.pathname === "/pricing"
         return location.pathname === to
@@ -181,8 +170,11 @@ export default function Navbar() {
                                     className="relative"
                                     onMouseEnter={() => setServicesOpen(true)}
                                     onMouseLeave={() => setServicesOpen(false)}
+                                    onFocus={() => setServicesOpen(true)}
+                                    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setServicesOpen(false) }}
+                                    onKeyDown={event => { if (event.key === "Escape") setServicesOpen(false) }}
                                 >
-                                    <Link to="/" className={desktopNavLinkClass("/", true)}>
+                                    <Link to={item.to} className={desktopNavLinkClass(item.to, true)}>
                                         {item.label}
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-1.5 h-4 w-4">
                                             <path d="m6 9 6 6 6-6" />
@@ -192,7 +184,7 @@ export default function Navbar() {
                                     <div className="absolute left-0 top-full h-8 w-full" />
 
                                     <div
-                                        className={`absolute left-1/2 top-full z-50 mt-6 w-[340px] -translate-x-1/2 rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.14)] transition-all duration-200 dark:border-white/10 dark:bg-zinc-950 dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] ${
+                                        className={`absolute left-1/2 top-full z-50 mt-6 max-h-[70vh] overflow-y-auto w-[340px] -translate-x-1/2 rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.14)] transition-all duration-200 dark:border-white/10 dark:bg-zinc-950 dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)] ${
                                             servicesOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0"
                                         }`}
                                     >

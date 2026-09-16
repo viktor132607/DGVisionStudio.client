@@ -1,9 +1,8 @@
-import { homeMetadata, hubPath, photographyServices, servicePath } from "./photography"
+import { homeMetadata, hubPath } from "./photography"
 
 export const staticPages = [
   { path: "/", ...homeMetadata.bg },
   { path: hubPath, title: "Фотографски услуги в Русе", description: "Фотографски услуги от DG Vision Studio в Русе. Изберете сватбена, портретна, семейна, продуктова или събитийна фотография и разгледайте нашия подход." },
-  ...photographyServices.map((service) => ({ path: servicePath(service), title: service.bg.title, description: service.bg.description })),
   { path: "/portfolio", title: "Фотографско портфолио — Русе", description: "Фотографско портфолио на DG Vision Studio в Русе — сватби, портрети, абитуриентски балове, кръщенета и събития. Разгледайте публикуваните албуми." },
   { path: "/pricing", title: "Цени за фотографски услуги в Русе", description: "Цени за фотосесии и фотографски услуги в Русе от DG Vision Studio. Разгледайте ценоразписа и изпратете запитване за своята дата и проект." },
   { path: "/about", title: "За нас — фотографско студио в Русе", description: "DG Vision Studio в Русе — запознайте се с екипа и нашия подход към портретната фотография, събитията и визуалното съдържание за брандове." },

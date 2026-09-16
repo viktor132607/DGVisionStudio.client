@@ -34,20 +34,12 @@ test("every HTML page has one canonical, title, description and robots directive
   }
 })
 
-test("photography content and crawlable service links exist without JavaScript", () => {
-  const photographyUrls = urls.filter((url) => new URL(url).pathname.startsWith("/fotograf-ruse"))
-  assert.equal(photographyUrls.length, 10)
-  const home = htmlFor("https://dgvisionstudio.com/")
-  assert(home.includes('<div id="root"></div>'), "Homepage must not inject the removed photography block")
-  for (const url of photographyUrls) {
-    const html = htmlFor(url)
-    assert.equal([...html.matchAll(/<h1\b/g)].length, 1, url)
-    assert(html.includes("Русе") && html.includes("Търговски комплекс Ялта"), url)
-    assert(html.includes('href="/contact"') && html.includes('href="/pricing"'), url)
-    for (const serviceUrl of photographyUrls.filter((value) => value !== "https://dgvisionstudio.com/fotograf-ruse")) {
-      assert(html.includes(`href="${new URL(serviceUrl).pathname}"`), `${url} missing ${serviceUrl}`)
-    }
+test("service content is dynamic and the removed homepage block stays absent", () => {
+  assert.equal(urls.filter(url => new URL(url).pathname.startsWith("/fotograf-ruse/")).length, 0)
+  for (const path of ["/", "/fotograf-ruse"]) {
+    assert(htmlFor(`https://dgvisionstudio.com${path}`).includes('<div id="root"></div>'))
   }
+  assert(readFileSync("dist/robots.txt", "utf8").includes("https://api.dgvisionstudio.com/api/photography-pages/sitemap.xml"))
 })
 
 test("structured data parses and service pages identify the local provider", () => {

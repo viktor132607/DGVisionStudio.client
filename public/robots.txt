@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://dgvisionstudio.com/sitemap.xml
+Sitemap: https://api.dgvisionstudio.com/api/photography-pages/sitemap.xml
