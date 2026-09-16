@@ -191,13 +191,13 @@ export default function Home() {
 
                             <h1 className="home-hero-title text-neutral-950 dark:text-white">
                                 {isBg
-                                    ? "Фотограф в Русе — кадри с характер"
-                                    : "Photographer in Ruse — images with character"}
+                                    ? "Фотография и визуално съдържание"
+                                    : "Photography and visual content"}
                             </h1>
 
                             {recentAlbums.length > 0 ? (
                                 <div className="home-recent">
-                                    <div className="home-recent-label text-neutral-500">
+                                    <div className="home-recent-label text-neutral-500 dark:text-white">
                                         Recent photography
                                     </div>
                                     <div className="home-recent-collage">
@@ -474,4 +474,3 @@ export default function Home() {
         </>
     )
 }
-
