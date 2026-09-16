@@ -191,8 +191,8 @@ export default function Home() {
 
                             <h1 className="home-hero-title text-neutral-950 dark:text-white">
                                 {isBg
-                                    ? "Фотография и визуално съдържание"
-                                    : "Photography and visual content"}
+                                    ? "Фотография и визуално съдържание със стил, характер и ясно присъствие"
+                                    : "Photography and visual content with style, character, and clear presence"}
                             </h1>
 
                             {recentAlbums.length > 0 ? (
