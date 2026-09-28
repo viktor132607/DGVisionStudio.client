@@ -6,6 +6,18 @@ const sitemap = readFileSync("dist/sitemap.xml", "utf8")
 const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
 const htmlFor = (url) => readFileSync(`dist${new URL(url).pathname.replace(/\/$/, "")}/index.html`, "utf8")
 
+test("direct login and admin URLs have non-indexable application entry points", () => {
+  for (const path of ["/identity/login", "/identity/register", "/identity/forgot-password", "/identity/reset-password", "/identity/confirm-email", "/identity/profile", "/identity/change-password", "/identity/delete-account", "/identity/access-denied", "/admin", "/admin/users", "/admin/database-backup"]) {
+    const url = `https://dgvisionstudio.com${path}`
+    const html = htmlFor(url)
+    assert(html.includes('<div id="root"></div>'), path)
+    assert.match(html, /<script[^>]*type="module"[^>]*src="\/assets\//, path)
+    assert(html.includes('name="robots" content="noindex, nofollow"'), path)
+    assert(!html.includes('rel="canonical"'), path)
+    assert(!urls.includes(url), path)
+  }
+})
+
 test("sitemap covers the public navigation and excludes account/duplicate URLs", () => {
   assert.equal(new Set(urls).size, urls.length)
   for (const path of ["/", "/fotograf-ruse", "/portfolio", "/pricing", "/about", "/contact", "/blog", "/privacy", "/cookies", "/terms"]) {

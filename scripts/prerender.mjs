@@ -37,7 +37,29 @@ try {
   }
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${staticPages.map((page) => `  <url><loc>${SITE_URL}${page.path}</loc></url>`).join("\n")}\n</urlset>\n`
   await writeFile(resolve("dist/sitemap.xml"), sitemap)
+
+  // Render serves files before React Router runs. Account/admin entry points
+  // need HTML too; omitting them makes direct login links and reloads return 404.
+  // These are empty application shells: authorization stays in React and the API.
+  const appRoutes = await readFile(resolve("src/App.tsx"), "utf8")
+  const adminRoutes = await readFile(resolve("src/pages/admin/AdminRoutes.tsx"), "utf8")
+  const literalPaths = (source) => [...source.matchAll(/\bpath="([^"]+)"/g)]
+    .map((match) => match[1])
+    .filter((path) => !/[:*]/.test(path))
+  const privatePaths = new Set([
+    ...literalPaths(appRoutes).filter((path) => path.startsWith("/identity/")),
+    "/admin",
+    ...literalPaths(adminRoutes).map((path) => `/admin/${path}`),
+  ])
+  const privateHtml = stripManagedHead(template).replace("</head>",
+    `<title>${escape(SITE_NAME)}</title>\n<meta data-rh="true" name="robots" content="noindex, nofollow">\n</head>`)
+  for (const path of privatePaths) {
+    const directory = resolve("dist", `.${path}`)
+    await mkdir(directory, { recursive: true })
+    await writeFile(resolve(directory, "index.html"), privateHtml)
+  }
   console.log(`Generated ${staticPages.length} public HTML pages and sitemap. Service content is managed through the API.`)
+  console.log(`Generated ${privatePaths.size} non-indexable account/admin entry points.`)
 } finally {
   await server.close()
 }
