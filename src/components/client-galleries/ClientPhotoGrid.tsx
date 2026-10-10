@@ -1,3 +1,4 @@
+import GalleryImage from "../GalleryImage"
 import type { ClientPhotoDto } from "../../types/clientGallery"
 
 type ClientPhotoGridProps = {
@@ -38,7 +39,7 @@ export default function ClientPhotoGrid({ photos, getPhotoDownloadUrl, isBg }: C
                                         <div className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white sm:left-3 sm:top-3 sm:px-3 sm:text-[10px] sm:tracking-[0.16em]">Video</div>
                                     </>
                                 ) : (
-                                    <img src={photo.previewUrl} alt={title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
+                                    <GalleryImage fallbackSrc={photo.originalUrl} src={photo.previewUrl} alt={title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
                                 )}
 
                                 <div className="pointer-events-none absolute inset-0 bg-black/10 transition duration-300 group-hover:bg-black/20 dark:group-hover:bg-black/30" />

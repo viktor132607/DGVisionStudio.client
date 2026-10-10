@@ -1,3 +1,4 @@
+import GalleryImage from "../GalleryImage"
 import type { PortfolioItem } from "../../types/portfolio"
 
 type PortfolioGridProps = {
@@ -46,29 +47,12 @@ export default function PortfolioGrid({
                                     </div>
                                 </>
                             ) : (
-                                <img
-                                    key={`${item.src}-${item.originalSrc}`}
+                                <GalleryImage
                                     src={item.src}
+                                    fallbackSrc={item.originalSrc}
                                     alt={item.title}
                                     loading="lazy"
                                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                                    onLoad={(event) => {
-                                        event.currentTarget.classList.remove("opacity-0")
-                                        event.currentTarget.alt = item.title
-                                    }}
-                                    onError={(event) => {
-                                        const image = event.currentTarget
-                                        const fallbackSrc = item.originalSrc?.trim()
-
-                                        if (fallbackSrc && image.dataset.originalFallback !== "true") {
-                                            image.dataset.originalFallback = "true"
-                                            image.src = fallbackSrc
-                                            return
-                                        }
-
-                                        image.alt = ""
-                                        image.classList.add("opacity-0")
-                                    }}
                                 />
                             )}
 

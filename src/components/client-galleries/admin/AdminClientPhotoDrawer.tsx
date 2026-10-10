@@ -1,3 +1,4 @@
+import GalleryImage from "../../GalleryImage"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type {
@@ -136,7 +137,8 @@ export default function AdminClientPhotoDrawer({
 
                 <div className="p-5">
                     <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-zinc-800">
-                        <img
+                        <GalleryImage
+                            fallbackSrc={photo.originalUrl}
                             src={photo.previewUrl}
                             alt=""
                             className="h-auto w-full object-cover"

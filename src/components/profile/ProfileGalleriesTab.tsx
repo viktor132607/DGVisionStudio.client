@@ -1,3 +1,4 @@
+import GalleryImage from "../GalleryImage"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PortfolioLightbox from "../portfolio/PortfolioLightbox"
 import ClientGalleryCard from "../client-galleries/ClientGalleryCard"
@@ -630,8 +631,9 @@ export default function ProfileGalleriesTab({
                                                             </span>
                                                         </>
                                                     ) : (
-                                                        <img
+                                                        <GalleryImage
                                                             src={mediaSrc}
+                                                            fallbackSrc={photo.previewUrl}
                                                             alt={title}
                                                             className="h-auto w-full object-contain transition duration-300 group-hover:scale-[1.01]"
                                                             loading="lazy"

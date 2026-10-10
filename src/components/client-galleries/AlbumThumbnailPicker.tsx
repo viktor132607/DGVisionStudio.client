@@ -1,5 +1,7 @@
+import GalleryImage from "../GalleryImage"
 type ThumbnailPhoto = {
     id: number
+    originalUrl?: string | null
     previewUrl: string
     fileName?: string
     isCover?: boolean
@@ -54,7 +56,8 @@ export default function AlbumThumbnailPicker({
                                 }`}
                             >
                                 <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-zinc-800">
-                                    <img
+                                    <GalleryImage
+                                        fallbackSrc={photo.originalUrl}
                                         src={photo.previewUrl}
                                         alt={photo.fileName || "thumbnail"}
                                         className="h-full w-full object-cover"

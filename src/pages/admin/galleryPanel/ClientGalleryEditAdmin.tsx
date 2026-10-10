@@ -1,3 +1,4 @@
+import GalleryImage from "../../../components/GalleryImage"
 import { useEffect, useMemo, useState } from "react"
 import type { DragEvent, FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -1150,7 +1151,8 @@ export default function ClientGalleryEditAdmin() {
                                         className="relative aspect-[4/5] cursor-pointer overflow-hidden bg-neutral-100 dark:bg-zinc-800"
                                         onClick={() => setSelectedPhotoId(photo.localId)}
                                     >
-                                        <img
+                                        <GalleryImage
+                                            fallbackSrc={photo.originalUrl}
                                             src={photo.previewUrl}
                                             alt={photo.altText || "photo"}
                                             className="h-full w-full object-cover"

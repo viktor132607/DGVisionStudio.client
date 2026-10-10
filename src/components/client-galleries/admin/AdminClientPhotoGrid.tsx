@@ -1,3 +1,4 @@
+import GalleryImage from "../../GalleryImage"
 import { useTranslation } from "react-i18next"
 import type { ClientPhotoDto } from "../../../types/clientGallery"
 
@@ -77,7 +78,8 @@ export default function AdminClientPhotoGrid({
                                 className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left transition hover:-translate-y-0.5 hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-950"
                             >
                                 <div className="relative aspect-square overflow-hidden bg-neutral-200 dark:bg-zinc-800">
-                                    <img
+                                    <GalleryImage
+                                        fallbackSrc={photo.originalUrl}
                                         src={photo.previewUrl}
                                         alt=""
                                         className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"

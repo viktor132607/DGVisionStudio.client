@@ -1,3 +1,4 @@
+import GalleryImage from "../../components/GalleryImage"
 import { useMemo, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -369,7 +370,8 @@ export default function MyGalleryDetails() {
                                                             onClick={() => togglePhoto(photo.id)}
                                                             className="relative block w-full overflow-hidden bg-neutral-100 text-left dark:bg-zinc-800"
                                                         >
-                                                            <img
+                                                            <GalleryImage
+                                                                fallbackSrc={photo.originalUrl}
                                                                 src={photo.previewUrl}
                                                                 alt={photo.altText || photo.caption || photo.name || ""}
                                                                 className="aspect-square w-full object-cover"

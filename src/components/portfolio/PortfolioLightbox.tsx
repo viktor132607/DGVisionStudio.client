@@ -1,3 +1,4 @@
+import GalleryImage from "../GalleryImage"
 import { useEffect, useRef, useState } from "react"
 import type { MouseEvent as ReactMouseEvent, TouchEvent, WheelEvent } from "react"
 import type { PortfolioItem } from "../../types/portfolio"
@@ -327,23 +328,16 @@ export default function PortfolioLightbox({
                                         startDrag(e.clientX, e.clientY)
                                     }}
                                 >
-                                    <img
+                                    <GalleryImage
                                         key={`${item.id}-${mediaSrc}`}
                                         ref={imageRef}
                                         src={mediaSrc}
+                                        fallbackSrc={item.src}
                                         alt={item.title}
                                         className="block max-h-[calc(100vh-180px)] max-w-[98vw] select-none object-contain sm:max-h-[calc(100vh-220px)] sm:max-w-[96vw]"
                                         draggable={false}
                                         onLoad={(e) => {
                                             imageBoundsRef.current = e.currentTarget.getBoundingClientRect()
-                                        }}
-                                        onError={(e) => {
-                                            const image = e.currentTarget
-                                            const previewSrc = item.src?.trim()
-                                            if (previewSrc && previewSrc !== mediaSrc && image.dataset.previewFallback !== "true") {
-                                                image.dataset.previewFallback = "true"
-                                                image.src = previewSrc
-                                            }
                                         }}
                                     />
                                 </div>
