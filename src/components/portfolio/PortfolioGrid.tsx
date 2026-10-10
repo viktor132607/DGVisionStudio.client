@@ -47,10 +47,15 @@ export default function PortfolioGrid({
                                 </>
                             ) : (
                                 <img
+                                    key={`${item.src}-${item.originalSrc}`}
                                     src={item.src}
                                     alt={item.title}
                                     loading="lazy"
                                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                                    onLoad={(event) => {
+                                        event.currentTarget.classList.remove("opacity-0")
+                                        event.currentTarget.alt = item.title
+                                    }}
                                     onError={(event) => {
                                         const image = event.currentTarget
                                         const fallbackSrc = item.originalSrc?.trim()
