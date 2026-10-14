@@ -65,7 +65,7 @@ export default function PortfolioGrid({
                                     </p>
                                     <p className="mt-1 text-sm font-semibold text-white sm:text-[15px]">{item.title}</p>
                                 </div>
-                            ) : null>
+                            ) : null}
                         </button>
                     )
                 })}
