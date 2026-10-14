@@ -42,11 +42,12 @@ export function buildPortfolioItems(
 
         const albumImages = publishedImagesByAlbum.get(album.id) ?? []
 
-        albumImages.forEach((image, index) => {
+        albumImages.forEach((image) => {
             const title =
                 image.altText?.trim() ||
                 image.caption?.trim() ||
-                `${album.title} ${index + 1}`
+                image.name?.trim() ||
+                ""
 
             result.push({
                 id: image.id,
