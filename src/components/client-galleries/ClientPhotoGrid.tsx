@@ -49,7 +49,7 @@ export default function ClientPhotoGrid({ photos, getPhotoDownloadUrl, isBg }: C
                                         <p className="text-[9px] uppercase tracking-[0.16em] text-white/70 sm:text-[10px] sm:tracking-[0.28em]">#{photo.displayOrder}</p>
                                         <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-white sm:mt-1 sm:text-[15px]">{visibleTitle}</p>
                                     </div>
-                                ) : null>
+                                ) : null}
                             </a>
 
                             {photo.canDownload ? (
