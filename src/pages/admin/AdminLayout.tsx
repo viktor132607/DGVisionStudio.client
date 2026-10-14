@@ -4,6 +4,7 @@ import AdminToastProvider from "../../components/admin/AdminToastProvider"
 
 const navItems = [
     { to: "/admin/database-backup", label: "Архив на базата" },
+    { to: "/admin/commands", label: "Команден промпт" },
     { to: "/admin", label: "Начало" },
     { to: "/admin/contact-requests", label: "Запитвания" },
     { to: "/admin/users", label: "Потребители" },
