@@ -50,7 +50,7 @@ export default function PortfolioGrid({
                                 <GalleryImage
                                     src={item.src}
                                     fallbackSrc={item.originalSrc}
-                                    alt={item.title}
+                                    alt={item.title || item.albumLabel}
                                     loading="lazy"
                                     className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                                 />
@@ -58,15 +58,14 @@ export default function PortfolioGrid({
 
                             <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/20 dark:group-hover:bg-black/30" />
 
-                            <div className="absolute inset-x-0 bottom-0 translate-y-3 p-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:translate-y-4 sm:p-4">
-                                <p className="text-[10px] uppercase tracking-[0.22em] text-white/70 sm:tracking-[0.28em]">
-                                    {item.albumLabel}
-                                </p>
-
-                                <p className="mt-1 text-sm font-semibold text-white sm:text-[15px]">
-                                    {item.title}
-                                </p>
-                            </div>
+                            {item.title.trim() ? (
+                                <div className="absolute inset-x-0 bottom-0 translate-y-3 p-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:translate-y-4 sm:p-4">
+                                    <p className="text-[10px] uppercase tracking-[0.22em] text-white/70 sm:tracking-[0.28em]">
+                                        {item.albumLabel}
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold text-white sm:text-[15px]">{item.title}</p>
+                                </div>
+                            ) : null>
                         </button>
                     )
                 })}
