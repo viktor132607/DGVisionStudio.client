@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import { readFileSync, readdirSync, existsSync } from "node:fs"
 
 const sitemap = readFileSync("dist/sitemap.xml", "utf8")
 const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
@@ -15,6 +15,27 @@ test("direct login and admin URLs have non-indexable application entry points", 
     assert(html.includes('name="robots" content="noindex, nofollow"'), path)
     assert(!html.includes('rel="canonical"'), path)
     assert(!urls.includes(url), path)
+  }
+})
+
+test("published photography services open directly and preserve per-page SEO", () => {
+  const routeDir = "dist/fotograf-ruse"
+  const serviceSlugs = readdirSync(routeDir, { withFileTypes: true })
+    .filter(item => item.isDirectory())
+    .map(item => item.name)
+    .filter(slug => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && existsSync(`${routeDir}/${slug}/index.html`))
+  assert(serviceSlugs.length > 0, "At least one published service route should have an HTML entry point.")
+  for (const slug of serviceSlugs) {
+    const url = `https://dgvisionstudio.com/fotograf-ruse/${slug}`
+    const html = htmlFor(url)
+    assert(html.includes('<div id="root"></div>'), slug)
+    assert.match(html, /<script[^>]*type="module"[^>]*src="\/assets\//, slug)
+    assert(html.includes(`rel="canonical" href="${url}"`), slug)
+    const scripts = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)]
+    assert.equal(scripts.length, 1, slug)
+    const schema = JSON.parse(scripts[0][1])
+    const service = schema["@graph"].find(item => item["@type"] === "Service")
+    assert.equal(service.url, url)
   }
 })
 

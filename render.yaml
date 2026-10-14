@@ -1,0 +1,15 @@
+# Source-controlled Render routing (takes effect once this service is linked
+# to a Render Blueprint; standalone static sites still use Dashboard routes).
+services:
+  - type: web
+    runtime: static
+    name: DGVisionStudio.client
+    repo: https://github.com/viktor132607/DGVisionStudio.client
+    branch: main
+    buildCommand: npm install; npm run build
+    staticPublishPath: dist
+    routes:
+      # Render serves real pre-rendered files first; React handles the rest.
+      - type: rewrite
+        source: /*
+        destination: /index.html
