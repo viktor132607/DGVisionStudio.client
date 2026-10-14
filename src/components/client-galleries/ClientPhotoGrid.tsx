@@ -22,6 +22,7 @@ export default function ClientPhotoGrid({ photos, getPhotoDownloadUrl, isBg }: C
                 {photos.map((photo, index) => {
                     const video = isVideo(photo)
                     const mediaUrl = photo.originalUrl || photo.previewUrl
+                    const visibleTitle = photo.name?.trim() || photo.altText?.trim() || photo.caption?.trim() || ""
                     const title = getTitle(photo, `${isBg ? "Медия" : "Media"} ${index + 1}`)
 
                     return (
@@ -43,10 +44,12 @@ export default function ClientPhotoGrid({ photos, getPhotoDownloadUrl, isBg }: C
                                 )}
 
                                 <div className="pointer-events-none absolute inset-0 bg-black/10 transition duration-300 group-hover:bg-black/20 dark:group-hover:bg-black/30" />
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-100 transition duration-300 sm:translate-y-4 sm:p-4 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
-                                    <p className="text-[9px] uppercase tracking-[0.16em] text-white/70 sm:text-[10px] sm:tracking-[0.28em]">#{photo.displayOrder}</p>
-                                    <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-white sm:mt-1 sm:text-[15px]">{title}</p>
-                                </div>
+                                {visibleTitle ? (
+                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-100 transition duration-300 sm:translate-y-4 sm:p-4 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
+                                        <p className="text-[9px] uppercase tracking-[0.16em] text-white/70 sm:text-[10px] sm:tracking-[0.28em]">#{photo.displayOrder}</p>
+                                        <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-white sm:mt-1 sm:text-[15px]">{visibleTitle}</p>
+                                    </div>
+                                ) : null>
                             </a>
 
                             {photo.canDownload ? (
