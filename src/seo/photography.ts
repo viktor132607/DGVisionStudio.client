@@ -7,6 +7,10 @@ export type PhotographyService = { slug: string; category?: string; bg: ServiceC
 
 export const hubPath = "/fotograf-ruse"
 export const servicePath = (service: { slug: string }) => service.slug ? `/fotograf-ruse/${service.slug}` : hubPath
+// Open a published service from the admin in a new tab on a route that has a
+// static HTML entry point on Render. The page resolves the selected service.
+export const servicePreviewPath = (service: { slug: string }) =>
+  service.slug ? `${hubPath}?service=${encodeURIComponent(service.slug)}` : hubPath
 export const homeMetadata = {
   bg: { title: "Фотограф в Русе — фотосесии и събития", description: "DG Vision Studio — фотограф в Русе за сватби, балове, кръщенета, портретни, семейни и продуктови фотосесии. Портфолио, цени и запитвания." },
   en: { title: "Photographer in Ruse — photoshoots and events", description: "DG Vision Studio — photographer in Ruse for weddings, proms, baptisms, portraits, family and product photoshoots. View our portfolio, pricing and contact details." },
