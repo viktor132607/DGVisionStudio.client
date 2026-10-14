@@ -6,6 +6,7 @@ const navItems = [
     { to: "/admin/database-backup", label: "Архив на базата" },
     { to: "/admin/commands", label: "Команден промпт" },
     { to: "/admin", label: "Начало" },
+    { to: "/admin/portfolio-categories", label: "Категории" },
     { to: "/admin/contact-requests", label: "Запитвания" },
     { to: "/admin/users", label: "Потребители" },
     { to: "/admin/print-requests", label: "Заявки за принтиране" },

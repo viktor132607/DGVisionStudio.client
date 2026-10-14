@@ -10,6 +10,7 @@ import ContactRequestsAdmin from "./ContactRequestsAdmin"
 import ContactRequestEditAdmin from "./ContactRequestEditAdmin"
 import ClientGalleryEditAdmin from "./galleryPanel/ClientGalleryEditAdmin"
 import ClientGalleryAccessAdmin from "./galleryPanel/ClientGalleryAccessAdmin"
+import PortfolioCategoriesAdmin from "./categoryPanel/PortfolioCategoriesAdmin"
 import PortfolioCategoryCreateAdmin from "./categoryPanel/PortfolioCategoryCreateAdmin"
 import PortfolioCategoryEditAdmin from "./categoryPanel/PortfolioCategoryEditAdmin"
 import PortfolioCategoryAlbumsAdmin from "./categoryPanel/PortfolioCategoryAlbumsAdmin"
@@ -68,6 +69,7 @@ export default function AdminRoutes() {
                     />
                     <Route path="client-galleries/access" element={<ClientGalleryAccessAdmin />} />
 
+                    <Route path="portfolio-categories" element={<PortfolioCategoriesAdmin />} />
                     <Route path="portfolio-categories/new" element={<PortfolioCategoryCreateAdmin />} />
                     <Route path="portfolio-categories/edit" element={<PortfolioCategoryEditAdmin />} />
                     <Route path="portfolio-categories/albums" element={<PortfolioCategoryAlbumsAdmin />} />

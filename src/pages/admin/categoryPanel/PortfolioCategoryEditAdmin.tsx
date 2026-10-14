@@ -272,7 +272,7 @@ export default function PortfolioCategoryEditAdmin() {
             })
 
             setDeleteOpen(false)
-            navigate("/admin")
+            navigate("/admin/portfolio-categories")
         } catch (err) {
             const message =
                 err instanceof Error ? err.message : "Неуспешно изтриване на категорията."
@@ -298,10 +298,10 @@ export default function PortfolioCategoryEditAdmin() {
             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                     <Link
-                        to="/admin"
+                        to="/admin/portfolio-categories"
                         className="mb-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                     >
-                        Назад към админ
+                        Назад към категориите
                     </Link>
 
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

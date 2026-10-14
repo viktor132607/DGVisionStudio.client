@@ -258,7 +258,7 @@ export default function PortfolioCategoryAlbumsAdmin() {
             <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <Link
-                        to={categoryId ? `/admin/portfolio-categories/edit?id=${categoryId}` : "/admin"}
+                        to={categoryId ? `/admin/portfolio-categories/edit?id=${categoryId}` : "/admin/portfolio-categories"}
                         className="mb-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                     >
                         Назад към категорията
