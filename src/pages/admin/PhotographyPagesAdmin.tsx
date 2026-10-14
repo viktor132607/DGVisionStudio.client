@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
 import { apiFetchJson } from "../../services/api"
 import { invalidatePhotographyPages, type PhotographyPage } from "../../hooks/usePhotographyPages"
-import { servicePath } from "../../seo/photography"
+import { servicePreviewPath } from "../../seo/photography"
 
 type Category = { id: number; name: string; isActive: boolean }
 const blank: PhotographyPage = { id: 0, slug: "", title: "", titleEn: "", description: "", descriptionEn: "", body: "", bodyEn: "", preparation: "", preparationEn: "", portfolioCategoryId: null, displayOrder: 0, isActive: true }
@@ -103,7 +103,7 @@ export default function PhotographyPagesAdmin() {
         <p className="mt-1 text-sm text-neutral-500">{page.slug ? `${page.isActive ? "Активна" : "Неактивна"} · ${categories.find(c => c.id === page.portfolioCategoryId)?.name || "Без категория"}` : "Обща страница на услугите"}</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {page.isActive && <Link to={servicePath(page)} className={button} target="_blank" rel="noreferrer">Преглед</Link>}
+        {page.isActive && <Link to={servicePreviewPath(page)} className={button} target="_blank" rel="noopener noreferrer">Преглед</Link>}
         <button className={button} disabled={busy} onClick={() => { setDraft({ ...page }); setLanguage("bg"); setNotice("") }}>Редактирай</button>
         {page.slug && <><button className={button} disabled={busy} onClick={() => void mutate(() => apiFetchJson(`/admin/photography-pages/${page.id}`, { method: "PUT", body: JSON.stringify({ ...page, isActive: !page.isActive }) }), page.isActive ? "Услугата е деактивирана." : "Услугата е активирана.")}>{page.isActive ? "Деактивирай" : "Активирай"}</button>
           <button className={`${button} text-red-600`} disabled={busy} onClick={() => setDeleting(page)}>Изтрий</button></>}
