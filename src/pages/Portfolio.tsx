@@ -190,7 +190,7 @@ export default function Portfolio() {
 
         const albumImages = publishedImagesByAlbum.get(selectedAlbum.id) ?? []
 
-        return albumImages.map((image, index) => {
+        return albumImages.map((image) => {
             const isVideo = image.mediaType === "Video" || isVideoPath(image.imageUrl)
 
             return {
@@ -207,7 +207,7 @@ export default function Portfolio() {
                     image.altText?.trim() ||
                     image.caption?.trim() ||
                     image.name?.trim() ||
-                    `${selectedAlbum.title} ${index + 1}`,
+                    "",
             }
         })
     }, [activeCategories, publishedImagesByAlbum, selectedAlbum, isBg])
