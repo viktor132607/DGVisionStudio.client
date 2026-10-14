@@ -14,10 +14,15 @@ export async function markAdminUsersSeen() {
     })
 }
 
+export const ADMIN_CONTACT_REQUESTS_SEEN_EVENT = "dgvisionstudio:admin-contact-requests-seen"
+
 export async function markAdminContactRequestsSeen() {
-    return apiFetchJson<void>("/admin/contact-requests/seen", {
+    await apiFetchJson<void>("/admin/contact-requests/seen", {
         method: "PUT",
     })
+
+    // Update the sidebar after the database confirms that requests were seen.
+    window.dispatchEvent(new Event(ADMIN_CONTACT_REQUESTS_SEEN_EVENT))
 }
 
 export async function markAdminPrintRequestsSeen() {

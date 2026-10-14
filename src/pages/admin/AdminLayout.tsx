@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation } from "react-router-dom"
 import AdminToastProvider from "../../components/admin/AdminToastProvider"
+import { ADMIN_CONTACT_REQUESTS_SEEN_EVENT, getAdminNotificationCounts } from "../../services/adminNotifications"
 
 const navItems = [
     { to: "/admin/database-backup", label: "Архив на базата" },
@@ -20,6 +21,48 @@ const navItems = [
 function AdminLayoutContent() {
     const location = useLocation()
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [unseenContactRequests, setUnseenContactRequests] = useState(0)
+
+    useEffect(() => {
+        let active = true
+        let latestRequest = 0
+
+        const refreshNotifications = async () => {
+            if (document.visibilityState === "hidden") return
+            const requestId = ++latestRequest
+
+            try {
+                const counts = await getAdminNotificationCounts()
+                if (active && requestId === latestRequest) {
+                    setUnseenContactRequests(Math.max(0, Number(counts.newContactRequests) || 0))
+                }
+            } catch {
+                // Keep the last known count when the notification API is temporarily unavailable.
+            }
+        }
+
+        const onVisibilityChange = () => {
+            if (document.visibilityState === "visible") void refreshNotifications()
+        }
+        const onContactRequestsSeen = () => {
+            setUnseenContactRequests(0)
+            void refreshNotifications()
+        }
+
+        void refreshNotifications()
+        const intervalId = window.setInterval(() => { void refreshNotifications() }, 30000)
+        window.addEventListener("focus", refreshNotifications)
+        document.addEventListener("visibilitychange", onVisibilityChange)
+        window.addEventListener(ADMIN_CONTACT_REQUESTS_SEEN_EVENT, onContactRequestsSeen)
+
+        return () => {
+            active = false
+            window.clearInterval(intervalId)
+            window.removeEventListener("focus", refreshNotifications)
+            document.removeEventListener("visibilitychange", onVisibilityChange)
+            window.removeEventListener(ADMIN_CONTACT_REQUESTS_SEEN_EVENT, onContactRequestsSeen)
+        }
+    }, [])
 
     const closeMobileMenu = () => setMobileMenuOpen(false)
     const isDashboard = location.pathname === "/admin" || location.pathname === "/admin/"
@@ -105,7 +148,18 @@ function AdminLayoutContent() {
                                     : "text-white/75 hover:bg-white/10 hover:text-white"
                             }`}
                         >
-                            {item.label}
+                            <span className="flex w-full items-center justify-between gap-3">
+                                <span>{item.label}</span>
+                                {item.to === "/admin/contact-requests" && unseenContactRequests > 0 ? (
+                                    <span
+                                        className="relative flex h-3 w-3 shrink-0"
+                                        title={`Нови запитвания: ${unseenContactRequests}`}
+                                    >
+                                        <span className="h-3 w-3 rounded-full bg-red-500 ring-2 ring-red-500/20" aria-hidden="true" />
+                                        <span className="sr-only">Нови запитвания: {unseenContactRequests}</span>
+                                    </span>
+                                ) : null}
+                            </span>
                         </Link>
                     ))}
                 </nav>
