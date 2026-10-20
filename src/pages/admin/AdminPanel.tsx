@@ -445,7 +445,7 @@ export default function AdminPanel() {
                 </button>
             </div>
 
-            <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="my-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {mainCards.map((card) => (
                     <Link
                         key={card.title}
