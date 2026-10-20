@@ -83,3 +83,71 @@
         transform: none !important;
     }
 }
+
+/* Portrait tablets: logo + headline in one row, slideshow directly below.
+   Keep folded phones and landscape/tablet desktop layouts unchanged. */
+@media (min-width: 600px) and (max-width: 1199px) and (orientation: portrait) {
+    main .min-h-screen > section.home-hero > .home-hero-grid {
+        display: grid !important;
+        grid-template-columns: minmax(110px, 24%) minmax(0, 1fr) !important;
+        align-items: center !important;
+        column-gap: clamp(14px, 2.6vw, 28px) !important;
+        row-gap: clamp(16px, 2.6vw, 24px) !important;
+        width: min(100%, 840px) !important;
+        max-width: 840px !important;
+        padding: 16px 18px 24px !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-hero-copy {
+        display: contents !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        justify-self: center !important;
+        align-self: center !important;
+        width: min(100%, 160px) !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-title {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        align-self: center !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        font-size: clamp(22px, 3.3vw, 36px) !important;
+        line-height: 1.05 !important;
+        letter-spacing: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        justify-self: center !important;
+        align-self: start !important;
+        width: min(100%, 680px) !important;
+        min-width: 0 !important;
+        max-width: 680px !important;
+        height: auto !important;
+        aspect-ratio: 4 / 5 !important;
+        margin: 0 auto !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent {
+        grid-column: 1 / -1 !important;
+        grid-row: 3 !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-description {
+        grid-column: 1 / -1 !important;
+        grid-row: 4 !important;
+        margin: 0 !important;
+    }
+}
