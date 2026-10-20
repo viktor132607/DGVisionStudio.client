@@ -15,7 +15,7 @@ const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl
 const albumActionClass = "album-card-action inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
 const selectClass = "h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
 const albumFilterClass = "mt-1 h-10 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
-const albumBulkActionClass = "inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+const albumBulkActionClass = "inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
 const readSort = () => { try { return localStorage.getItem("dgvisionstudio.admin.albumSort") || "activity_desc" } catch { return "activity_desc" } }
 const readActivity = (): Record<string, number> => { try { return JSON.parse(localStorage.getItem("dgvisionstudio.admin.albumActivity") || "{}") } catch { return {} } }
 
@@ -582,7 +582,7 @@ export default function AdminPanel() {
                         </label>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 border-t border-gray-200 pt-2 dark:border-zinc-800" aria-label="Групови действия за албуми">
+                    <div className="flex flex-wrap items-center gap-2 border-t border-gray-200 pt-2 2xl:flex-nowrap dark:border-zinc-800" aria-label="Групови действия за албуми">
                         <label className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-gray-800 dark:text-white">
                             <input type="checkbox" className="h-4 w-4 accent-sky-600" checked={allVisibleSelected}
                                 ref={element => { if (element) element.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected }}
@@ -597,7 +597,7 @@ export default function AdminPanel() {
                             onClick={() => setSelectedAlbumIds(new Set())}>Изчисти избора</button>
                         <button type="button" className={albumBulkActionClass} disabled={albumManagementBusy || !selectedAlbumIds.size}
                             onClick={() => void archive.start([...selectedAlbumIds])}>Изтегли маркираните ({selectedAlbumIds.size})</button>
-                        <label className="min-w-0 w-full sm:w-48">
+                        <label className="min-w-0 w-full sm:w-48 2xl:w-48 2xl:shrink-0">
                             <span className="sr-only">Премести в категория</span>
                             <select className="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-xs text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
                                 aria-label="Премести в категория" value={targetCategoryId} disabled={albumManagementBusy || categoriesLoading}
