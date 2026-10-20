@@ -746,18 +746,14 @@ export default function ClientGalleryEditAdmin() {
             }
         }
 
+        // Existing photos already update their cover flag and album cover on the
+        // server through updateGalleryPhoto. A second PUT /cover is redundant
+        // and may return 404 when the preview URL differs from the stored URL.
         const coverLocalId = ordered.find((item) => item.isCover)?.localId
+        const uploadedCover = coverLocalId ? uploadedMap.get(coverLocalId) : undefined
 
-        if (coverLocalId) {
-            const uploadedCover = uploadedMap.get(coverLocalId)
-            const existingCover = ordered.find(
-                (item) => item.localId === coverLocalId && item.isExisting
-            )
-
-            const nextCoverUrl = uploadedCover
-                ? getStoredCoverImageUrl(uploadedCover)
-                : existingCover?.originalUrl || existingCover?.previewUrl || ""
-
+        if (uploadedCover) {
+            const nextCoverUrl = getStoredCoverImageUrl(uploadedCover)
             if (nextCoverUrl) {
                 await setGalleryCoverImage(currentGalleryId, { coverImageUrl: nextCoverUrl } as any)
             }
@@ -807,9 +803,23 @@ export default function ClientGalleryEditAdmin() {
                     message: t.updateSuccess,
                 })
 
-                await loadGallery()
-                await loadExistingGalleries()
-                await loadAvailableUsers()
+                // A refresh failure must not be reported as a failed save:
+                // the updates above have already been committed.
+                try {
+                    await Promise.all([
+                        loadGallery(),
+                        loadExistingGalleries(),
+                        loadAvailableUsers(),
+                    ])
+                } catch {
+                    showToast({
+                        type: "warning",
+                        title: isBg ? "Обновяване" : "Refresh",
+                        message: isBg
+                            ? "Промените са запазени, но данните не се презаредиха. Обнови страницата."
+                            : "Changes were saved, but the latest data could not be reloaded. Refresh the page.",
+                    })
+                }
             } else {
                 const created = await createAdminClientGallery(payload as any)
                 const createdId = Number((created as any)?.id)
