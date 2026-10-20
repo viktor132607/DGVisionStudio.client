@@ -445,13 +445,13 @@ export default function AdminPanel() {
                 </button>
             </div>
 
-            <div className="my-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="admin-dashboard-metrics my-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {mainCards.map((card) => (
                     <Link
                         key={card.title}
                         to={card.link}
                         onClick={() => markNotificationAsSeen(card.notificationKey, Number(card.currentTotal) || 0)}
-                        className={`relative rounded-2xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-zinc-900 ${
+                        className={`group relative flex min-h-[100px] flex-col justify-center rounded-xl border bg-white px-5 py-4 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-md dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 ${
                             card.hasNew
                                 ? "border-red-300 ring-2 ring-red-100 dark:border-red-500/40 dark:ring-red-500/10"
                                 : "border-gray-200 dark:border-zinc-800"
@@ -461,13 +461,13 @@ export default function AdminPanel() {
                             <span className="absolute right-4 top-4 inline-flex h-3 w-3 rounded-full bg-red-600" />
                         ) : null}
 
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-zinc-400">
+                        <h3 className="text-xs font-semibold leading-5 text-slate-500 dark:text-zinc-400">
                             {card.title}
                         </h3>
-                        <p className="mt-2 mb-2 text-3xl font-bold text-slate-900 dark:text-white">
+                        <p className="mt-1 text-2xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
                             {card.value}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-zinc-300">{card.desc}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-zinc-300">{card.desc}</p>
                     </Link>
                 ))}
             </div>

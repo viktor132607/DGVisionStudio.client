@@ -8,7 +8,8 @@ html.apple-device [data-apple-dashboard-metrics="true"] {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 8px !important;
-    margin-bottom: 24px !important;
+    margin-block: 0 !important;
+    padding-block: 16px !important;
 }
 
 html.apple-device [data-admin-main="true"] div:has(> a[href="/admin/users"]):has(> a[href="/admin/contact-requests"]):has(> a[href="/admin/print-requests"]) > a,
