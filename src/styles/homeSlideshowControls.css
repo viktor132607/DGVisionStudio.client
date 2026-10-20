@@ -157,3 +157,33 @@ main .min-h-screen > section.home-hero .home-slideshow-controls-grid > div {
 main .min-h-screen > section.home-hero > .home-hero-grid > .home-slideshow {
     border: 0 !important;
 }
+
+/* Compact landscape tablets (e.g. Surface Pro 1440x960): leave room for all
+   three recent album covers inside the hero instead of pushing them below the fold.
+   These rules belong after the shared desktop styles so the heading size is not
+   overwritten by the broader desktop selector above. */
+@media (min-width: 1024px) and (max-width: 1599px) and (orientation: landscape) {
+    main .min-h-screen > section.home-hero .home-hero-logo {
+        width: min(19svh, 100%) !important;
+        margin-bottom: 0.8svh !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-hero-title {
+        font-size: clamp(32px, 3vw, 42px) !important;
+        line-height: 0.97 !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent {
+        margin-top: 0.9svh !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-label {
+        margin-bottom: 0.6svh !important;
+        font-size: min(3svh, 28px) !important;
+    }
+
+    main .min-h-screen > section.home-hero .home-recent-card {
+        top: 0.5svh !important;
+    }
+}
+
