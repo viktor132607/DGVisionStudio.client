@@ -455,7 +455,7 @@ export default function SlideshowAdmin() {
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Управление на слайдшоу</h1>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Качи intro видео или избери снимките, реда и скоростта за началната страница.</p>
+                    
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -473,7 +473,7 @@ export default function SlideshowAdmin() {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 className="text-lg font-black text-slate-950 dark:text-white">Intro видео</h2>
-                        <p className="mt-1 text-xs font-bold text-slate-500 dark:text-white/60">Ако има качено видео, то се пуска веднъж и после започва слайдшоуто. Ако няма видео, слайдшоуто тръгва директно.</p>
+                        
                     </div>
 
                     <div className="flex flex-wrap gap-2">

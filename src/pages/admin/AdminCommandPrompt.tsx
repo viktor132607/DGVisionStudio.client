@@ -79,9 +79,7 @@ export default function AdminCommandPrompt() {
         <div className="mx-auto w-full max-w-5xl space-y-6 px-4 sm:px-6" aria-busy={busy !== null}>
             <header className="space-y-2">
                 <h1 className="text-2xl font-black sm:text-3xl">Команден промпт</h1>
-                <p className="text-sm text-slate-600 dark:text-zinc-300">
-                    Администраторски команди. Изпълняват се само поддържаните операции, не системни или SQL команди.
-                </p>
+                
             </header>
 
             <section className="overflow-hidden rounded-2xl border border-slate-700 bg-zinc-950 text-zinc-100 shadow-xl">
@@ -130,9 +128,7 @@ export default function AdminCommandPrompt() {
                         </button>
                     </div>
                 ))}
-                <p className="text-xs text-slate-600 dark:text-zinc-400">
-                    Командата премахва имената, алтернативните текстове и надписите на снимките от базата. Не изтрива снимки, видеа, файлове или заглавия на албуми.
-                </p>
+                
             </section>
 
             {error && <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-200">{error}</p>}

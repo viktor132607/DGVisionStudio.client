@@ -307,9 +307,7 @@ export default function PortfolioCategoryEditAdmin() {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Редактиране на категория
                     </h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
-                        Промяна на име, slug, ред и активност.
-                    </p>
+                    
                 </div>
 
                 {categoryId ? (

@@ -62,10 +62,7 @@ export default function DatabaseBackupAdmin() {
     return (
         <div className="mx-auto max-w-4xl space-y-6 px-4 sm:px-6" aria-busy={busy !== null}>
             <header><h1 className="text-2xl font-black sm:text-3xl">Архив на базата</h1></header>
-            <p className="text-slate-600 dark:text-slate-300">
-                Пълен архив на PostgreSQL базата на DGVisionStudio: всички таблици, записи, потребители,
-                настройки, връзки, схеми, миграции и последователности. Включва и данни извън текущите модели на приложението.
-            </p>
+            
             <p className="text-sm text-slate-600 dark:text-slate-300">
                 Снимките и видеата в Cloudinary или на диска не са в PostgreSQL — архивът съдържа записите
                 и адресите им, но не самите външни файлове. Съхранявайте архива защитено: съдържа лични данни.
@@ -77,7 +74,7 @@ export default function DatabaseBackupAdmin() {
             </div>}
             <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
                 <h2 className="text-xl font-bold">Изтегляне на пълен архив</h2>
-                <p>Създава компресиран PostgreSQL архив във формат .dump.</p>
+                
                 <button type="button" disabled={busy !== null} onClick={() => void exportDatabase()}
                     className={`${button} bg-slate-950 text-white dark:bg-white dark:text-black`}>
                     {busy === "export" ? "Архивиране…" : "Изтегли архив"}

@@ -119,7 +119,7 @@ export default function GalleryVideosAdmin() {
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Видео в албуми</h1>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Качване на видео клип към съществуващ албум. Максимум 100MB на видео.</p>
+                    
                 </div>
 
                 <button type="button" onClick={load} disabled={loading || uploading} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900 dark:text-white">

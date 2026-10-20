@@ -285,7 +285,7 @@ export default function ServicesAdmin() {
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Услуги за началния екран</h1>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-white/60">Добавяне, редакция, триене и подреждане на картите в секцията „Услуги“.</p>
+                    
                 </div>
 
                 <button type="button" onClick={load} disabled={loading || saving} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900 dark:text-white">
@@ -324,7 +324,7 @@ export default function ServicesAdmin() {
                         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-black/30">
                             <div className="mb-3">
                                 <h3 className="text-sm font-black text-slate-800 dark:text-white">Избор на снимка от албум</h3>
-                                <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-white/55">Избери албум, после натисни една снимка за картата.</p>
+                                
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -393,7 +393,7 @@ export default function ServicesAdmin() {
                 <section className="rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <h2 className="text-lg font-black text-slate-950 dark:text-white">Текущи карти ({sortedServices.length})</h2>
-                        <p className="text-xs font-bold text-slate-500 dark:text-white/60">Редът се пази автоматично при местене.</p>
+                        
                     </div>
 
                     {loading ? (

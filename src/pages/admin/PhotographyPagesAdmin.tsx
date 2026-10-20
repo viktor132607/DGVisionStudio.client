@@ -79,7 +79,7 @@ export default function PhotographyPagesAdmin() {
           {field.key.startsWith("title") ? <input className={control} value={draft[field.key]} required={field.key === "title"} maxLength={field.max} onChange={e => change(field.key, e.target.value)} />
             : <textarea className={control} rows={field.key.startsWith("body") ? 9 : 3} maxLength={field.max} value={draft[field.key]} onChange={e => change(field.key, e.target.value)} />}
         </label>)}
-        {language === "en" && <p className="text-sm text-neutral-500">При празно поле се показва българският текст.</p>}
+        
         <div className="grid gap-5 md:grid-cols-2">
           <label className="text-sm font-medium">Адрес: /fotograf-ruse/{overview ? "" : "…"}
             <input className={control} value={draft.slug} disabled={overview} required={!overview} pattern="[a-z0-9]+(-[a-z0-9]+)*" maxLength={150} onChange={e => change("slug", e.target.value.toLowerCase())} />

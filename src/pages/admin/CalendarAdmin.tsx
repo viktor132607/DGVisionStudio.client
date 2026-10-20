@@ -516,7 +516,7 @@ export default function CalendarAdmin() {
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Календар</h1>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">Управление на събития, типове, цени и цветове.</p>
+                    
                 </div>
                 <button type="button" onClick={() => void loadAll()} className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-700">Обнови</button>
             </div>

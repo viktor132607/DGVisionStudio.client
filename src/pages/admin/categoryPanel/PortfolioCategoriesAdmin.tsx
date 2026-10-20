@@ -218,9 +218,7 @@ export default function PortfolioCategoriesAdmin() {
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                             Категории
                         </h2>
-                        <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">
-                            Създавай, редактирай, подреждай и управлявай категориите в портфолиото
-                        </p>
+                        
                     </div>
 
                     <div className="flex flex-col gap-2 sm:flex-row">

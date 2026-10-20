@@ -13,7 +13,6 @@ import "../../styles/adminAlbumManagement.css"
 
 const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
 const albumActionClass = "album-card-action inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
-const selectClass = "h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
 const albumFilterClass = "mt-1 h-10 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
 const albumBulkActionClass = "inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
 const readSort = () => { try { return localStorage.getItem("dgvisionstudio.admin.albumSort") || "activity_desc" } catch { return "activity_desc" } }
@@ -434,9 +433,7 @@ export default function AdminPanel() {
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
                         Админ панел
                     </h1>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-zinc-400 sm:text-base">
-                        Централно управление на съдържание, потребители и албуми
-                    </p>
+                    
                 </div>
 
                 <button
