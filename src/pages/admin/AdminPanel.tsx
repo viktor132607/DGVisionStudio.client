@@ -667,16 +667,18 @@ export default function AdminPanel() {
                                     className="album-management-card flex flex-col overflow-hidden rounded-none border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
                                 >
                                     <div className="relative aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-zinc-800">
-                                        <label className="absolute bottom-2 left-2 z-10 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-white/95 px-3 text-xs font-semibold text-gray-900 shadow">
-                                            <input type="checkbox" className="h-5 w-5 accent-sky-600" checked={selectedAlbumIds.has(album.id)}
-                                                aria-label={`Маркирай албум „${album.title}“`} disabled={albumManagementBusy}
-                                                onChange={() => setSelectedAlbumIds(current => {
-                                                    const next = new Set(current)
-                                                    if (next.has(album.id)) next.delete(album.id); else next.add(album.id)
-                                                    return next
-                                                })} />
-                                            Маркирай
-                                        </label>
+                                        <input
+                                            type="checkbox"
+                                            className="absolute bottom-2 left-2 z-10 h-5 w-5 cursor-pointer accent-sky-600"
+                                            checked={selectedAlbumIds.has(album.id)}
+                                            aria-label={`Маркирай албум „${album.title}“`}
+                                            disabled={albumManagementBusy}
+                                            onChange={() => setSelectedAlbumIds(current => {
+                                                const next = new Set(current)
+                                                if (next.has(album.id)) next.delete(album.id); else next.add(album.id)
+                                                return next
+                                            })}
+                                        />
                                         {album.coverImageUrl ? (
                                             <img
                                                 src={resolveAssetUrl(album.coverImageUrl)}
