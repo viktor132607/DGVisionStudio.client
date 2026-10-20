@@ -284,7 +284,7 @@ export default function AdminDashboardCalendarPreview() {
     )
 
     const desktopCalendar = (
-        <section className="mb-10 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6">
+        <section className="mb-10 rounded-2xl border border-gray-200 bg-white p-4 pb-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 sm:pb-8">
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-3">
                     <button type="button" onClick={() => changeMonth(-1)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold">Назад</button>
@@ -304,7 +304,7 @@ export default function AdminDashboardCalendarPreview() {
                 {desktopWeekdays.map((name) => <div key={name} className="py-2">{name}</div>)}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="mb-5 grid grid-cols-7 gap-2">
                 {monthGrid.map((date) => {
                     const dayEvents = events.filter((event) => isSameDay(new Date(event.startAtUtc), date))
                     const isCurrentMonth = date.getMonth() === viewDate.getMonth()
