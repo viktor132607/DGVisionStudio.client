@@ -79,3 +79,146 @@ html.dark.android-device #albums[data-react-album-management="true"] .album-card
     background: #4a4458 !important;
     color: #e8def8 !important;
 }
+
+/* Album metadata and actions share one baseline; compact per-card instead of per viewport. */
+#albums[data-react-album-management="true"] .album-management-card {
+    container-type: inline-size;
+}
+
+#albums[data-react-album-management="true"] .album-card-footer {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+
+#albums[data-react-album-management="true"] .album-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+#albums[data-react-album-management="true"] .album-card-meta-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 36px;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    white-space: nowrap;
+}
+
+#albums[data-react-album-management="true"] .album-card-meta-label {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: #6b7280;
+}
+
+#albums[data-react-album-management="true"] .album-card-meta-value {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #111827;
+}
+
+#albums[data-react-album-management="true"] .album-card-meta-label-short {
+    display: none;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    color: #6b7280;
+}
+
+html.dark #albums[data-react-album-management="true"] .album-card-meta-badge {
+    background: #09090b;
+    border-color: #27272a;
+}
+
+html.dark #albums[data-react-album-management="true"] .album-card-meta-value {
+    color: #fafafa;
+}
+
+html.dark #albums[data-react-album-management="true"] .album-card-meta-label,
+html.dark #albums[data-react-album-management="true"] .album-card-meta-label-short {
+    color: #a1a1aa;
+}
+
+html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 4px !important;
+}
+
+html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action,
+html.apple-device #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action,
+html.android-device #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+}
+
+/* Abbreviate labels only when the individual card cannot fit them. */
+@container (max-width: 360px) {
+    #albums[data-react-album-management="true"] .album-card-meta-label {
+        display: none;
+    }
+
+    #albums[data-react-album-management="true"] .album-card-meta-label-short {
+        display: inline;
+    }
+
+    #albums[data-react-album-management="true"] .album-card-meta-badge {
+        gap: 3px;
+        padding-inline: 5px;
+    }
+}
+
+/* Two-column phone cards are too narrow for six 40px controls. */
+@container (max-width: 283px) {
+    #albums[data-react-album-management="true"] .album-card-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #albums[data-react-album-management="true"] .album-card-meta {
+        width: 100%;
+        justify-content: center;
+    }
+
+    html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        max-width: 100%;
+    }
+
+    html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action,
+    html.apple-device #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action,
+    html.android-device #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action {
+        flex-basis: 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+    }
+}

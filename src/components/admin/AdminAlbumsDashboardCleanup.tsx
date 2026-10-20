@@ -93,9 +93,10 @@ function markPlatformAlbumActions(platform: "apple" | "android" | "other") {
 
     actionBar.dataset.appleAlbumActions = "true"
     actionBar.dataset.nativePlatform = platform
-    actionBar.style.setProperty("width", "100%", "important")
-    actionBar.style.setProperty("justify-content", "center", "important")
-    actionBar.style.setProperty("margin-inline", "auto", "important")
+    const isInlineFooter = Boolean(actionBar.closest(".album-card-footer"))
+    actionBar.style.setProperty("width", isInlineFooter ? "auto" : "100%", "important")
+    actionBar.style.setProperty("justify-content", isInlineFooter ? "flex-end" : "center", "important")
+    actionBar.style.setProperty("margin-inline", isInlineFooter ? "0" : "auto", "important")
 
     editLink.dataset.appleAlbumAction = "edit"
     editLink.setAttribute("aria-label", "Редакция")
