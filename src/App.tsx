@@ -70,7 +70,9 @@ function AppContent() {
 
   return (
     <div
-      className={`flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-slate-900 dark:bg-zinc-900 dark:text-white ${
+      className={`flex min-h-screen w-full flex-col overflow-x-hidden text-slate-900 dark:text-white ${
+        isAdminPage ? "bg-gray-100 dark:bg-zinc-950" : "bg-white dark:bg-zinc-900"
+      } ${
         isProfilePage ? "dg-profile-page" : ""
       } ${isGalleryDetailsPage ? "dg-gallery-details-page" : ""}`}
     >
