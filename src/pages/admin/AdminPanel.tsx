@@ -702,40 +702,31 @@ export default function AdminPanel() {
                                         </div>
                                     </div>
 
-                                    <div className="p-5">
-                                        <div className="mb-4">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    <div className="p-3 sm:p-4">
+                                        <div className="mb-3">
+                                            <h3 className="text-base font-semibold leading-snug text-gray-900 dark:text-white">
                                                 {album.title}
                                             </h3>
-
-                                            <p className="mt-2 min-h-[48px] line-clamp-2 text-sm leading-6 text-gray-600 dark:text-zinc-300">
-                                                {album.description || "Няма описание"}
-                                            </p>
-
-                                            <div className="mt-3 text-xs font-medium text-gray-500 dark:text-zinc-400">
+                                            <div className="mt-1.5 text-xs font-medium text-gray-500 dark:text-zinc-400">
                                                 Категория: {categoryName}
-                                            </div>
-
-                                            <div className="mt-1 text-xs font-medium text-gray-500 dark:text-zinc-400">
-                                                Slug: {album.slug}
                                             </div>
                                         </div>
 
-                                        <div className="mb-4 grid gap-3 sm:grid-cols-2">
-                                            <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-                                                <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                        <div className="mb-3 grid grid-cols-2 gap-2">
+                                            <div className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+                                                <div className="text-[11px] font-bold uppercase leading-tight tracking-wide text-gray-500 dark:text-zinc-400">
                                                     В портфолио
                                                 </div>
-                                                <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                                <div className="mt-1 text-sm font-semibold leading-tight text-gray-900 dark:text-white">
                                                     {album.isPublished ? "Да" : "Не"}
                                                 </div>
                                             </div>
 
-                                            <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-                                                <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+                                            <div className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+                                                <div className="text-[11px] font-bold uppercase leading-tight tracking-wide text-gray-500 dark:text-zinc-400">
                                                     Ред
                                                 </div>
-                                                <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                                                <div className="mt-1 text-sm font-semibold leading-tight text-gray-900 dark:text-white">
                                                     {album.displayOrder}
                                                 </div>
                                             </div>
