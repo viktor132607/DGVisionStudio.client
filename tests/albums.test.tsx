@@ -106,6 +106,9 @@ describe("album management", () => {
         fireEvent.change(target, { target: { value: "2" } })
         fireEvent.click(screen.getByRole("button", { name: "Премести маркираните" }))
         await waitFor(() => expect(albums.filter(a => a.portfolioCategoryId === 2)).toHaveLength(3))
+        await waitFor(() => expect(screen.getByText("Маркирани: 0")).toBeTruthy())
+        expect(screen.getByRole("checkbox", { name: "Маркирай албум „Анна и Иван“" })).toHaveProperty("checked", false)
+        expect(screen.getByRole("checkbox", { name: "Маркирай албум „Семеен ден“" })).toHaveProperty("checked", false)
         expect(JSON.parse(posts()[0][1]!.body as string)).toEqual({ albumIds: [11, 13], categoryId: 2 })
     })
 

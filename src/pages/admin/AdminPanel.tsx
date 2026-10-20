@@ -347,7 +347,7 @@ export default function AdminPanel() {
                 body: JSON.stringify({ albumIds: ids, categoryId }),
             })
             setBulkDeleteIds(null)
-            if (categoryId === undefined) setSelectedAlbumIds(current => new Set([...current].filter(id => !ids.includes(id))))
+            setSelectedAlbumIds(current => new Set([...current].filter(id => !ids.includes(id))))
             await Promise.all([loadAlbums(), loadStats()])
             showToast({ type: "success", title: "Готово", message: categoryId === undefined
                 ? `Изтрити албуми: ${result.count}.`
