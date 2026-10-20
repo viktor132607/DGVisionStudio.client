@@ -213,6 +213,14 @@ main .min-h-screen > section.home-hero .home-slideshow-controls {
     }
 }
 
+/* Tablet / compact-laptop landscape: let Recent photography sit higher. */
+@media (min-width: 1024px) and (max-width: 1599px) and (orientation: landscape) {
+    main .min-h-screen > section.home-hero .home-hero-title {
+        font-size: min(5.25svh, 3.65vw) !important;
+        line-height: 0.98 !important;
+    }
+}
+
 @media (max-width: 1023px), (orientation: portrait) {
     main .min-h-screen > section.home-hero {
         min-height: 0 !important;
