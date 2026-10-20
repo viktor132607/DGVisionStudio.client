@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { Download, LoaderCircle, LockKeyhole, Pencil, Trash2 } from "lucide-react"
 import { apiFetch, apiFetchJson } from "../../services/api"
 import { resolveAssetUrl } from "../../utils/resolveAssetUrl"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
@@ -11,6 +12,7 @@ import type { AlbumPage } from "../../utils/albumSelection"
 import "../../styles/adminAlbumManagement.css"
 
 const actionClass = "inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+const albumActionClass = "album-card-action inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
 const selectClass = "h-12 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
 const readSort = () => { try { return localStorage.getItem("dgvisionstudio.admin.albumSort") || "activity_desc" } catch { return "activity_desc" } }
 const readActivity = (): Record<string, number> => { try { return JSON.parse(localStorage.getItem("dgvisionstudio.admin.albumActivity") || "{}") } catch { return {} } }
@@ -739,32 +741,52 @@ export default function AdminPanel() {
                                             </div>
                                         </div>
 
-                                        <button type="button" className={`${actionClass} mb-3 w-full`} disabled={albumManagementBusy}
-                                            aria-label={`Изтегли архив на албум „${album.title}“`} onClick={() => void archive.start([album.id])}>
-                                            Изтегли архив
-                                        </button>
-                                        <div className="album-card-actions flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                                            <Link
-                                                to={`/admin/client-galleries/edit?id=${album.id}`}
-                                                className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
-                                            >
-                                                Редакция
-                                            </Link>
-
-                                            <Link
-                                                to={`/admin/client-galleries/access?id=${album.id}`}
-                                                className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:border-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-700"
-                                            >
-                                                Достъп
-                                            </Link>
-
+                                        <div className="album-card-actions flex flex-wrap items-center justify-center gap-2">
                                             <button
                                                 type="button"
+                                                data-apple-album-action="download"
+                                                className={albumActionClass}
+                                                disabled={albumManagementBusy}
+                                                aria-label={"Изтегли архив на албум „" + album.title + "“"}
+                                                title="Изтегли архив"
+                                                onClick={() => void archive.start([album.id])}
+                                            >
+                                                <Download className="album-card-action-icon" aria-hidden="true" />
+                                                <span className="sr-only">Изтегли архив</span>
+                                            </button>
+                                            <Link
+                                                to={"/admin/client-galleries/edit?id=" + album.id}
+                                                data-apple-album-action="edit"
+                                                className={albumActionClass}
+                                                aria-label="Редакция"
+                                                title="Редакция"
+                                            >
+                                                <Pencil className="album-card-action-icon" aria-hidden="true" />
+                                                <span className="sr-only">Редакция</span>
+                                            </Link>
+                                            <Link
+                                                to={"/admin/client-galleries/access?id=" + album.id}
+                                                data-apple-album-action="access"
+                                                className={albumActionClass}
+                                                aria-label="Достъп"
+                                                title="Достъп"
+                                            >
+                                                <LockKeyhole className="album-card-action-icon" aria-hidden="true" />
+                                                <span className="sr-only">Достъп</span>
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                data-apple-album-action="delete"
                                                 onClick={() => setDeleteAlbumId(album.id)}
                                                 disabled={albumManagementBusy}
-                                                className="inline-flex h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/40 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                                                className={albumActionClass + " border-red-300 !text-red-600 hover:bg-red-50 dark:border-red-500/40 dark:!text-red-400 dark:hover:bg-red-500/10"}
+                                                aria-label={busyAlbumId === album.id ? "Зареждане..." : "Изтрий"}
+                                                title="Изтрий"
                                             >
-                                                {busyAlbumId === album.id ? "Зареждане..." : "Изтрий"}
+                                                {busyAlbumId === album.id
+                                                    ? <LoaderCircle className="album-card-action-icon animate-spin" aria-hidden="true" />
+                                                    : <Trash2 className="album-card-action-icon" aria-hidden="true" />}
+                                                <span className="sr-only">{busyAlbumId === album.id ? "Зареждане..." : "Изтрий"}</span>
                                             </button>
                                         </div>
                                     </div>
