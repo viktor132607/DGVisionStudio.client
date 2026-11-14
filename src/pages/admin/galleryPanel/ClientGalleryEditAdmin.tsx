@@ -1041,7 +1041,7 @@ export default function ClientGalleryEditAdmin() {
                             {t.chooseFiles}
                             <input
                                 type="file"
-                                accept=".jpg,.jpeg,.png,.webp"
+                                accept=".jpg,.jpeg,.png,.webp,.bmp,.gif"
                                 multiple
                                 className="hidden"
                                 onChange={(e) => handleFiles(Array.from(e.target.files || []))}

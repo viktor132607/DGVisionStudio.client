@@ -97,7 +97,7 @@ export default function AdminClientPhotoDropzone({
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
+                    accept=".jpg,.jpeg,.png,.webp,.bmp,.gif"
                     multiple
                     className="hidden"
                     onChange={(e) => {

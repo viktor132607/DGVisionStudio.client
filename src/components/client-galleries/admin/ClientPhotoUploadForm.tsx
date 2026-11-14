@@ -15,7 +15,7 @@ type ClientPhotoUploadFormProps = {
 export default function ClientPhotoUploadForm({
     title,
     galleryId,
-    accept = ".jpg,.jpeg,.png,.webp",
+    accept = ".jpg,.jpeg,.png,.webp,.bmp,.gif",
     buttonLabel,
     uploadingLabel,
     allowMultiple = true,

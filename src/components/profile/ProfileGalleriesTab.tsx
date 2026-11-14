@@ -365,7 +365,7 @@ export default function ProfileGalleriesTab({
                                   : "Upload more photos"}
                             <input
                                 type="file"
-                                accept="image/jpeg,image/png,image/webp"
+                                accept="image/jpeg,image/png,image/webp,image/bmp,image/gif"
                                 multiple
                                 className="hidden"
                                 disabled={uploadingId === gallery.id || deletingId === gallery.id}
@@ -487,7 +487,7 @@ export default function ProfileGalleriesTab({
                     </span>
                     <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp"
+                        accept="image/jpeg,image/png,image/webp,image/bmp,image/gif"
                         multiple
                         className="hidden"
                         onChange={(event) => addPendingFiles(Array.from(event.target.files || []))}

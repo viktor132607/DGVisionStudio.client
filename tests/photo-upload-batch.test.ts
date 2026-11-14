@@ -15,7 +15,15 @@ describe("photo upload batch", () => {
     it.each(["", "application/octet-stream", "image/jpeg"])("accepts supported files with MIME %s", type => {
         expect(() => validatePhotoFile(new File(["image"], "PHOTO.JPG", { type }))).not.toThrow()
     })
-    it.each(["photo.heic", "photo.gif", "photo.svg"])("rejects unsupported %s before upload", name => {
+    it.each(["photo.heic", "photo.avif", "photo.tiff", "photo.svg"])("rejects unsupported %s before upload", name => {
         expect(() => validatePhotoFile(new File(["image"], name, { type: "image/heic" }))).toThrow()
     })
+})
+
+it.each([['photo.bmp', 'image/bmp'], ['photo.GIF', 'image/gif'], ['photo.bmp', ''], ['photo.bmp', 'image/x-ms-bmp']])('accepts %s with %s', (name, type) => {
+    expect(() => validatePhotoFile(new File(['image'], name, { type }))).not.toThrow()
+})
+it.each(['bmp', 'gif'])('rejects oversized %s without conversion', extension => {
+    const file = new File([new Uint8Array(10 * 1024 * 1024 + 1)], `large.${extension}`, { type: `image/${extension}` })
+    expect(() => validatePhotoFile(file)).toThrow('10MB')
 })

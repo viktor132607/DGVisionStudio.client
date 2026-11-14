@@ -210,7 +210,7 @@ export default function ContactRequestAlbumEditor({
 
                 <label className="lg:col-span-2 flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-zinc-300">
                     Качи снимки
-                    <input type="file" accept=".jpg,.jpeg,.png,.webp" multiple onChange={handleFiles} className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white" />
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp,.bmp,.gif" multiple onChange={handleFiles} className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white" />
                     {files.length ? <span className="text-xs text-gray-500">Избрани снимки: {files.length}</span> : null}
                 </label>
             </fieldset>
