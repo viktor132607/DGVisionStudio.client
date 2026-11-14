@@ -1,3 +1,4 @@
+import { validatePhotoFile } from "../../../services/clientGalleries/shared"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -38,7 +39,8 @@ export default function AdminClientPhotoDropzone({
           }
 
     const handleFiles = async (fileList: FileList | File[]) => {
-        const files = Array.from(fileList).filter((file) => file.type.startsWith("image/"))
+        const files = Array.from(fileList)
+        if (uploading) return
 
         if (!files.length || disabled) {
             if (disabled) setError(t.disabled)
@@ -50,6 +52,7 @@ export default function AdminClientPhotoDropzone({
         setSuccess("")
 
         try {
+            files.forEach(validatePhotoFile)
             await onUpload(files)
             setSuccess(t.success)
         } catch (err) {
@@ -94,7 +97,7 @@ export default function AdminClientPhotoDropzone({
                 <input
                     ref={inputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp"
                     multiple
                     className="hidden"
                     onChange={(e) => {

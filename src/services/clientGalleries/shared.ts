@@ -13,9 +13,13 @@ export const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${API_ROOT}/api`)
 const MAX_PHOTO_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024
 
 export function validatePhotoFile(file: File): void {
-    if (!file.type.startsWith("image/")) {
-        throw new Error("Only image files are allowed.")
+    if (!/\.(jpe?g|png|webp)$/i.test(file.name)) {
+        throw new Error(`${file.name}: Only JPG, JPEG, PNG and WEBP files are allowed.`)
     }
+    if (file.type && file.type !== "application/octet-stream" && !file.type.startsWith("image/")) {
+        throw new Error(`${file.name}: Invalid image MIME type.`)
+    }
+    if (!file.size) throw new Error(`${file.name}: File is empty.`)
 
     if (file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES) {
         throw new Error("Photo is too large. Maximum size is 20MB.")

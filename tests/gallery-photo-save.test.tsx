@@ -9,6 +9,8 @@ import {
     updateGalleryPhoto,
     setGalleryCoverImage,
     uploadGalleryPhoto,
+    createAdminClientGallery,
+    deleteAdminClientGallery,
 } from "../src/services/clientGalleries"
 import { apiFetch } from "../src/services/api"
 
@@ -75,7 +77,7 @@ describe("admin album photo save feedback", () => {
         expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: "error" }))
     })
 
-    it("still sends a cover request for a newly uploaded photo chosen as cover", async () => {
+    it("persists metadata and cover selection for a newly uploaded photo", async () => {
         await mountEditor()
         vi.stubGlobal("URL", class extends URL { static createObjectURL = vi.fn(() => "blob:preview") })
         const newPhoto = { ...initialPhoto, id: 52, previewUrl: "/uploads/new-cover.jpg", isCover: false }
@@ -93,6 +95,55 @@ describe("admin album photo save feedback", () => {
 
         await screen.findByText("Албумът беше обновен успешно.")
         expect(uploadGalleryPhoto).toHaveBeenCalledWith(27, file)
-        expect(setGalleryCoverImage).toHaveBeenCalledWith(27, { coverImageUrl: "/uploads/new-cover.jpg" })
+        expect(updateGalleryPhoto).toHaveBeenCalledWith(27, 52, expect.objectContaining({ isCover: true }))
+        expect(setGalleryCoverImage).not.toHaveBeenCalled()
     })
+})
+
+for (const isNew of [false, true]) {
+    it(`continues after a failed file and retries without duplicates (${isNew ? "new" : "existing"} album)`, async () => {
+        vi.stubGlobal("URL", class extends URL { static createObjectURL = vi.fn(() => "blob:preview") })
+        vi.mocked(createAdminClientGallery).mockResolvedValue({ id: 27 } as never)
+        if (isNew) {
+            render(<MemoryRouter initialEntries={["/admin/client-galleries/create"]}><ClientGalleryEditAdmin /></MemoryRouter>)
+            fireEvent.change(await screen.findByPlaceholderText("Пример: Бал Азра"), { target: { value: "New album" } })
+        } else {
+            await mountEditor()
+        }
+        const files = ["one.jpg", "bad.jpg", "three.jpg"].map(name => new File(["image"], name, { type: "image/jpeg" }))
+        let failed = false
+        vi.mocked(uploadGalleryPhoto).mockImplementation(async (_, file) => {
+            if (file.name === "bad.jpg" && !failed) { failed = true; throw new Error("Temporary failure") }
+            return { ...initialPhoto, id: 100 + files.indexOf(file) } as never
+        })
+        fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files } })
+        fireEvent.submit(document.querySelector("form")!)
+        await screen.findByText(/bad.jpg: Temporary failure/)
+        expect(uploadGalleryPhoto).toHaveBeenCalledTimes(3)
+        expect(deleteAdminClientGallery).not.toHaveBeenCalled()
+        fireEvent.submit(document.querySelector("form")!)
+        await waitFor(() => expect(uploadGalleryPhoto).toHaveBeenCalledTimes(4))
+        expect(vi.mocked(uploadGalleryPhoto).mock.calls.map(call => call[1].name)).toEqual(["one.jpg", "bad.jpg", "three.jpg", "bad.jpg"])
+        if (isNew) expect(createAdminClientGallery).toHaveBeenCalledTimes(1)
+        await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })))
+    })
+}
+
+it("does not re-upload a photo when its metadata save fails", async () => {
+    await mountEditor()
+    vi.stubGlobal("URL", class extends URL { static createObjectURL = vi.fn(() => "blob:preview") })
+    vi.mocked(uploadGalleryPhoto).mockResolvedValue({ ...initialPhoto, id: 90 } as never)
+    let failed = false
+    vi.mocked(updateGalleryPhoto).mockImplementation(async (_, id) => {
+        if (id === 90 && !failed) { failed = true; throw new Error("Metadata failed") }
+        return initialPhoto as never
+    })
+    fireEvent.change(document.querySelector('input[type="file"]')!, {
+        target: { files: [new File(["photo"], "new.jpg", { type: "image/jpeg" })] },
+    })
+    fireEvent.submit(document.querySelector("form")!)
+    await screen.findByText(/new.jpg: Metadata failed/)
+    fireEvent.submit(document.querySelector("form")!)
+    await screen.findByText("Албумът беше обновен успешно.")
+    expect(uploadGalleryPhoto).toHaveBeenCalledTimes(1)
 })

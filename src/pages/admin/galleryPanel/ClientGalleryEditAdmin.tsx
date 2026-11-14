@@ -1,5 +1,6 @@
+import { validatePhotoFile } from "../../../services/clientGalleries/shared"
 import GalleryImage from "../../../components/GalleryImage"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { DragEvent, FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -9,7 +10,6 @@ import {
     deleteGalleryPhoto,
     getAdminClientGalleryById,
     getAdminClientGalleries,
-    setGalleryCoverImage,
     updateAdminClientGallery,
     updateGalleryPhoto,
     uploadGalleryPhoto,
@@ -17,7 +17,6 @@ import {
 import { apiFetch } from "../../../services/api"
 import type {
     AdminGalleryUserOptionDto,
-    ClientPhotoDto,
     GalleryType,
     MyClientGalleryDto,
     UserClientGalleryStatus,
@@ -79,10 +78,6 @@ function toBoolean(value: unknown, fallback = false) {
     return fallback
 }
 
-function getStoredCoverImageUrl(photo?: Pick<ClientPhotoDto, "originalUrl" | "previewUrl"> | null) {
-    return photo?.originalUrl || photo?.previewUrl || ""
-}
-
 export default function ClientGalleryEditAdmin() {
     const navigate = useNavigate()
     const { i18n } = useTranslation()
@@ -93,6 +88,9 @@ export default function ClientGalleryEditAdmin() {
     const galleryIdParam = searchParams.get("id")
     const galleryId = galleryIdParam ? Number(galleryIdParam) : null
     const isEditMode = galleryId !== null && Number.isFinite(galleryId) && galleryId > 0
+
+    const createdGalleryId = useRef<number | null>(null)
+    const submitInFlight = useRef(false)
 
     const [titleBg, setTitleBg] = useState("")
     const [titleEn, setTitleEn] = useState("")
@@ -188,8 +186,6 @@ export default function ClientGalleryEditAdmin() {
               saveFailed: "Неуспешен запис.",
               deleteFailed: "Неуспешно изтриване.",
               photoDeleteFailed: "Неуспешно премахване на снимката.",
-              photoUploadFailed:
-                  "Албумът беше създаден, но качването на снимките се провали. Празният албум беше изтрит автоматично.",
           }
         : {
               back: "Back",
@@ -257,8 +253,6 @@ export default function ClientGalleryEditAdmin() {
               saveFailed: "Failed to save.",
               deleteFailed: "Failed to delete.",
               photoDeleteFailed: "Failed to remove photo.",
-              photoUploadFailed:
-                  "The album was created, but photo upload failed. The empty album was deleted automatically.",
           }
 
     const inputClassName =
@@ -441,35 +435,15 @@ export default function ClientGalleryEditAdmin() {
     }, [galleryId, isEditMode])
 
     const handleFiles = (files: File[]) => {
-        if (!files.length) return
+        if (submitInFlight.current || !files.length) return
 
-        const imageFiles = files.filter((file) => file.type.startsWith("image/"))
-
-        if (imageFiles.length !== files.length) {
-            setError(t.invalidPhotoType)
-
-            showToast({
-                type: "error",
-                title: t.error,
-                message: t.invalidPhotoType,
-            })
-
+        try {
+            files.forEach(validatePhotoFile)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : t.invalidPhotoType)
             return
         }
-
-        const oversizedFiles = imageFiles.filter((file) => file.size > MAX_PHOTO_UPLOAD_SIZE_BYTES)
-
-        if (oversizedFiles.length > 0) {
-            setError(t.photoTooLarge)
-
-            showToast({
-                type: "error",
-                title: t.error,
-                message: t.photoTooLarge,
-            })
-
-            return
-        }
+        const imageFiles = files
 
         setError("")
 
@@ -503,9 +477,7 @@ export default function ClientGalleryEditAdmin() {
 
     useEffect(() => {
         const onPaste = (event: ClipboardEvent) => {
-            const files = Array.from(event.clipboardData?.files || []).filter((file) =>
-                file.type.startsWith("image/")
-            )
+            const files = Array.from(event.clipboardData?.files || [])
 
             if (files.length > 0) {
                 event.preventDefault()
@@ -556,8 +528,9 @@ export default function ClientGalleryEditAdmin() {
             setError("")
             setSuccess("")
 
-            if (photo.isExisting && galleryId && photo.id) {
-                await deleteGalleryPhoto(galleryId, photo.id)
+            const storedGalleryId = galleryId ?? createdGalleryId.current
+            if (photo.isExisting && storedGalleryId && photo.id) {
+                await deleteGalleryPhoto(storedGalleryId, photo.id)
             }
 
             setPhotos((current) => {
@@ -580,9 +553,6 @@ export default function ClientGalleryEditAdmin() {
                 message: t.photoRemoved,
             })
 
-            if (photo.isExisting && galleryId) {
-                await loadGallery()
-            }
         } catch (err) {
             const message = err instanceof Error ? err.message : t.photoDeleteFailed
             setError(message)
@@ -612,7 +582,7 @@ export default function ClientGalleryEditAdmin() {
     }
 
     const handlePhotoDropReorder = (targetLocalId: string) => {
-        if (!draggingPhotoId || draggingPhotoId === targetLocalId) return
+        if (submitInFlight.current || !draggingPhotoId || draggingPhotoId === targetLocalId) return
 
         setPhotos((current) => {
             const fromIndex = current.findIndex((item) => item.localId === draggingPhotoId)
@@ -720,61 +690,50 @@ export default function ClientGalleryEditAdmin() {
 
     const persistExistingPhotos = async (currentGalleryId: number) => {
         const ordered = reorderItems([...photos].sort((a, b) => a.displayOrder - b.displayOrder))
+        const failures: string[] = []
 
         for (const photo of ordered) {
-            if (photo.isExisting && photo.id) {
-                await updateGalleryPhoto(currentGalleryId, photo.id, {
-                    altText: photo.altText || null,
-                    caption: photo.caption || null,
-                    description: photo.caption || null,
-                    displayOrder: photo.displayOrder,
-                    isCover: photo.isCover,
-                    isPublished: photo.isPublished,
-                    showInPublicGallery: photo.showInPublicGallery,
-                    visibleToAllAuthorizedUsers: photo.visibleToAllAuthorizedUsers,
-                    allowedUserIds: photo.allowedUserIds,
-                })
+            try {
+                let photoId = photo.id
+                if (!photo.isExisting && photo.file) {
+                    const uploaded = await uploadGalleryPhoto(currentGalleryId, photo.file)
+                    photoId = uploaded.id
+                    // Record each confirmed upload immediately, even if metadata or a later file fails.
+                    updateLocalPhoto(photo.localId, { id: photoId, isExisting: true, file: null })
+                }
+                if (photoId) {
+                    await updateGalleryPhoto(currentGalleryId, photoId, {
+                        altText: photo.altText || null,
+                        caption: photo.caption || null,
+                        description: photo.caption || null,
+                        displayOrder: photo.displayOrder,
+                        isCover: photo.isCover,
+                        isPublished: photo.isPublished,
+                        showInPublicGallery: photo.showInPublicGallery,
+                        visibleToAllAuthorizedUsers: photo.visibleToAllAuthorizedUsers,
+                        allowedUserIds: photo.allowedUserIds,
+                    })
+                }
+            } catch (err) {
+                failures.push(`${photo.file?.name || photo.altText || photo.id}: ${err instanceof Error ? err.message : t.saveFailed}`)
             }
         }
-
-        const uploadedMap = new Map<string, ClientPhotoDto>()
-
-        for (const photo of ordered) {
-            if (!photo.isExisting && photo.file) {
-                const uploaded = await uploadGalleryPhoto(currentGalleryId, photo.file)
-                uploadedMap.set(photo.localId, uploaded)
-            }
-        }
-
-        // Existing photos already update their cover flag and album cover on the
-        // server through updateGalleryPhoto. A second PUT /cover is redundant
-        // and may return 404 when the preview URL differs from the stored URL.
-        const coverLocalId = ordered.find((item) => item.isCover)?.localId
-        const uploadedCover = coverLocalId ? uploadedMap.get(coverLocalId) : undefined
-
-        if (uploadedCover) {
-            const nextCoverUrl = getStoredCoverImageUrl(uploadedCover)
-            if (nextCoverUrl) {
-                await setGalleryCoverImage(currentGalleryId, { coverImageUrl: nextCoverUrl } as any)
-            }
-        }
-    }
-
-    const rollbackCreatedGallery = async (createdId: number) => {
-        try {
-            await deleteAdminClientGallery(createdId)
-        } catch {
-            // Best-effort cleanup only. The original upload error must remain the visible error.
+        if (failures.length) {
+            throw new Error((isBg
+                ? "Някои снимки не са записани. Успешните са запазени; натисни Запази за повторен опит. "
+                : "Some photos could not be saved. Successful uploads are preserved; save again to retry. ") + failures.join("; "))
         }
     }
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
+        if (submitInFlight.current) return
         setError("")
         setSuccess("")
 
         if (!validate()) return
 
+        submitInFlight.current = true
         setSaving(true)
 
         try {
@@ -821,47 +780,16 @@ export default function ClientGalleryEditAdmin() {
                     })
                 }
             } else {
-                const created = await createAdminClientGallery(payload as any)
-                const createdId = Number((created as any)?.id)
-
-                if (!createdId || !Number.isFinite(createdId)) {
-                    throw new Error("Неуспешно създаване на албума.")
+                if (!createdGalleryId.current) {
+                    const created = await createAdminClientGallery(payload as any)
+                    const id = Number(created?.id)
+                    if (!Number.isFinite(id) || id <= 0) throw new Error(t.saveFailed)
+                    createdGalleryId.current = id
+                } else {
+                    await updateAdminClientGallery(createdGalleryId.current, payload)
                 }
-
-                try {
-                    const ordered = reorderItems(
-                        [...photos].sort((a, b) => a.displayOrder - b.displayOrder)
-                    )
-
-                    const uploadedMap = new Map<string, ClientPhotoDto>()
-
-                    for (const photo of ordered) {
-                        if (!photo.file) continue
-
-                        const uploaded = await uploadGalleryPhoto(createdId, photo.file)
-                        uploadedMap.set(photo.localId, uploaded)
-                    }
-
-                    const coverLocalId = ordered.find((item) => item.isCover)?.localId
-                    const uploadedCover = coverLocalId ? uploadedMap.get(coverLocalId) : null
-                    const firstUploaded = Array.from(uploadedMap.values())[0]
-                    const nextCoverUrl = getStoredCoverImageUrl(uploadedCover || firstUploaded)
-
-                    if (nextCoverUrl) {
-                        await setGalleryCoverImage(createdId, {
-                            coverImageUrl: nextCoverUrl,
-                        } as any)
-                    }
-                } catch (uploadError) {
-                    await rollbackCreatedGallery(createdId)
-
-                    const uploadMessage =
-                        uploadError instanceof Error && uploadError.message
-                            ? uploadError.message
-                            : t.photoUploadFailed
-
-                    throw new Error(`${t.photoUploadFailed} ${uploadMessage}`)
-                }
+                const createdId = createdGalleryId.current
+                await persistExistingPhotos(createdId)
 
                 showToast({
                     type: "success",
@@ -882,6 +810,7 @@ export default function ClientGalleryEditAdmin() {
                 message,
             })
         } finally {
+            submitInFlight.current = false
             setSaving(false)
         }
     }
@@ -968,6 +897,7 @@ export default function ClientGalleryEditAdmin() {
             ) : null}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                <fieldset disabled={saving} className="min-w-0 space-y-6">
                 <AlbumVisibilitySection
                     isBg={isBg}
                     isPublic={isPublic}
@@ -1111,7 +1041,7 @@ export default function ClientGalleryEditAdmin() {
                             {t.chooseFiles}
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept=".jpg,.jpeg,.png,.webp"
                                 multiple
                                 className="hidden"
                                 onChange={(e) => handleFiles(Array.from(e.target.files || []))}
@@ -1303,6 +1233,7 @@ export default function ClientGalleryEditAdmin() {
                         {saving ? t.saving : t.save}
                     </button>
                 </div>
+                </fieldset>
             </form>
 
             <ConfirmDialog

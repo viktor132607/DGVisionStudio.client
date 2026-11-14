@@ -168,8 +168,8 @@ describe("client gallery service modules", () => {
 
     it("rejects invalid photo uploads before making a request", async () => {
         const invalid = new File(["text"], "file.txt", { type: "text/plain" })
-        await expect(uploadGalleryPhoto(1, invalid)).rejects.toThrow("Only image files")
-        await expect(uploadMyClientGalleryPhoto(1, invalid)).rejects.toThrow("Only image files")
+        await expect(uploadGalleryPhoto(1, invalid)).rejects.toThrow("Only JPG, JPEG, PNG and WEBP")
+        await expect(uploadMyClientGalleryPhoto(1, invalid)).rejects.toThrow("Only JPG, JPEG, PNG and WEBP")
         expect(apiFetch).not.toHaveBeenCalled()
     })
 

@@ -1,3 +1,5 @@
+import { uploadPhotoBatch } from "../../services/clientGalleries/uploadBatch"
+import { validatePhotoFile } from "../../services/clientGalleries/shared"
 import { useMemo, useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import {
@@ -66,7 +68,13 @@ export default function ContactRequestAlbumEditor({
     }
 
     const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
-        setFiles(Array.from(event.target.files || []).filter((file) => file.type.startsWith("image/")))
+        const selected = Array.from(event.target.files || [])
+        try {
+            selected.forEach(validatePhotoFile)
+            setFiles(selected)
+        } catch (err) {
+            onError(err instanceof Error ? err.message : "Invalid photo.")
+        }
     }
 
     const refreshGalleries = async () => {
@@ -76,6 +84,7 @@ export default function ContactRequestAlbumEditor({
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault()
+        if (saving) return
 
         if (!draft.userEmail.trim()) {
             onError("Избери потребител или въведи email за достъп.")
@@ -113,6 +122,8 @@ export default function ContactRequestAlbumEditor({
                 throw new Error("Албумът не беше създаден.")
             }
 
+            setDraft((current) => ({ ...current, galleryId: galleryId! }))
+
             await grantGalleryAccess(galleryId, {
                 userEmail: draft.userEmail.trim(),
                 previewEnabled: draft.previewEnabled,
@@ -120,9 +131,10 @@ export default function ContactRequestAlbumEditor({
                 downloadExpiresAtUtc: null,
             })
 
-            for (const file of files) {
-                await uploadGalleryPhoto(galleryId, file)
-            }
+            const failures = await uploadPhotoBatch(files,
+                (file) => uploadGalleryPhoto(galleryId!, file),
+                (file) => setFiles((current) => current.filter((item) => item !== file)))
+            if (failures.length) throw new Error(failures.join("; "))
 
             await refreshGalleries()
             setFiles([])
@@ -139,7 +151,7 @@ export default function ContactRequestAlbumEditor({
         <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Албум и достъп</h2>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <fieldset disabled={saving} className="grid min-w-0 gap-4 lg:grid-cols-2">
                 <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-zinc-300">
                     Албум
                     <select
@@ -198,10 +210,10 @@ export default function ContactRequestAlbumEditor({
 
                 <label className="lg:col-span-2 flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-zinc-300">
                     Качи снимки
-                    <input type="file" accept="image/*" multiple onChange={handleFiles} className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white" />
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp" multiple onChange={handleFiles} className="rounded-lg border border-dashed border-gray-300 bg-white px-3 py-3 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white" />
                     {files.length ? <span className="text-xs text-gray-500">Избрани снимки: {files.length}</span> : null}
                 </label>
-            </div>
+            </fieldset>
 
             <button type="submit" disabled={saving} className="mt-5 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 disabled:opacity-60">
                 {saving ? "Запазване..." : "Запази албум / достъп / снимки"}

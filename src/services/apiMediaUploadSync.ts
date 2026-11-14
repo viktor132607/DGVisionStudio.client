@@ -14,7 +14,7 @@ function getFileNameWithoutExtension(file: File): string {
 }
 
 function getAdminGalleryUploadMatch(path: string): RegExpMatchArray | null {
-    return path.match(/^\/admin\/client-galleries\/(\d+)\/(photos|videos)\/upload$/)
+    return path.match(/^\/admin\/client-galleries\/(\d+)\/(videos)\/upload$/)
 }
 
 export async function syncUploadedMediaName(
@@ -48,12 +48,15 @@ export async function syncUploadedMediaName(
         return
     }
 
+    const metadataHeaders = new Headers(headers)
+    metadataHeaders.set("Content-Type", "application/json")
+
     await fetch(
         `${API_BASE_URL}/api/admin/client-galleries/${galleryId}/media/${mediaId}/metadata`,
         {
             method: "PUT",
             credentials: "include",
-            headers,
+            headers: metadataHeaders,
             body: JSON.stringify({
                 name: getFileNameWithoutExtension(file),
                 clearAltAndCaption: true,

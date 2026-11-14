@@ -1,3 +1,5 @@
+import { uploadPhotoBatch } from "../../services/clientGalleries/uploadBatch"
+import { validatePhotoFile } from "../../services/clientGalleries/shared"
 import GalleryImage from "../GalleryImage"
 import { useEffect, useMemo, useRef, useState } from "react"
 import PortfolioLightbox from "../portfolio/PortfolioLightbox"
@@ -97,6 +99,7 @@ export default function ProfileGalleriesTab({
     const [uploadingId, setUploadingId] = useState<number | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
+    const pendingGalleryId = useRef<number | null>(null)
     const photosSectionRef = useRef<HTMLDivElement | null>(null)
 
     const userPrintGalleries = useMemo(
@@ -159,11 +162,14 @@ export default function ProfileGalleriesTab({
     }
 
     const addPendingFiles = (files: File[]) => {
-        const imageFiles = files.filter((file) => file.type.startsWith("image/"))
-        if (imageFiles.length !== files.length) {
-            setGalleryError(isBg ? "Можеш да качваш само снимки." : "Only image files are allowed.")
+        if (creating) return
+        try {
+            files.forEach(validatePhotoFile)
+        } catch (err) {
+            setGalleryError(err instanceof Error ? err.message : "Invalid photo.")
             return
         }
+        const imageFiles = files
 
         setGalleryError("")
         setPendingFiles((current) => [...current, ...imageFiles])
@@ -171,25 +177,31 @@ export default function ProfileGalleriesTab({
 
     const createGallery = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (creating) return
         setGalleryError("")
 
         try {
             setCreating(true)
-            const result = await createMyClientGallery({
-                title: makeAutoTitle(userEmail, userPrintGalleries.length),
-                description: newDescription.trim() || null,
-            })
-
-            for (const file of pendingFiles) {
-                await uploadMyClientGalleryPhoto(result.id, file)
+            if (!pendingGalleryId.current) {
+                const result = await createMyClientGallery({
+                    title: makeAutoTitle(userEmail, userPrintGalleries.length),
+                    description: newDescription.trim() || null,
+                })
+                pendingGalleryId.current = result.id
             }
+            const galleryId = pendingGalleryId.current
+            const failures = await uploadPhotoBatch(pendingFiles,
+                (file) => uploadMyClientGalleryPhoto(galleryId, file),
+                (file) => setPendingFiles((current) => current.filter((item) => item !== file)))
+            if (failures.length) throw new Error(failures.join("; "))
+            pendingGalleryId.current = null
 
             setNewDescription("")
             setPendingFiles([])
 
             await onReload?.()
 
-            const created = await getClientGalleryDetails(result.id)
+            const created = await getClientGalleryDetails(galleryId)
             setOpenedGallery(created)
         } catch (err) {
             setGalleryError(
@@ -205,17 +217,16 @@ export default function ProfileGalleriesTab({
     }
 
     const uploadPhotos = async (galleryId: number, files: FileList | null) => {
-        if (!files || files.length === 0) return
+        if (uploadingId !== null || !files || files.length === 0) return
 
         try {
             setGalleryError("")
             setUploadingId(galleryId)
 
-            for (const file of Array.from(files)) {
-                await uploadMyClientGalleryPhoto(galleryId, file)
-            }
-
+            const failures = await uploadPhotoBatch(Array.from(files),
+                (file) => uploadMyClientGalleryPhoto(galleryId, file))
             await reloadAll()
+            if (failures.length) throw new Error(failures.join("; "))
         } catch (err) {
             setGalleryError(
                 err instanceof Error

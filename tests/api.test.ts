@@ -115,7 +115,7 @@ describe("API client facade", () => {
         ).resolves.toBeUndefined()
     })
 
-    it("preserves admin upload metadata synchronization side effect", async () => {
+    it("preserves video upload metadata synchronization with JSON headers", async () => {
         const fetchMock = vi.mocked(fetch)
         fetchMock
             .mockResolvedValueOnce(
@@ -154,7 +154,7 @@ describe("API client facade", () => {
 
         const { apiFetch } = await import("../src/services/api")
         await apiFetch(
-            "/admin/client-galleries/5/photos/upload",
+            "/admin/client-galleries/5/videos/upload",
             {
                 method: "POST",
                 body: formData,
@@ -173,6 +173,7 @@ describe("API client facade", () => {
             "https://api.dgvisionstudio.com/api/admin/client-galleries/5/media/17/metadata"
         )
         expect(metadataInit?.method).toBe("PUT")
+        expect(new Headers(metadataInit?.headers).get("Content-Type")).toBe("application/json")
         expect(
             new Headers(metadataInit?.headers).get("X-CSRF-TOKEN")
         ).toBe("csrf-upload")

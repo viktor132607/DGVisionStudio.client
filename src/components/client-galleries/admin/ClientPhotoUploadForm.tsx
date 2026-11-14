@@ -1,3 +1,4 @@
+import { validatePhotoFile } from "../../../services/clientGalleries/shared"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,7 +15,7 @@ type ClientPhotoUploadFormProps = {
 export default function ClientPhotoUploadForm({
     title,
     galleryId,
-    accept = "image/*",
+    accept = ".jpg,.jpeg,.png,.webp",
     buttonLabel,
     uploadingLabel,
     allowMultiple = true,
@@ -55,7 +56,12 @@ export default function ClientPhotoUploadForm({
           }
 
     const setSelectedFiles = (incoming: FileList | File[] | null | undefined) => {
-        const next = Array.from(incoming || []).filter((file) => file.type.startsWith("image/"))
+        if (uploading) return
+        const next = Array.from(incoming || [])
+        try { next.forEach(validatePhotoFile) } catch (err) {
+            setError(err instanceof Error ? err.message : "Invalid photo.")
+            return
+        }
         setFiles(next)
         setError("")
         setSuccess("")
@@ -63,6 +69,7 @@ export default function ClientPhotoUploadForm({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (uploading) return
         setError("")
         setSuccess("")
 
