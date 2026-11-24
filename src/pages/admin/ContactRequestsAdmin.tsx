@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
+import { ArrowLeft, RefreshCw, Search } from "lucide-react"
 import { apiFetch } from "../../services/api"
 import { markAdminContactRequestsSeen } from "../../services/adminNotifications"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
@@ -23,6 +24,13 @@ type ContactRequest = {
 }
 
 const statusOptions: ContactStatus[] = ["New", "InProgress", "Completed", "Rejected"]
+
+const statusLabels: Record<ContactStatus, string> = {
+    New: "Ново",
+    InProgress: "В процес",
+    Completed: "Завършено",
+    Rejected: "Отказано",
+}
 
 const statusValues: Record<ContactStatus, number> = {
     New: 0,
@@ -284,8 +292,70 @@ export default function ContactRequestsAdmin() {
 
     const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
 
+    const renderRequestCards = (sectionRequests: ContactRequest[], emptyText: string) => (
+        <div className="space-y-3 lg:hidden">
+            {sectionRequests.length === 0 ? (
+                <p className="rounded-2xl bg-white px-4 py-5 text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">{emptyText}</p>
+            ) : sectionRequests.map(request => {
+                const status = normalizeStatus(request.status)
+                const isBusy = busyId === request.id
+                return (
+                    <article key={request.id} aria-label={`Запитване #${getDisplayCode(request.id, requestCodes)}`}
+                        className="overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                        <div className="space-y-4 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-xs font-semibold tracking-wide text-gray-500 dark:text-zinc-400">#{getDisplayCode(request.id, requestCodes)}</p>
+                                    <h3 className="mt-1 text-lg font-semibold leading-snug text-gray-900 dark:text-white">{request.name}</h3>
+                                </div>
+                                {request.isSeenByAdmin === false && <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">Непрочетено</span>}
+                            </div>
+                            <dl className="space-y-3 text-sm">
+                                <div>
+                                    <dt className="text-xs text-gray-500 dark:text-zinc-400">Имейл</dt>
+                                    <dd className="mt-1 break-words text-blue-600 dark:text-blue-400"><a href={`mailto:${request.email}`} className="inline-flex min-h-11 max-w-full items-center [overflow-wrap:anywhere]">{request.email}</a></dd>
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 dark:text-zinc-400">Телефон</dt>
+                                    <dd className="mt-1 text-blue-600 dark:text-blue-400">{request.phone ? <a href={`tel:${request.phone}`} className="inline-flex min-h-11 items-center">{request.phone}</a> : "—"}</dd>
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 dark:text-zinc-400">Тема</dt>
+                                    <dd className="mt-1 break-words text-gray-900 dark:text-zinc-100">{request.subject || "—"}</dd>
+                                </div>
+                                <div className="rounded-2xl bg-gray-50 p-3 dark:bg-zinc-800/60">
+                                    <dt className="text-xs text-gray-500 dark:text-zinc-400">Съобщение</dt>
+                                    <dd className="mt-1 whitespace-pre-wrap break-words leading-relaxed text-gray-900 dark:text-zinc-100 [overflow-wrap:anywhere]">{request.message}</dd>
+                                </div>
+                            </dl>
+                            <p className="text-xs text-gray-500 dark:text-zinc-400">
+                                {request.createdAtUtc ? new Date(request.createdAtUtc).toLocaleString("bg-BG") : "Няма дата"}
+                            </p>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400">
+                                Статус
+                                <select aria-label={`Статус на запитване #${getDisplayCode(request.id, requestCodes)}`}
+                                    value={status} disabled={isBusy}
+                                    onChange={event => void changeStatus(request.id, event.target.value as ContactStatus)}
+                                    className="mt-1 min-h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-base font-medium text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
+                                    {statusOptions.map(option => <option key={option} value={option}>{statusLabels[option]}</option>)}
+                                </select>
+                            </label>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 border-t border-gray-100 p-2 dark:border-zinc-800">
+                            <Link to={`/admin/contact-requests/${request.id}`} className="flex min-h-11 items-center justify-center rounded-xl px-1 text-xs font-semibold text-blue-600 active:bg-blue-50 dark:text-blue-400 dark:active:bg-zinc-800">Преглед</Link>
+                            <Link to={`/admin/contact-requests/${request.id}/edit`} className="flex min-h-11 items-center justify-center rounded-xl px-1 text-xs font-semibold text-blue-600 active:bg-blue-50 dark:text-blue-400 dark:active:bg-zinc-800">Редакция</Link>
+                            <button type="button" onClick={() => setDeleteRequestId(request.id)} disabled={isBusy} className="min-h-11 rounded-xl px-1 text-xs font-semibold text-red-600 active:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:active:bg-red-500/10">{isBusy ? "…" : "Изтрий"}</button>
+                        </div>
+                    </article>
+                )
+            })}
+        </div>
+    )
+
     const renderRequestsTable = (sectionRequests: ContactRequest[], emptyText: string) => (
-        <div className="overflow-x-auto">
+        <>
+        {renderRequestCards(sectionRequests, emptyText)}
+        <div className="hidden overflow-x-auto lg:block">
             <table className="w-full overflow-hidden rounded-xl border bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <thead className="bg-gray-50 dark:bg-zinc-950">
                     <tr>
@@ -334,14 +404,14 @@ export default function ContactRequestsAdmin() {
                                     <td className="p-3 text-gray-900 dark:text-white">{request.subject || "-"}</td>
                                     <td className="p-3">
                                         <select
-                                            value={status}
+                                            value={statusLabels[status]}
                                             disabled={isBusy}
                                             onChange={(event) => void changeStatus(request.id, event.target.value as ContactStatus)}
                                             className="rounded-lg border border-green-700 bg-green-600 px-3 py-1.5 text-sm font-semibold text-white outline-none transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-green-500 dark:bg-green-600 dark:hover:bg-green-700"
                                         >
                                             {statusOptions.map((option) => (
                                                 <option key={option} value={option} className="bg-white text-gray-900">
-                                                    {option}
+                                                    {statusLabels[option]}
                                                 </option>
                                             ))}
                                         </select>
@@ -399,12 +469,13 @@ export default function ContactRequestsAdmin() {
                 </tbody>
             </table>
         </div>
+        </>
     )
 
     return (
-        <div className="p-6">
+        <div className="min-h-screen bg-[#f2f2f7] p-6 dark:bg-black lg:bg-transparent lg:dark:bg-transparent">
             <div className="mb-6 flex flex-col gap-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                             Запитвания
@@ -419,46 +490,56 @@ export default function ContactRequestsAdmin() {
                             type="button"
                             onClick={() => void load()}
                             disabled={loading}
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            aria-label="Обнови запитванията"
+                            title="Обнови"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm disabled:opacity-50 dark:bg-zinc-900 dark:text-blue-400"
                         >
-                            Обнови
+                            <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
                         </button>
 
                         <Link
                             to="/admin"
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            aria-label="Назад към админ панела"
+                            title="Назад"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm dark:bg-zinc-900 dark:text-blue-400"
                         >
-                            Назад
+                            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
                         </Link>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-3 lg:flex-row">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_200px_180px]">
+                    <label className="relative col-span-2 min-w-0 lg:col-span-1">
+                    <span className="sr-only">Търси запитвания</span>
+                    <Search className="pointer-events-none absolute left-3 top-3 h-5 w-5 text-gray-400" aria-hidden="true" />
                     <input
                         type="text"
-                        placeholder="Търси по код, име, email, телефон, тема, съобщение..."
+                        placeholder="Търси запитвания"
                         value={search}
                         onChange={(event) => handleSearchChange(event.target.value)}
-                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 outline-none focus:ring-2 focus:ring-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-700 lg:flex-1"
+                        className="min-h-11 w-full rounded-xl border-0 bg-white py-2 pl-10 pr-3 text-base outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                     />
 
+                    </label>
                     <select
+                        aria-label="Филтрирай по статус"
                         value={statusFilter}
                         onChange={(event) => handleStatusFilterChange(event.target.value)}
-                        className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                        className="min-h-11 rounded-xl border-0 bg-white px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value="all">Всички статуси</option>
                         {statusOptions.map((status) => (
                             <option key={status} value={status}>
-                                {status}
+                                {statusLabels[status]}
                             </option>
                         ))}
                     </select>
 
                     <select
+                        aria-label="Запитвания на страница"
                         value={pageSize}
                         onChange={(event) => handlePageSizeChange(Number(event.target.value))}
-                        className="rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                        className="min-h-11 rounded-xl border-0 bg-white px-3 py-2 text-base outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-900 dark:text-white"
                     >
                         <option value={20}>20 / страница</option>
                         <option value={60}>60 / страница</option>
@@ -487,12 +568,12 @@ export default function ContactRequestsAdmin() {
 
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">New</h3>
+                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">Нови</h3>
                                     {renderRequestsTable(groupedRequests.newRequests, "Няма нови заявки.")}
                                 </div>
 
                                 <div>
-                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">In progress</h3>
+                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">В процес</h3>
                                     {renderRequestsTable(groupedRequests.inProgressRequests, "Няма заявки в процес.")}
                                 </div>
                             </div>
@@ -503,12 +584,12 @@ export default function ContactRequestsAdmin() {
 
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">Completed</h3>
+                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">Завършени</h3>
                                     {renderRequestsTable(groupedRequests.completedRequests, "Няма завършени заявки.")}
                                 </div>
 
                                 <div>
-                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">Rejected</h3>
+                                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-zinc-400">Отказани</h3>
                                     {renderRequestsTable(groupedRequests.rejectedRequests, "Няма отказани заявки.")}
                                 </div>
                             </div>
@@ -521,7 +602,7 @@ export default function ContactRequestsAdmin() {
                             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
-                            Prev
+                            Предишна
                         </button>
 
                         {pageNumbers.map((page) => (
@@ -543,7 +624,7 @@ export default function ContactRequestsAdmin() {
                             onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                         >
-                            Next
+                            Следваща
                         </button>
                     </div>
                 </>
