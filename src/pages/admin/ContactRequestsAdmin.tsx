@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowLeft, RefreshCw, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { apiFetch } from "../../services/api"
 import { markAdminContactRequestsSeen } from "../../services/adminNotifications"
 import ConfirmDialog from "../../components/admin/ConfirmDialog"
@@ -485,27 +485,7 @@ export default function ContactRequestsAdmin() {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            onClick={() => void load()}
-                            disabled={loading}
-                            aria-label="Обнови запитванията"
-                            title="Обнови"
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm disabled:opacity-50 dark:bg-zinc-900 dark:text-blue-400"
-                        >
-                            <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
-                        </button>
 
-                        <Link
-                            to="/admin"
-                            aria-label="Назад към админ панела"
-                            title="Назад"
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm dark:bg-zinc-900 dark:text-blue-400"
-                        >
-                            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-                        </Link>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_200px_180px]">
