@@ -22,7 +22,6 @@ import PhotographyPagesAdmin from "./PhotographyPagesAdmin"
 import PricingAdmin from "./PricingAdmin"
 import AdminDashboardCalendarPreview from "../../components/admin/AdminDashboardCalendarPreview"
 import AdminVideoUploadPortal from "../../components/admin/AdminVideoUploadPortal"
-import AlbumPublishScheduleSection from "../../components/admin/AlbumPublishScheduleSection"
 import EmptyAlbumSubmitBridge from "../../components/admin/EmptyAlbumSubmitBridge"
 
 export default function AdminRoutes() {
@@ -53,7 +52,6 @@ export default function AdminRoutes() {
                         element={
                             <>
                                 <ClientGalleryEditAdmin />
-                                <AlbumPublishScheduleSection />
                                 <EmptyAlbumSubmitBridge />
                             </>
                         }
@@ -63,7 +61,6 @@ export default function AdminRoutes() {
                         element={
                             <>
                                 <ClientGalleryEditAdmin />
-                                <AlbumPublishScheduleSection />
                             </>
                         }
                     />

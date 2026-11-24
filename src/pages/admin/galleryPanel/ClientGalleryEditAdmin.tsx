@@ -22,6 +22,7 @@ import type {
     UserClientGalleryStatus,
 } from "../../../types/clientGallery"
 import ConfirmDialog from "../../../components/admin/ConfirmDialog"
+import AlbumPublishScheduleSection from "../../../components/admin/AlbumPublishScheduleSection"
 import AlbumVisibilitySection from "../../../components/client-galleries/AlbumVisibilitySection"
 import AlbumBulkActionsBar from "../../../components/client-galleries/AlbumBulkActionsBar"
 import UserAccessSelector, {
@@ -866,6 +867,17 @@ export default function ClientGalleryEditAdmin() {
                     </h1>
                 </div>
 
+                <div className="flex flex-wrap gap-3">
+                    <button
+                        type="submit"
+                        form="album-edit-form"
+                        disabled={saving || loading}
+                        className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                    >
+                        {saving ? t.saving : t.save}
+                    </button>
+                </div>
+
                 {isEditMode ? (
                     <button
                         type="button"
@@ -896,7 +908,50 @@ export default function ClientGalleryEditAdmin() {
                 </div>
             ) : null}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="mb-6 space-y-3">
+                <section className="rounded-3xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
+                                {t.publicState}
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
+                                {isPublic ? t.yes : t.no}
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
+                                {t.category}
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
+                                {isPublic ? selectedCategoryName : t.notAssigned}
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
+                                {t.preview}
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
+                                {publicPreviewEnabled ? t.enabled : t.disabled}
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
+                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
+                                {t.download}
+                            </div>
+                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
+                                {publicDownloadEnabled ? t.enabled : t.disabled}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <AlbumPublishScheduleSection />
+            </div>
+
+            <form id="album-edit-form" onSubmit={handleSubmit} className="space-y-6">
                 <fieldset disabled={saving} className="min-w-0 space-y-6">
                 <AlbumVisibilitySection
                     isBg={isBg}
@@ -1184,55 +1239,9 @@ export default function ClientGalleryEditAdmin() {
                     onChange={setSelectedAccesses}
                 />
 
-                <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                    <div className="grid gap-4 md:grid-cols-4">
-                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
-                                {t.publicState}
-                            </div>
-                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
-                                {isPublic ? t.yes : t.no}
-                            </div>
-                        </div>
 
-                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
-                                {t.category}
-                            </div>
-                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
-                                {isPublic ? selectedCategoryName : t.notAssigned}
-                            </div>
-                        </div>
 
-                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
-                                {t.preview}
-                            </div>
-                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
-                                {publicPreviewEnabled ? t.enabled : t.disabled}
-                            </div>
-                        </div>
 
-                        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                            <div className="text-xs font-bold uppercase tracking-wide text-neutral-500 dark:text-zinc-400">
-                                {t.download}
-                            </div>
-                            <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-white">
-                                {publicDownloadEnabled ? t.enabled : t.disabled}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <div className="flex flex-wrap gap-3">
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="inline-flex items-center rounded-2xl bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                    >
-                        {saving ? t.saving : t.save}
-                    </button>
-                </div>
                 </fieldset>
             </form>
 

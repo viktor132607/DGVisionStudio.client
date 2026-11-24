@@ -254,9 +254,23 @@ export default function AlbumPublishScheduleSection() {
     }
 
     return (
-        <div className="mx-auto w-full max-w-[1600px] px-4 pb-6 sm:px-6 lg:px-8">
-            <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <h2 className="text-xl font-bold text-neutral-950 dark:text-white">{text.title}</h2>
+        <div className="w-full">
+            <section className="rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="text-lg font-bold text-neutral-950 dark:text-white">{text.title}</h2>
+                        <button
+                            type="button"
+                            disabled={saving || loading || Boolean(loadError)}
+                            onClick={() => void handleSave()}
+                            className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        >
+                            {saving
+                                ? text.saving
+                                : galleryId
+                                  ? text.save
+                                  : text.saveForCreate}
+                        </button>
+                </div>
 
                 {!galleryId ? (
                     <p className="mt-3 text-sm text-neutral-500 dark:text-zinc-400">{text.createHint}</p>
@@ -325,18 +339,7 @@ export default function AlbumPublishScheduleSection() {
                             </div>
                         ) : null}
 
-                        <button
-                            type="button"
-                            disabled={saving}
-                            onClick={() => void handleSave()}
-                            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                        >
-                            {saving
-                                ? text.saving
-                                : galleryId
-                                  ? text.save
-                                  : text.saveForCreate}
-                        </button>
+
                     </>
                 )}
             </section>
