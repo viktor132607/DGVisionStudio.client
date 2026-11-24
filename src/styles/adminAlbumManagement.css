@@ -40,9 +40,12 @@ html #albums[data-react-album-management="true"] .album-card-actions > .album-ca
     padding: 0 !important;
     box-sizing: border-box !important;
     text-align: center !important;
+    gap: 0 !important;
 }
 
-html #albums[data-react-album-management="true"] .album-card-actions > .album-card-action::before {
+/* Outrank legacy :has(edit):has(access) rules that inject a second icon. */
+html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action::before,
+html #albums[data-react-album-management="true"] .album-card-footer .album-card-actions > .album-card-action::after {
     content: none !important;
     display: none !important;
 }
@@ -193,7 +196,7 @@ html.android-device #albums[data-react-album-management="true"] .album-card-foot
     }
 }
 
-/* Two-column phone cards are too narrow for six 40px controls. */
+/* Stack metadata above the four actions on narrow two-column cards. */
 @container (max-width: 283px) {
     #albums[data-react-album-management="true"] .album-card-footer {
         flex-direction: column;
@@ -220,5 +223,6 @@ html.android-device #albums[data-react-album-management="true"] .album-card-foot
         max-width: 36px !important;
         height: 44px !important;
         min-height: 44px !important;
+        border-radius: 10px !important;
     }
 }
